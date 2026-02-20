@@ -1,0 +1,475 @@
+{
+  "common": {
+    "appName": "NeoCAST",
+    "login": "Mag-login",
+    "logout": "Mag-logout",
+    "signUp": "Mag-sign up",
+    "profile": "Profile",
+    "confirm": "Kumpirmahin",
+    "cancel": "Kanselahin",
+    "save": "I-save",
+    "close": "Isara",
+    "copy": "Kopyahin",
+    "copied": "Nakopya na!",
+    "start": "Magsimula",
+    "loading": "Naglo-load...",
+    "processing": "Pinoproseso...",
+    "error": "May naganap na error",
+    "yes": "Oo",
+    "no": "Hindi",
+    "ok": "OK",
+    "search": "Maghanap",
+    "copyright": "© 2026 NeoLAB Convergence. Nakalaan ang lahat ng karapatan."
+  },
+  "landing": {
+    "heroTitle": "Kung saan ang imahinasyon",
+    "heroSubtitle": "ay nagiging totoo",
+    "heroDescription": "Sinusuportahan ng NeoCAST ang iba't ibang input tools kabilang ang Neo Smartpen, stylus, touch at mouse. Isang real-time collaboration platform kung saan maaari kang sumulat, gumuhit at makipag-communicate nang malaya, anumang oras, kahit saan.",
+    "getStarted": "Magsimula",
+    "section1Title": "Ang perpektong solusyon para sa",
+    "section1Subtitle": "remote learning at meetings",
+    "section1Description": "Maaaring subaybayan ng mga guro (host) ang sulat-kamay ng lahat ng estudyante (guest) sa isang tingin at magbigay ng indibidwal na feedback. Kumonekta nang buhay na parang nasa klase ka, kahit gaano kalayo.",
+    "feature1": "Real-time na pagbabahagi ng sulat at annotation",
+    "feature2": "Malakas na pamamahala na nakasentro sa host",
+    "section2Title": "Ipahayag nang malaya gamit ang",
+    "section2Subtitle": "iba't ibang paraan ng input",
+    "section2Description": "Sumulat sa papel gamit ang Neo Smartpen at makita itong lumitaw sa screen agad-agad. Ang mouse at touch input ay ganap ding sinusuportahan. Gamitin ang pinaka-komportableng tool para ilabas ang iyong pagkamalikhain.",
+    "feature3": "Neo Smartpen analog writing support",
+    "feature4": "Tablet touch at mouse drawing",
+    "section3Title": "Ibahagi at suriin",
+    "section3Subtitle": "ang proseso ng pagsulat",
+    "section3Description": "Mag-record at mag-playback hindi lang ng huling resulta, kundi ng buong proseso ng pag-iisip. Ibahagi at suriin nang malalim ang mga hakbang sa paglutas ng problema o design sketch flows.",
+    "section4Title": "Pamilyar at simpleng",
+    "section4Subtitle": "sistema ng imbitasyon",
+    "section4Description": "Madaling mag-imbita ng mga kalahok gamit ang isang link lang, tulad ng Zoom, Teams o Meet. Sumali sa mga session agad-agad sa pag-click ng link, walang komplikadong installation o registration.",
+    "section5Title": "Mahigpit na seguridad ng session",
+    "section5Subtitle": "at proteksyon ng privacy",
+    "section5Description": "Ang iyong mahalagang mga ideya at data ay ligtas na protektado. Pamahalaan ang access sa session gamit ang malakas na teknolohiya ng seguridad at panatilihing ligtas ang iyong personal na impormasyon.",
+    "newConcept": {
+      "title": "Lumikha ng iyong sariling",
+      "subtitle": "smart classroom gamit ang Ncode",
+      "description": "Gawing smart Ncode textbook ang ordinaryong PDF at i-record nang real-time ang proseso ng pag-iisip ng mga estudyante. Pag-aralan at suriin ang proseso ng pag-aaral gamit ang AI at bigyan ng personalized na feedback ang bawat estudyante.",
+      "feature1": "Patented Ncode PDF generation technology",
+      "feature2": "AI-based process-oriented assessment & multimodal analysis"
+    },
+    "targetAudience": {
+      "title": "Sino ang",
+      "subtitle": "maaaring gumamit?",
+      "description": "Mula sa silid-aralan hanggang sa mga business meeting, nire-record at ikinokonekta ng NeoCAST ang bawat sandali.",
+      "educator": {
+        "title": "Educator",
+        "description": "Guro sa paaralan, propesor sa unibersidad, instruktor sa edukasyon"
+      },
+      "tutor": {
+        "title": "Tutor",
+        "description": "Private tutor, online tutor, tutor sa grupo"
+      },
+      "consultant": {
+        "title": "Consultant",
+        "description": "Business consultant, technical consultant, management consultant"
+      },
+      "counselor": {
+        "title": "Counselor",
+        "description": "Art therapist, psychologist, life coach"
+      }
+    },
+    "technology": {
+      "title": "Mga teknolohiyang",
+      "subtitle": "ginamit",
+      "ncode": {
+        "title": "Ncode Technology",
+        "concept": "Hindi nakikitang Digital DNA",
+        "description": "Mga microscopic na pattern na naka-print sa papel, halos hindi nakikita ng mata, ngunit ang pangunahing teknolohiya na nagbibigay-daan sa smartpen na tumpak na makilala ang posisyon, presyon ng pen, at impormasyon ng oras."
+      },
+      "smartpen": {
+        "title": "Smartpen Technology",
+        "concept": "Tulay sa pagitan ng analog at digital",
+        "description": "Nagbibigay ng parehong pakiramdam sa pagsulat tulad ng regular na pen, na may built-in na high-speed camera at processor na nagta-track ng coordinates hanggang 240 beses bawat segundo at nagpapadala ng data."
+      },
+      "paperhub": {
+        "title": "PaperHub Technology",
+        "concept": "Lalagyan para sa lahat ng paper data",
+        "description": "Ligtas na nag-iimbak at namamahala ng lahat ng data na nabuo sa pisikal na papel sa digital space, na nagbibigay-daan sa pag-access at paghahanap anumang oras, kahit saan."
+      },
+      "pod": {
+        "title": "Print On Demand",
+        "concept": "Kahit sino ay makakagawa ng smart paper",
+        "description": "Isang eco-friendly na solusyon kung saan kahit sino na may regular na laser printer ay maaaring mag-print at gumamit ng mga textbook o form na may Ncode nang walang dedicated na factory."
+      },
+      "footer": {
+        "company": "NeoLAB Convergence",
+        "description": "Mula nang maitatag noong 2009, nag-research kami ng teknolohiya na sumisira sa mga hangganan sa pagitan ng papel at digital. Ang NeoLAB ay ipinagmamalaki ang No.1 market share at teknolohiya sa mundo sa larangan ng smartpen at Ncode technology."
+      }
+    }
+  },
+  "auth": {
+    "loginTitle": "Mag-login",
+    "signUpTitle": "Mag-sign up",
+    "email": "Email",
+    "emailPlaceholder": "user@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "Ilagay ang password",
+    "confirmPassword": "Kumpirmahin ang password",
+    "name": "Pangalan",
+    "namePlaceholder": "Ilagay ang iyong pangalan",
+    "passwordRequirement": "Hindi bababa sa 6 na character",
+    "passwordMismatch": "Hindi tugma ang mga password",
+    "noAccount": "Wala pang account?",
+    "hasAccount": "May account na?",
+    "loginButton": "Mag-login",
+    "signUpButton": "Mag-sign up",
+    "rememberEmail": "Tandaan ang ID"
+  },
+  "guest": {
+    "title": "Sumali sa Session",
+    "invited": "Inimbitahan ka sa isang session",
+    "invitedSubtitle": "Sumali at ibahagi ang iyong mga ideya!",
+    "anyoneCanJoin": "Sinuman ay maaaring sumali",
+    "displayName": "Display Name",
+    "displayNameOptional": "(Opsyonal)",
+    "displayNamePlaceholder": "hal: Guest-1234",
+    "displayNameHint": "Gagawa ng random na pangalan kung iwanang blangko.",
+    "joinAsGuest": "Sumali bilang Guest",
+    "joining": "Sumasali sa session...",
+    "joinButton": "Sumali",
+    "guestNotAllowed": "Hindi pinapayagan ng session na ito ang guest mode. Kailangan mag-login.",
+    "loginRequired": "Ang session na ito ay nangangailangan ng login",
+    "loginToJoin": "Mag-login para sumali",
+    "loginToJoinFull": "Mag-login at sumali",
+    "hasAccount": "May account na?",
+    "noAccountQuestion": "Wala pang account?",
+    "joinWithoutLogin": "Sumali nang hindi nagla-login",
+    "checkingSession": "Sinusuri ang info ng session..."
+  },
+  "session": {
+    "notFound": "Hindi nahanap ang session",
+    "notFoundDescription": "Nag-expire na o invalid ang invitation link.\nPakihingi ng bagong link sa host.",
+    "expiredLink": "Nag-expire na o invalid ang link",
+    "host": "Host",
+    "guest": "Guest",
+    "hostRole": "Session Host",
+    "guestRole": "Session Guest",
+    "code": "Code",
+    "participants": "Mga Kalahok",
+    "currentParticipants": "Kasalukuyang Kalahok",
+    "participantCount": "{{count}} sumali",
+    "participantCountSimple": "{{count}}"
+  },
+  "sessionCreate": {
+    "title": "Gumawa ng Bagong Session",
+    "password": "Password ng Session",
+    "passwordPlaceholder": "Ilagay ang password...",
+    "passwordHint": "Auto-generated ang password. Maaari mong baguhin.",
+    "allowGuest": "Payagan ang Guest Mode",
+    "allowGuestHint": "Ang mga user na hindi naka-login ay maaaring sumali direkta sa pamamagitan ng invitation link.",
+    "createButton": "Gumawa ng Session",
+    "creating": "Gumagawa..."
+  },
+  "sessionJoin": {
+    "title": "Sumali sa Session",
+    "welcome": "Sumali sa Session",
+    "code": "Session Code",
+    "codePlaceholder": "ABC123",
+    "password": "Password ng Session",
+    "passwordOptional": "(kung kinakailangan)",
+    "passwordRequired": "Kinakailangan ang password.",
+    "joinButton": "Sumali",
+    "joining": "Sumasali...",
+    "checking": "Sinusuri...",
+    "autoConnecting": "Auto-connect sa pamamagitan ng invitation link...",
+    "otherCode": "Sumali gamit ang ibang code"
+  },
+  "sessionReconnect": {
+    "title": "Na-disconnect ang nakaraang session",
+    "message": "Ang session code <code>{{code}}</code> ay may <bold>{{count}}</bold> kalahok.",
+    "reconnectButton": "Muling kumonekta",
+    "reconnecting": "Muling kumokonekta...",
+    "dismissButton": "Huwag pansinin"
+  },
+  "sessionMenu": {
+    "copyCode": "Kopyahin ang Session Code",
+    "copyLink": "Kopyahin ang Invitation Link",
+    "endSession": "Tapusin ang Session",
+    "leaveSession": "Umalis sa Session"
+  },
+  "participant": {
+    "host": "Host",
+    "guest": "Guest",
+    "viewing": "Tinitingnan",
+    "offline": "Offline",
+    "promoteToHost": "I-promote sa Host",
+    "demoteToGuest": "I-demote sa Guest",
+    "copyCode": "Kopyahin ang Code",
+    "copyLink": "Kopyahin ang Link",
+    "kick": "Alisin",
+    "kickConfirm": "Alisin si {{name}} sa session?",
+    "kickedMessage": "Inalis ka sa session.",
+    "spotlightShare": "I-share bilang Spotlight"
+  },
+  "invite": {
+    "title": "Mag-imbita ng Kalahok",
+    "subtitle": "Ang mga kalahok ay maaaring sumali sa pamamagitan ng invitation link",
+    "copyLink": "Kopyahin ang Link",
+    "hidePrompt": "Huwag na ipakita ang imbitasyong ito?"
+  },
+  "lobby": {
+    "welcome": "Maligayang Pagdating!",
+    "welcomeDescription": "Magsimula ng bagong session o\nsumali sa kasalukuyang session.",
+    "newSession": "Gumawa ng Bagong Session",
+    "newSessionDescription": "Maging host at magsimula ng klase o meeting. Mag-imbita ng kalahok gamit ang invitation link.",
+    "joinSession": "Sumali",
+    "joinSessionDescription": "Ilagay ang ibinahaging session code para sumali sa kasalukuyang aktibidad."
+  },
+  "description": {
+    "title": "Ilabas ang iyong",
+    "titleHighlight": "mga ideya",
+    "titleSuffix": " sa digital canvas",
+    "subtitle": "Ang NeoCAST ay ang pinakamahusay na platform para sa real-time collaboration at pagbabahagi ng sulat. Sumali ngayon at maranasan ang bagong mundo ng paglikha.",
+    "subtitleLogin": "Ang NeoCAST ay ang pinakamahusay na platform para sa real-time collaboration at pagbabahagi ng sulat. Mag-login ngayon at maranasan ang bagong mundo ng paglikha.",
+    "featurePen": "Smartpen at Touch Input",
+    "featureCollab": "Real-time Collaboration"
+  },
+  "canvas": {
+    "lock": "I-lock",
+    "noPages": "Wala pang mga pahina",
+    "addPage": "Magdagdag ng Pahina",
+    "deletePage": "Burahin ang Pahina",
+    "mouse": "Mouse",
+    "owned": "Pag-aari",
+    "notOwned": "Hindi pag-aari",
+    "undo": "I-undo",
+    "redo": "I-redo",
+    "clearPage": "Linisin ang Pahina",
+    "clearConfirm": "Burahin ang lahat ng stroke sa pahinang ito?",
+    "clear": "Linisin",
+    "active": "Aktibo",
+    "noPage": "Walang Pahina",
+    "clickToActivate": "I-click para i-activate",
+    "addPageButton": "Magdagdag ng Pahina",
+    "spotlightView": "Spotlight View",
+    "gridView": "Grid View",
+    "spotlightSharing": "Spotlight Sharing",
+    "stopSpotlightShare": "Itigil ang Spotlight Share"
+  },
+  "page": {
+    "lock": "I-lock",
+    "noPagesYet": "Wala pang mga pahina",
+    "addPage": "Magdagdag ng Pahina",
+    "addPageTooltip": "Magdagdag ng bagong pahina",
+    "deletePage": "Burahin ang Pahina",
+    "owned": "Pag-aari",
+    "notOwned": "Hindi pag-aari",
+    "mouse": "Mouse"
+  },
+  "toolbar": {
+    "undo": "I-undo",
+    "redo": "I-redo",
+    "clearPage": "Linisin ang Pahina",
+    "clearConfirm": "Burahin ang lahat ng stroke sa pahinang ito?"
+  },
+  "grid": {
+    "reorder": "Ayusin muli",
+    "autoLayout": "Auto Layout",
+    "changeGrid": "Palitan ang Grid"
+  },
+  "pen": {
+    "notAvailable": "Pen N/A",
+    "connecting": "Kumokonekta...",
+    "authenticating": "Nag-a-authenticate...",
+    "ready": "Handa na ang Pen",
+    "connect": "Kumonekta",
+    "title": "NeoSmartpen",
+    "webBluetoothNotSupported": "Hindi sinusuportahan ng browser na ito ang Web Bluetooth. Pakigamit ang Chrome, Edge o Opera.",
+    "connectedReady": "Konektado at Handa na",
+    "connectedAuth": "Konektado (Nag-a-authenticate...)",
+    "disconnected": "Na-disconnect",
+    "device": "Device:",
+    "mac": "MAC:",
+    "battery": "Baterya:",
+    "page": "Pahina:",
+    "passwordProtected": "Protektado ng password ang pen.",
+    "attempt": "(Pagsubok {{current}}/{{max}})",
+    "enterPassword": "Ilagay ang password",
+    "disconnectButton": "I-disconnect",
+    "connectButton": "Ikonekta ang Pen",
+    "logs": "Mga Log",
+    "clear": "Linisin",
+    "noLogs": "Walang logs",
+    "penSettings": "Mga Setting ng Pen",
+    "paperSize": "Laki ng Papel",
+    "penType": "Uri ng Pen",
+    "pen": "Pen",
+    "highlighter": "Highlighter",
+    "eraser": "Pambura",
+    "color": "Kulay",
+    "thickness": "Kapal",
+    "fine": "Fine",
+    "medium": "Medium",
+    "thick": "Thick",
+    "bold": "Bold"
+  },
+  "language": {
+    "select": "Pumili ng Wika",
+    "current": "Kasalukuyang Wika"
+  },
+  "controlBar": {
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "muteTip": "I-click para i-mute",
+    "unmuteTip": "I-click para i-unmute",
+    "penOn": "Pen",
+    "penOff": "Pen",
+    "penOnTip": "Pagguhit aktibo",
+    "penOffTip": "Pagguhit hindi aktibo",
+    "smartpen": "Smart pen",
+    "stylusOn": "Touch",
+    "stylusOff": "Touch",
+    "stylusPaused": "Pause",
+    "stylusOnTip": "Touch input aktibo",
+    "stylusOffTip": "Touch input hindi aktibo",
+    "stylusPausedTip": "Touch naka-pause habang pinindot ang CMD/CTRL",
+    "upload": "Upload",
+    "uploadTip": "Mag-upload ng dokumento",
+    "participants": "Kalahok",
+    "participantsTip": "Tingnan ang mga kalahok",
+    "chat": "Chat",
+    "chatTip": "Buksan ang chat",
+    "messenger": "Mensahe",
+    "messengerTip": "Buksan ang messenger",
+    "settings": "Setting",
+    "settingsTip": "Buksan ang settings",
+    "more": "Iba pa",
+    "moreTip": "Higit pang mga opsyon",
+    "about": "Info",
+    "pages": "Pahina",
+    "pagesTip": "Tingnan ang mga pahina",
+    "myMaterials": "Files",
+    "myMaterialsTip": "Tingnan ang aking materyal",
+    "sessionHostTip": "Ikaw ang host",
+    "sessionGuestTip": "Ikaw ay isang guest",
+    "leave": "Alis",
+    "leaveTip": "Umalis sa session",
+    "endSession": "Tapos",
+    "endSessionTip": "Tapusin ang session"
+  },
+  "chat": {
+    "title": "Chat",
+    "placeholder": "Mag-type ng mensahe...",
+    "send": "Ipadala",
+    "noMessages": "Wala pang mga mensahe"
+  },
+  "messenger": {
+    "title": "Messenger",
+    "offline": "Offline",
+    "noMessages": "Wala pang mga mensahe",
+    "startDm": "Magpadala ng direktang mensahe!",
+    "placeholder": "Mag-type ng mensahe...",
+    "typing": "Nagta-type...",
+    "loadMore": "Mag-load ng mas lumang mensahe",
+    "selectFriend": "Pumili ng kaibigan",
+    "selectFriendHint": "para magsimula ng usapan",
+    "selectThread": "Pumili ng usapan",
+    "selectThreadHint": "para magpatuloy sa pakikipag-usap",
+    "startMessageHint": "Pumili ng kaibigan para magsimula ng usapan",
+    "noMessageYet": "Wala pang mga mensahe",
+    "tabs": {
+      "friends": "Mga Kaibigan",
+      "messages": "Mga Mensahe"
+    },
+    "friends": {
+      "online": "Online",
+      "offline": "Offline",
+      "busy": "Abala",
+      "away": "Wala",
+      "addFriend": "Magdagdag ng Kaibigan",
+      "searchPlaceholder": "Maghanap sa pamamagitan ng email...",
+      "userNotFound": "Hindi nahanap ang user",
+      "alreadyFriends": "Kaibigan na",
+      "noFriends": "Wala pang mga kaibigan",
+      "addFriendHint": "Magdagdag ng mga kaibigan para magsimulang mag-mensahe"
+    },
+    "requests": {
+      "title": "Mga Friend Request",
+      "accept": "Tanggapin",
+      "reject": "Tanggihan",
+      "pending": "Naghihintay"
+    },
+    "relations": {
+      "friend": "Kaibigan",
+      "teacher": "Guro",
+      "student": "Estudyante",
+      "parent": "Magulang",
+      "child": "Anak"
+    },
+    "time": {
+      "today": "Ngayon",
+      "yesterday": "Kahapon"
+    }
+  },
+  "settings": {
+    "title": "Mga Setting",
+    "general": "Pangkalahatan",
+    "display": "Display",
+    "audio": "Audio",
+    "language": "Wika",
+    "theme": "Tema",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "Sistema"
+  },
+  "leave": {
+    "title": "Umalis sa Session",
+    "confirmMessage": "Sigurado ka bang gusto mong umalis sa session na ito?",
+    "confirmEndMessage": "Sigurado ka bang gusto mong tapusin ang session na ito? Lahat ng kalahok ay madi-disconnect.",
+    "leaveButton": "Umalis",
+    "endButton": "Tapusin ang Session",
+    "cancelButton": "Kanselahin"
+  },
+  "pages": {
+    "title": "Mga Pahina",
+    "addPage": "Magdagdag ng Pahina",
+    "deletePage": "Tanggalin ang Pahina",
+    "pageNumber": "Pahina {{number}}",
+    "totalPages": "{{total}} mga pahina"
+  },
+  "pdf": {
+    "title": "PDF na Dokumento",
+    "upload": "I-upload ang PDF",
+    "uploading": "Nag-a-upload...",
+    "processing": "Pinoproseso...",
+    "error": "Hindi na-load ang PDF"
+  },
+  "myPapers": {
+    "title": "Aking Materyal",
+    "upload": "I-upload",
+    "recent": "Kamakailan",
+    "all": "Lahat",
+    "empty": "Wala pang materyal"
+  },
+  "about": {
+    "title": "Tungkol sa",
+    "version": "Bersyon",
+    "copyright": "Copyright",
+    "license": "Lisensya"
+  },
+  "voice": {
+    "micPermissionDenied": "Tinanggihan ang pahintulot sa mikropono. Pakipayagan ang access sa mga setting ng browser.",
+    "micError": "Hindi ma-access ang mikropono.",
+    "noDevices": "Walang nakitang mikropono",
+    "noSpeakers": "Default ng System",
+    "testMicrophone": "I-test ang Mikropono",
+    "testSpeaker": "I-test ang Speaker",
+    "micTesting": "Nagre-record... (3 seg)",
+    "speakerTesting": "Nagpe-play...",
+    "transmitNotAllowed": "Na-disable ng host ang mikropono."
+  },
+  "printSettings": {
+    "title": "Mga Setting ng Print",
+    "orientation": "Oryentasyon",
+    "portrait": "Portrait",
+    "landscape": "Landscape",
+    "paperSize": "Laki ng Papel",
+    "quality": "Kalidad",
+    "print": "I-print"
+  }
+}

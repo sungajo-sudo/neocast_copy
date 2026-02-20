@@ -1,0 +1,475 @@
+{
+  "common": {
+    "appName": "NeoCAST",
+    "login": "تسجيل الدخول",
+    "logout": "تسجيل الخروج",
+    "signUp": "إنشاء حساب",
+    "profile": "الملف الشخصي",
+    "confirm": "تأكيد",
+    "cancel": "إلغاء",
+    "save": "حفظ",
+    "close": "إغلاق",
+    "copy": "نسخ",
+    "copied": "تم النسخ!",
+    "start": "ابدأ",
+    "loading": "جاري التحميل...",
+    "processing": "جاري المعالجة...",
+    "error": "حدث خطأ",
+    "yes": "نعم",
+    "no": "لا",
+    "ok": "موافق",
+    "search": "بحث",
+    "copyright": "© 2026 NeoLAB Convergence. جميع الحقوق محفوظة."
+  },
+  "landing": {
+    "heroTitle": "حيث يصبح الخيال",
+    "heroSubtitle": "حقيقة",
+    "heroDescription": "يدعم NeoCAST أدوات إدخال متنوعة بما في ذلك Neo Smartpen والقلم الرقمي واللمس والفأرة. منصة تعاون في الوقت الفعلي حيث يمكنك الكتابة والرسم والتواصل بحرية، في أي وقت ومن أي مكان.",
+    "getStarted": "ابدأ الآن",
+    "section1Title": "الحل المثالي",
+    "section1Subtitle": "للتعلم والاجتماعات عن بُعد",
+    "section1Description": "يمكن للمعلمين (المضيفين) مراقبة كتابة جميع الطلاب (الضيوف) بنظرة واحدة وتقديم ملاحظات فردية. تواصل بشكل حيوي كأنك في الفصل الدراسي، بغض النظر عن المسافة الفعلية.",
+    "feature1": "مشاركة الكتابة والتعليقات في الوقت الفعلي",
+    "feature2": "إدارة قوية تتمحور حول المضيف",
+    "section2Title": "عبّر بحرية باستخدام",
+    "section2Subtitle": "طرق إدخال متنوعة",
+    "section2Description": "اكتب على الورق باستخدام Neo Smartpen وشاهده يظهر على الشاشة فوراً. إدخال الفأرة واللمس مدعوم بالكامل أيضاً. استخدم أداتك المفضلة لإطلاق إبداعك.",
+    "feature3": "دعم الكتابة التناظرية Neo Smartpen",
+    "feature4": "الرسم باللمس على الجهاز اللوحي والفأرة",
+    "section3Title": "شارك وحلل",
+    "section3Subtitle": "عملية الكتابة",
+    "section3Description": "سجّل وأعد تشغيل ليس فقط النتيجة النهائية، بل عملية التفكير بأكملها. شارك وحلل بعمق خطوات حل المشكلات أو تدفقات رسم التصميم.",
+    "section4Title": "نظام دعوة",
+    "section4Subtitle": "مألوف وبسيط",
+    "section4Description": "ادعُ المشاركين بسهولة برابط واحد فقط، مثل Zoom أو Teams أو Meet. انضم إلى الجلسات فوراً بالنقر على الرابط، دون تثبيت معقد أو تسجيل.",
+    "section5Title": "أمان جلسة صارم",
+    "section5Subtitle": "وحماية الخصوصية",
+    "section5Description": "أفكارك وبياناتك القيمة محمية بأمان. أدِر الوصول إلى الجلسات بتقنية أمان قوية وحافظ على معلوماتك الشخصية آمنة.",
+    "newConcept": {
+      "title": "أنشئ",
+      "subtitle": "فصلك الذكي الخاص مع Ncode",
+      "description": "حوّل ملفات PDF العادية إلى كتب Ncode الذكية وسجّل عملية تفكير الطلاب في الوقت الفعلي. حلّل وقيّم عملية التعلم باستخدام الذكاء الاصطناعي وقدم ملاحظات مخصصة لكل طالب.",
+      "feature1": "تقنية توليد PDF Ncode الحاصلة على براءة اختراع",
+      "feature2": "تقييم قائم على العملية بالذكاء الاصطناعي وتحليل متعدد الوسائط"
+    },
+    "targetAudience": {
+      "title": "من يمكنه",
+      "subtitle": "الاستخدام؟",
+      "description": "من الفصول الدراسية إلى اجتماعات العمل، يسجل NeoCAST كل لحظة ويربطها.",
+      "educator": {
+        "title": "المعلم",
+        "description": "معلم المدرسة، أستاذ الجامعة، مدرب التعليم"
+      },
+      "tutor": {
+        "title": "المدرّس الخصوصي",
+        "description": "مدرس خصوصي، مدرس عبر الإنترنت، مدرس جماعي"
+      },
+      "consultant": {
+        "title": "المستشار",
+        "description": "مستشار أعمال، مستشار تقني، مستشار إداري"
+      },
+      "counselor": {
+        "title": "المرشد",
+        "description": "معالج بالفن، عالم نفس، مدرب حياة"
+      }
+    },
+    "technology": {
+      "title": "التقنيات",
+      "subtitle": "المستخدمة",
+      "ncode": {
+        "title": "تقنية Ncode",
+        "concept": "الحمض النووي الرقمي غير المرئي",
+        "description": "باستخدام الأنماط الدقيقة المطبوعة على الورق، يمكن تحديد موضع طرف القلم بدقة. هذا يسمح بتسجيل حركات الخطوط بدقة تصل إلى 0.1 مم، بحيث يمكن تحويل الكتابة اليدوية على الورق بشكل طبيعي إلى رقمي."
+      },
+      "smartpen": {
+        "title": "تقنية Smartpen",
+        "concept": "الجسر بين التناظري والرقمي",
+        "description": "يوفر نفس إحساس الكتابة كالقلم العادي مع تسجيل جميع الخطوط في الوقت الفعلي والمزامنة مع الأجهزة الرقمية. استمتع براحة الكتابة على الورق مع سهولة الإدارة الرقمية."
+      },
+      "paperhub": {
+        "title": "تقنية PaperHub",
+        "concept": "وعاء لجميع بيانات الورق",
+        "description": "يجمع جميع البيانات المُنشأة على الورق المادي في الوقت الفعلي ويخزنها ويديرها بأمان في السحابة. هذا يتيح البحث والتحليل ومشاركة الملاحظات المكتوبة بخط اليد في أي وقت ومن أي مكان."
+      },
+      "pod": {
+        "title": "الطباعة عند الطلب",
+        "concept": "ورق ذكي يمكن لأي شخص صنعه",
+        "description": "بدون مصنع متخصص، يمكن لأي شخص لديه طابعة ليزر عادية طباعة Ncode وإنشاء ورق ذكي. حوّل دفاتر الملاحظات وكتب التمارين والمواد المطبوعة العادية إلى محتوى ذكي مدعوم رقمياً."
+      },
+      "footer": {
+        "company": "NeoLAB Convergence",
+        "description": "منذ تأسيسها في عام 2009، ابتكرت تقنية الورق الذكي والقلم لأكثر من 15 عاماً. تمتلك أكثر من 170 حقاً من حقوق الملكية الفكرية المتعلقة بـ Ncode حول العالم، وتُستخدم المنتجات والخدمات في أكثر من 50 دولة."
+      }
+    }
+  },
+  "auth": {
+    "loginTitle": "تسجيل الدخول",
+    "signUpTitle": "إنشاء حساب",
+    "email": "البريد الإلكتروني",
+    "emailPlaceholder": "user@example.com",
+    "password": "كلمة المرور",
+    "passwordPlaceholder": "أدخل كلمة المرور",
+    "confirmPassword": "تأكيد كلمة المرور",
+    "name": "الاسم",
+    "namePlaceholder": "أدخل اسمك",
+    "passwordRequirement": "6 أحرف على الأقل",
+    "passwordMismatch": "كلمات المرور غير متطابقة",
+    "noAccount": "ليس لديك حساب؟",
+    "hasAccount": "لديك حساب بالفعل؟",
+    "loginButton": "تسجيل الدخول",
+    "signUpButton": "إنشاء حساب",
+    "rememberEmail": "تذكر المعرف"
+  },
+  "guest": {
+    "title": "الانضمام إلى الجلسة",
+    "invited": "لقد تمت دعوتك إلى جلسة",
+    "invitedSubtitle": "انضم وشارك أفكارك!",
+    "anyoneCanJoin": "يمكن لأي شخص الانضمام",
+    "displayName": "اسم العرض",
+    "displayNameOptional": "(اختياري)",
+    "displayNamePlaceholder": "مثال: ضيف-1234",
+    "displayNameHint": "سيتم إنشاء اسم عشوائي إذا تُرك فارغاً.",
+    "joinAsGuest": "الانضمام كضيف",
+    "joining": "جاري الانضمام إلى الجلسة...",
+    "joinButton": "انضمام",
+    "guestNotAllowed": "هذه الجلسة لا تسمح بوضع الضيف. مطلوب تسجيل الدخول.",
+    "loginRequired": "هذه الجلسة تتطلب تسجيل الدخول",
+    "loginToJoin": "سجّل الدخول للانضمام",
+    "loginToJoinFull": "تسجيل الدخول والانضمام",
+    "hasAccount": "لديك حساب بالفعل؟",
+    "noAccountQuestion": "ليس لديك حساب؟",
+    "joinWithoutLogin": "الانضمام بدون تسجيل الدخول",
+    "checkingSession": "جاري التحقق من معلومات الجلسة..."
+  },
+  "session": {
+    "notFound": "الجلسة غير موجودة",
+    "notFoundDescription": "انتهت صلاحية رابط الدعوة أو أنه غير صالح.\nيرجى طلب رابط جديد من المضيف.",
+    "expiredLink": "انتهت صلاحية الرابط أو أنه غير صالح",
+    "host": "المضيف",
+    "guest": "ضيف",
+    "hostRole": "مضيف الجلسة",
+    "guestRole": "ضيف الجلسة",
+    "code": "الكود",
+    "participants": "المشاركون",
+    "currentParticipants": "المشاركون الحاليون",
+    "participantCount": "{{count}} منضمون",
+    "participantCountSimple": "{{count}}"
+  },
+  "sessionCreate": {
+    "title": "إنشاء جلسة جديدة",
+    "password": "كلمة مرور الجلسة",
+    "passwordPlaceholder": "أدخل كلمة المرور...",
+    "passwordHint": "يتم إنشاء كلمة المرور تلقائياً. يمكنك تعديلها.",
+    "allowGuest": "السماح بوضع الضيف",
+    "allowGuestHint": "يمكن للمستخدمين غير المسجلين الانضمام مباشرة عبر رابط الدعوة.",
+    "createButton": "إنشاء الجلسة",
+    "creating": "جاري الإنشاء..."
+  },
+  "sessionJoin": {
+    "title": "الانضمام إلى الجلسة",
+    "welcome": "الانضمام إلى جلسة",
+    "code": "رمز الجلسة",
+    "codePlaceholder": "ABC123",
+    "password": "كلمة مرور الجلسة",
+    "passwordOptional": "(إذا لزم الأمر)",
+    "passwordRequired": "كلمة المرور مطلوبة.",
+    "joinButton": "انضمام",
+    "joining": "جاري الانضمام...",
+    "checking": "جاري التحقق...",
+    "autoConnecting": "الاتصال التلقائي عبر رابط الدعوة...",
+    "otherCode": "الانضمام برمز آخر"
+  },
+  "sessionReconnect": {
+    "title": "انقطعت الجلسة السابقة",
+    "message": "رمز الجلسة <code>{{code}}</code> يحتوي على <bold>{{count}}</bold> مشارك.",
+    "reconnectButton": "إعادة الاتصال",
+    "reconnecting": "جاري إعادة الاتصال...",
+    "dismissButton": "تجاهل"
+  },
+  "sessionMenu": {
+    "copyCode": "نسخ رمز الجلسة",
+    "copyLink": "نسخ رابط الدعوة",
+    "endSession": "إنهاء الجلسة",
+    "leaveSession": "مغادرة الجلسة"
+  },
+  "participant": {
+    "host": "المضيف",
+    "guest": "ضيف",
+    "viewing": "يشاهد",
+    "offline": "غير متصل",
+    "promoteToHost": "ترقية إلى مضيف",
+    "demoteToGuest": "تخفيض إلى ضيف",
+    "copyCode": "نسخ الرمز",
+    "copyLink": "نسخ الرابط",
+    "kick": "إزالة",
+    "kickConfirm": "هل تريد إزالة {{name}} من الجلسة؟",
+    "kickedMessage": "تمت إزالتك من الجلسة.",
+    "spotlightShare": "مشاركة كتركيز"
+  },
+  "invite": {
+    "title": "دعوة المشاركين",
+    "subtitle": "يمكن للمشاركين الانضمام عبر رابط الدعوة",
+    "copyLink": "نسخ الرابط",
+    "hidePrompt": "عدم إظهار هذه الدعوة مرة أخرى؟"
+  },
+  "lobby": {
+    "welcome": "مرحباً!",
+    "welcomeDescription": "ابدأ جلسة جديدة أو\nانضم إلى جلسة جارية.",
+    "newSession": "إنشاء جلسة جديدة",
+    "newSessionDescription": "كن مضيفاً وابدأ فصلاً أو اجتماعاً. ادعُ المشاركين برابط الدعوة.",
+    "joinSession": "انضمام",
+    "joinSessionDescription": "أدخل رمز الجلسة المشترك للانضمام إلى نشاط جارٍ."
+  },
+  "description": {
+    "title": "أطلق",
+    "titleHighlight": "أفكارك",
+    "titleSuffix": " على لوحة رقمية",
+    "subtitle": "NeoCAST هو المنصة المثلى للتعاون في الوقت الفعلي ومشاركة الكتابة. انضم الآن واختبر عالماً جديداً من الإبداع.",
+    "subtitleLogin": "NeoCAST هو المنصة المثلى للتعاون في الوقت الفعلي ومشاركة الكتابة. سجّل الدخول الآن واختبر عالماً جديداً من الإبداع.",
+    "featurePen": "القلم الذكي وإدخال اللمس",
+    "featureCollab": "التعاون في الوقت الفعلي"
+  },
+  "canvas": {
+    "lock": "قفل",
+    "noPages": "لا توجد صفحات بعد",
+    "addPage": "إضافة صفحة",
+    "deletePage": "حذف الصفحة",
+    "mouse": "الفأرة",
+    "owned": "مملوكة",
+    "notOwned": "غير مملوكة",
+    "undo": "تراجع",
+    "redo": "إعادة",
+    "clearPage": "مسح الصفحة",
+    "clearConfirm": "مسح جميع الخطوط في هذه الصفحة؟",
+    "clear": "مسح",
+    "active": "نشط",
+    "noPage": "لا توجد صفحة",
+    "clickToActivate": "انقر للتنشيط",
+    "addPageButton": "إضافة صفحة",
+    "spotlightView": "عرض مسلط الضوء",
+    "gridView": "عرض الشبكة",
+    "spotlightSharing": "مشاركة التركيز",
+    "stopSpotlightShare": "إيقاف مشاركة التركيز"
+  },
+  "page": {
+    "lock": "قفل",
+    "noPagesYet": "لا توجد صفحات بعد",
+    "addPage": "إضافة صفحة",
+    "addPageTooltip": "إضافة صفحة جديدة",
+    "deletePage": "حذف الصفحة",
+    "owned": "مملوكة",
+    "notOwned": "غير مملوكة",
+    "mouse": "الفأرة"
+  },
+  "toolbar": {
+    "undo": "تراجع",
+    "redo": "إعادة",
+    "clearPage": "مسح الصفحة",
+    "clearConfirm": "مسح جميع الخطوط في هذه الصفحة؟"
+  },
+  "grid": {
+    "reorder": "إعادة الترتيب",
+    "autoLayout": "تخطيط تلقائي",
+    "changeGrid": "تغيير الشبكة"
+  },
+  "pen": {
+    "notAvailable": "القلم غ/م",
+    "connecting": "جاري الاتصال...",
+    "authenticating": "جاري المصادقة...",
+    "ready": "القلم جاهز",
+    "connect": "اتصال",
+    "title": "NeoSmartpen",
+    "webBluetoothNotSupported": "Web Bluetooth غير مدعوم في هذا المتصفح. يرجى استخدام Chrome أو Edge أو Opera.",
+    "connectedReady": "متصل وجاهز",
+    "connectedAuth": "متصل (جاري المصادقة...)",
+    "disconnected": "غير متصل",
+    "device": "الجهاز:",
+    "mac": "MAC:",
+    "battery": "البطارية:",
+    "page": "الصفحة:",
+    "passwordProtected": "القلم محمي بكلمة مرور.",
+    "attempt": "(محاولة {{current}}/{{max}})",
+    "enterPassword": "أدخل كلمة المرور",
+    "disconnectButton": "قطع الاتصال",
+    "connectButton": "توصيل القلم",
+    "logs": "السجلات",
+    "clear": "مسح",
+    "noLogs": "لا توجد سجلات",
+    "penSettings": "إعدادات القلم",
+    "paperSize": "حجم الورق",
+    "penType": "نوع القلم",
+    "pen": "قلم",
+    "highlighter": "قلم تحديد",
+    "eraser": "ممحاة",
+    "color": "اللون",
+    "thickness": "السُمك",
+    "fine": "Fine",
+    "medium": "Medium",
+    "thick": "Thick",
+    "bold": "Bold"
+  },
+  "language": {
+    "select": "اختر اللغة",
+    "current": "اللغة الحالية"
+  },
+  "controlBar": {
+    "mute": "كتم الصوت",
+    "unmute": "إلغاء كتم الصوت",
+    "muteTip": "انقر لكتم الصوت",
+    "unmuteTip": "انقر لإلغاء كتم الصوت",
+    "penOn": "القلم مفعل",
+    "penOff": "القلم متوقف",
+    "penOnTip": "الرسم مفعل",
+    "penOffTip": "الرسم متوقف",
+    "smartpen": "القلم الذكي",
+    "stylusOn": "اللمس مفعل",
+    "stylusOff": "اللمس متوقف",
+    "stylusPaused": "اللمس متوقف مؤقتاً",
+    "stylusOnTip": "إدخال اللمس مفعل",
+    "stylusOffTip": "إدخال اللمس متوقف",
+    "stylusPausedTip": "اللمس متوقف مؤقتاً أثناء الضغط على CMD/CTRL",
+    "upload": "رفع",
+    "uploadTip": "رفع مستند",
+    "participants": "المشاركون",
+    "participantsTip": "عرض المشاركين",
+    "chat": "الدردشة",
+    "chatTip": "فتح الدردشة",
+    "messenger": "المراسلة",
+    "messengerTip": "فتح المراسلة",
+    "settings": "الإعدادات",
+    "settingsTip": "فتح الإعدادات",
+    "more": "المزيد",
+    "moreTip": "خيارات إضافية",
+    "about": "حول",
+    "pages": "الصفحات",
+    "pagesTip": "عرض الصفحات",
+    "myMaterials": "موادي",
+    "myMaterialsTip": "عرض موادي",
+    "sessionHostTip": "أنت المضيف",
+    "sessionGuestTip": "أنت ضيف",
+    "leave": "مغادرة",
+    "leaveTip": "مغادرة الجلسة",
+    "endSession": "إنهاء",
+    "endSessionTip": "إنهاء الجلسة"
+  },
+  "chat": {
+    "title": "الدردشة",
+    "placeholder": "اكتب رسالة...",
+    "send": "إرسال",
+    "noMessages": "لا توجد رسائل بعد"
+  },
+  "messenger": {
+    "title": "المراسلة",
+    "offline": "غير متصل",
+    "noMessages": "لا توجد رسائل بعد",
+    "startDm": "أرسل رسالة مباشرة!",
+    "placeholder": "اكتب رسالة...",
+    "typing": "يكتب...",
+    "loadMore": "تحميل رسائل أقدم",
+    "selectFriend": "اختر صديقًا",
+    "selectFriendHint": "لبدء محادثة",
+    "selectThread": "اختر محادثة",
+    "selectThreadHint": "لمتابعة المراسلة",
+    "startMessageHint": "اختر صديقًا لبدء محادثة",
+    "noMessageYet": "لا توجد رسائل بعد",
+    "tabs": {
+      "friends": "الأصدقاء",
+      "messages": "الرسائل"
+    },
+    "friends": {
+      "online": "متصل",
+      "offline": "غير متصل",
+      "busy": "مشغول",
+      "away": "بعيد",
+      "addFriend": "إضافة صديق",
+      "searchPlaceholder": "البحث بالبريد الإلكتروني...",
+      "userNotFound": "المستخدم غير موجود",
+      "alreadyFriends": "أنتما أصدقاء بالفعل",
+      "noFriends": "لا يوجد أصدقاء بعد",
+      "addFriendHint": "أضف أصدقاء لبدء المراسلة"
+    },
+    "requests": {
+      "title": "طلبات الصداقة",
+      "accept": "قبول",
+      "reject": "رفض",
+      "pending": "قيد الانتظار"
+    },
+    "relations": {
+      "friend": "صديق",
+      "teacher": "معلم",
+      "student": "طالب",
+      "parent": "والد",
+      "child": "طفل"
+    },
+    "time": {
+      "today": "اليوم",
+      "yesterday": "أمس"
+    }
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "general": "عام",
+    "display": "العرض",
+    "audio": "الصوت",
+    "language": "اللغة",
+    "theme": "السمة",
+    "themeLight": "فاتح",
+    "themeDark": "داكن",
+    "themeSystem": "النظام"
+  },
+  "leave": {
+    "title": "مغادرة الجلسة",
+    "confirmMessage": "هل أنت متأكد أنك تريد مغادرة هذه الجلسة؟",
+    "confirmEndMessage": "هل أنت متأكد أنك تريد إنهاء هذه الجلسة؟ سيتم قطع اتصال جميع المشاركين.",
+    "leaveButton": "مغادرة",
+    "endButton": "إنهاء الجلسة",
+    "cancelButton": "إلغاء"
+  },
+  "pages": {
+    "title": "الصفحات",
+    "addPage": "إضافة صفحة",
+    "deletePage": "حذف الصفحة",
+    "pageNumber": "صفحة {{number}}",
+    "totalPages": "{{total}} صفحات"
+  },
+  "pdf": {
+    "title": "مستند PDF",
+    "upload": "رفع PDF",
+    "uploading": "جاري الرفع...",
+    "processing": "جاري المعالجة...",
+    "error": "فشل تحميل PDF"
+  },
+  "myPapers": {
+    "title": "موادي",
+    "upload": "رفع",
+    "recent": "الأخيرة",
+    "all": "الكل",
+    "empty": "لا توجد مواد بعد"
+  },
+  "about": {
+    "title": "حول",
+    "version": "الإصدار",
+    "copyright": "حقوق الطبع والنشر",
+    "license": "الترخيص"
+  },
+  "voice": {
+    "micPermissionDenied": "تم رفض إذن الميكروفون. يرجى السماح بالوصول في إعدادات المتصفح.",
+    "micError": "فشل الوصول إلى الميكروفون.",
+    "noDevices": "لم يتم اكتشاف ميكروفون",
+    "noSpeakers": "الافتراضي للنظام",
+    "testMicrophone": "اختبار الميكروفون",
+    "testSpeaker": "اختبار السماعة",
+    "micTesting": "جارٍ التسجيل... (3 ثوانٍ)",
+    "speakerTesting": "جارٍ التشغيل...",
+    "transmitNotAllowed": "تم تعطيل الميكروفون من قبل المضيف."
+  },
+  "printSettings": {
+    "title": "إعدادات الطباعة",
+    "orientation": "الاتجاه",
+    "portrait": "عمودي",
+    "landscape": "أفقي",
+    "paperSize": "حجم الورق",
+    "quality": "الجودة",
+    "print": "طباعة"
+  }
+}

@@ -1,0 +1,475 @@
+{
+  "common": {
+    "appName": "NeoCAST",
+    "login": "Đăng nhập",
+    "logout": "Đăng xuất",
+    "signUp": "Đăng ký",
+    "profile": "Hồ sơ",
+    "confirm": "Xác nhận",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "close": "Đóng",
+    "copy": "Sao chép",
+    "copied": "Đã sao chép!",
+    "start": "Bắt đầu",
+    "loading": "Đang tải...",
+    "processing": "Đang xử lý...",
+    "error": "Đã xảy ra lỗi",
+    "yes": "Có",
+    "no": "Không",
+    "ok": "OK",
+    "search": "Tìm kiếm",
+    "copyright": "© 2026 NeoLAB Convergence. Bảo lưu mọi quyền."
+  },
+  "landing": {
+    "heroTitle": "Nơi trí tưởng tượng",
+    "heroSubtitle": "trở thành hiện thực",
+    "heroDescription": "NeoCAST hỗ trợ nhiều công cụ nhập liệu bao gồm Neo Smartpen, bút cảm ứng, chạm và chuột. Nền tảng cộng tác thời gian thực nơi bạn có thể viết, vẽ và giao tiếp tự do, mọi lúc mọi nơi.",
+    "getStarted": "Bắt đầu",
+    "section1Title": "Giải pháp hoàn hảo cho",
+    "section1Subtitle": "học tập và họp từ xa",
+    "section1Description": "Giáo viên (chủ phòng) có thể theo dõi chữ viết tay của tất cả học sinh (khách) trong nháy mắt và đưa ra phản hồi cá nhân. Kết nối sống động như thể bạn đang ở trong lớp học, bất kể khoảng cách vật lý.",
+    "feature1": "Chia sẻ chữ viết và chú thích thời gian thực",
+    "feature2": "Quản lý mạnh mẽ tập trung vào chủ phòng",
+    "section2Title": "Thể hiện tự do với",
+    "section2Subtitle": "nhiều phương thức nhập liệu",
+    "section2Description": "Viết trên giấy với Neo Smartpen và xem nó xuất hiện trên màn hình ngay lập tức. Nhập liệu bằng chuột và chạm cũng được hỗ trợ đầy đủ. Sử dụng công cụ thoải mái nhất để giải phóng sáng tạo.",
+    "feature3": "Hỗ trợ viết analog Neo Smartpen",
+    "feature4": "Vẽ bằng chạm tablet và chuột",
+    "section3Title": "Chia sẻ và phân tích",
+    "section3Subtitle": "quá trình viết",
+    "section3Description": "Ghi lại và phát lại không chỉ kết quả cuối cùng, mà toàn bộ quá trình suy nghĩ. Chia sẻ và phân tích sâu các bước giải quyết vấn đề hoặc quy trình phác thảo thiết kế.",
+    "section4Title": "Hệ thống mời",
+    "section4Subtitle": "quen thuộc và đơn giản",
+    "section4Description": "Mời người tham gia dễ dàng chỉ với một liên kết, như Zoom, Teams hoặc Meet. Tham gia phiên ngay lập tức bằng cách nhấp vào liên kết, không cần cài đặt phức tạp hoặc đăng ký.",
+    "section5Title": "Bảo mật phiên kỹ lưỡng",
+    "section5Subtitle": "và bảo vệ quyền riêng tư",
+    "section5Description": "Ý tưởng và dữ liệu quý giá của bạn được bảo vệ an toàn. Quản lý quyền truy cập phiên với công nghệ bảo mật mạnh mẽ và giữ thông tin cá nhân của bạn an toàn.",
+    "newConcept": {
+      "title": "Tạo",
+      "subtitle": "lớp học thông minh của riêng bạn với Ncode",
+      "description": "Biến PDF thông thường thành sách giáo khoa Ncode thông minh và ghi lại quá trình suy nghĩ của học sinh theo thời gian thực. Phân tích và đánh giá quá trình học tập bằng AI và cung cấp phản hồi cá nhân hóa cho từng học sinh.",
+      "feature1": "Công nghệ tạo PDF Ncode được cấp bằng sáng chế",
+      "feature2": "Đánh giá hướng quy trình dựa trên AI & phân tích đa phương thức"
+    },
+    "targetAudience": {
+      "title": "Ai có thể",
+      "subtitle": "sử dụng?",
+      "description": "Từ lớp học đến cuộc họp kinh doanh, NeoCAST ghi lại và kết nối mọi khoảnh khắc.",
+      "educator": {
+        "title": "Nhà giáo dục",
+        "description": "Giáo viên trường học, giáo sư đại học, giảng viên giáo dục"
+      },
+      "tutor": {
+        "title": "Gia sư",
+        "description": "Gia sư riêng, gia sư trực tuyến, gia sư nhóm"
+      },
+      "consultant": {
+        "title": "Tư vấn viên",
+        "description": "Tư vấn kinh doanh, tư vấn kỹ thuật, tư vấn quản lý"
+      },
+      "counselor": {
+        "title": "Chuyên gia tư vấn",
+        "description": "Nhà trị liệu nghệ thuật, nhà tâm lý học, huấn luyện viên cuộc sống"
+      }
+    },
+    "technology": {
+      "title": "Công nghệ",
+      "subtitle": "được sử dụng",
+      "ncode": {
+        "title": "Công nghệ Ncode",
+        "concept": "DNA kỹ thuật số vô hình",
+        "description": "Với các mẫu vi mô được in trên giấy, vị trí đầu bút có thể được xác định chính xác. Điều này cho phép ghi lại chuyển động nét bút chính xác đến 0,1mm, để chữ viết tay trên giấy có thể được chuyển đổi tự nhiên sang kỹ thuật số."
+      },
+      "smartpen": {
+        "title": "Công nghệ Smartpen",
+        "concept": "Cầu nối giữa analog và digital",
+        "description": "Cung cấp cảm giác viết giống như bút thường trong khi ghi lại tất cả các nét vẽ theo thời gian thực và đồng bộ hóa với các thiết bị kỹ thuật số. Tận hưởng sự thoải mái khi viết trên giấy với sự tiện lợi của quản lý kỹ thuật số."
+      },
+      "paperhub": {
+        "title": "Công nghệ PaperHub",
+        "concept": "Nơi chứa tất cả dữ liệu giấy",
+        "description": "Thu thập tất cả dữ liệu được tạo trên giấy vật lý theo thời gian thực và lưu trữ, quản lý an toàn trên đám mây. Điều này cho phép tìm kiếm, phân tích và chia sẻ ghi chú viết tay mọi lúc, mọi nơi."
+      },
+      "pod": {
+        "title": "Print On Demand",
+        "concept": "Giấy thông minh mà ai cũng có thể tạo",
+        "description": "Không cần nhà máy chuyên dụng, bất kỳ ai có máy in laser thông thường cũng có thể in Ncode và tạo giấy thông minh. Biến sổ ghi chép, sổ bài tập và tài liệu in thường thành nội dung thông minh được hỗ trợ kỹ thuật số."
+      },
+      "footer": {
+        "company": "NeoLAB Convergence",
+        "description": "Kể từ khi thành lập năm 2009, đã đổi mới công nghệ giấy thông minh và bút trong hơn 15 năm. Sở hữu hơn 170 quyền sở hữu trí tuệ liên quan đến Ncode trên toàn thế giới, và sản phẩm cùng dịch vụ được sử dụng tại hơn 50 quốc gia."
+      }
+    }
+  },
+  "auth": {
+    "loginTitle": "Đăng nhập",
+    "signUpTitle": "Đăng ký",
+    "email": "Email",
+    "emailPlaceholder": "nguoidung@vidu.com",
+    "password": "Mật khẩu",
+    "passwordPlaceholder": "Nhập mật khẩu",
+    "confirmPassword": "Xác nhận mật khẩu",
+    "name": "Tên",
+    "namePlaceholder": "Nhập tên của bạn",
+    "passwordRequirement": "Ít nhất 6 ký tự",
+    "passwordMismatch": "Mật khẩu không khớp",
+    "noAccount": "Chưa có tài khoản?",
+    "hasAccount": "Đã có tài khoản?",
+    "loginButton": "Đăng nhập",
+    "signUpButton": "Đăng ký",
+    "rememberEmail": "Nhớ ID"
+  },
+  "guest": {
+    "title": "Tham gia phiên",
+    "invited": "Bạn được mời vào một phiên",
+    "invitedSubtitle": "Tham gia và chia sẻ ý tưởng của bạn!",
+    "anyoneCanJoin": "Bất kỳ ai cũng có thể tham gia",
+    "displayName": "Tên hiển thị",
+    "displayNameOptional": "(Tùy chọn)",
+    "displayNamePlaceholder": "vd: Khach-1234",
+    "displayNameHint": "Tên ngẫu nhiên sẽ được tạo nếu để trống.",
+    "joinAsGuest": "Tham gia với tư cách khách",
+    "joining": "Đang tham gia phiên...",
+    "joinButton": "Tham gia",
+    "guestNotAllowed": "Phiên này không cho phép chế độ khách. Cần đăng nhập.",
+    "loginRequired": "Phiên này yêu cầu đăng nhập",
+    "loginToJoin": "Đăng nhập để tham gia",
+    "loginToJoinFull": "Đăng nhập và tham gia",
+    "hasAccount": "Đã có tài khoản?",
+    "noAccountQuestion": "Chưa có tài khoản?",
+    "joinWithoutLogin": "Tham gia không cần đăng nhập",
+    "checkingSession": "Đang kiểm tra thông tin phiên..."
+  },
+  "session": {
+    "notFound": "Không tìm thấy phiên",
+    "notFoundDescription": "Liên kết mời đã hết hạn hoặc không hợp lệ.\nVui lòng yêu cầu liên kết mới từ chủ phòng.",
+    "expiredLink": "Liên kết đã hết hạn hoặc không hợp lệ",
+    "host": "Chủ phòng",
+    "guest": "Khách",
+    "hostRole": "Chủ phòng phiên",
+    "guestRole": "Khách phiên",
+    "code": "Mã",
+    "participants": "Người tham gia",
+    "currentParticipants": "Người tham gia hiện tại",
+    "participantCount": "{{count}} đang tham gia",
+    "participantCountSimple": "{{count}}"
+  },
+  "sessionCreate": {
+    "title": "Tạo phiên mới",
+    "password": "Mật khẩu phiên",
+    "passwordPlaceholder": "Nhập mật khẩu...",
+    "passwordHint": "Mật khẩu tự động tạo. Bạn có thể sửa đổi.",
+    "allowGuest": "Cho phép chế độ khách",
+    "allowGuestHint": "Người dùng không đăng nhập có thể tham gia trực tiếp qua liên kết mời.",
+    "createButton": "Tạo phiên",
+    "creating": "Đang tạo..."
+  },
+  "sessionJoin": {
+    "title": "Tham gia phiên",
+    "welcome": "Tham gia phiên",
+    "code": "Mã phiên",
+    "codePlaceholder": "ABC123",
+    "password": "Mật khẩu phiên",
+    "passwordOptional": "(nếu cần)",
+    "passwordRequired": "Cần nhập mật khẩu.",
+    "joinButton": "Tham gia",
+    "joining": "Đang tham gia...",
+    "checking": "Đang kiểm tra...",
+    "autoConnecting": "Tự động kết nối qua liên kết mời...",
+    "otherCode": "Tham gia với mã khác"
+  },
+  "sessionReconnect": {
+    "title": "Phiên trước đã ngắt kết nối",
+    "message": "Mã phiên <code>{{code}}</code> có <bold>{{count}}</bold> người tham gia.",
+    "reconnectButton": "Kết nối lại",
+    "reconnecting": "Đang kết nối lại...",
+    "dismissButton": "Bỏ qua"
+  },
+  "sessionMenu": {
+    "copyCode": "Sao chép mã phiên",
+    "copyLink": "Sao chép liên kết mời",
+    "endSession": "Kết thúc phiên",
+    "leaveSession": "Rời phiên"
+  },
+  "participant": {
+    "host": "Chủ phòng",
+    "guest": "Khách",
+    "viewing": "Đang xem",
+    "offline": "Ngoại tuyến",
+    "promoteToHost": "Nâng cấp làm chủ phòng",
+    "demoteToGuest": "Hạ cấp thành khách",
+    "copyCode": "Sao chép mã",
+    "copyLink": "Sao chép liên kết",
+    "kick": "Xóa",
+    "kickConfirm": "Xóa {{name}} khỏi phiên?",
+    "kickedMessage": "Bạn đã bị xóa khỏi phiên.",
+    "spotlightShare": "Chia sẻ dưới dạng Spotlight"
+  },
+  "invite": {
+    "title": "Mời người tham gia",
+    "subtitle": "Người tham gia có thể tham gia qua liên kết mời",
+    "copyLink": "Sao chép liên kết",
+    "hidePrompt": "Không hiển thị lời mời này nữa?"
+  },
+  "lobby": {
+    "welcome": "Chào mừng!",
+    "welcomeDescription": "Bắt đầu phiên mới hoặc\ntham gia phiên đang diễn ra.",
+    "newSession": "Tạo phiên mới",
+    "newSessionDescription": "Trở thành chủ phòng và bắt đầu lớp học hoặc cuộc họp. Mời người tham gia với liên kết mời.",
+    "joinSession": "Tham gia",
+    "joinSessionDescription": "Nhập mã phiên được chia sẻ để tham gia hoạt động đang diễn ra."
+  },
+  "description": {
+    "title": "Giải phóng",
+    "titleHighlight": "ý tưởng",
+    "titleSuffix": " của bạn trên canvas số",
+    "subtitle": "NeoCAST là nền tảng tối ưu cho cộng tác thời gian thực và chia sẻ chữ viết. Tham gia ngay và trải nghiệm thế giới sáng tạo mới.",
+    "subtitleLogin": "NeoCAST là nền tảng tối ưu cho cộng tác thời gian thực và chia sẻ chữ viết. Đăng nhập ngay và trải nghiệm thế giới sáng tạo mới.",
+    "featurePen": "Smartpen & Nhập liệu chạm",
+    "featureCollab": "Cộng tác thời gian thực"
+  },
+  "canvas": {
+    "lock": "Khóa",
+    "noPages": "Chưa có trang",
+    "addPage": "Thêm trang",
+    "deletePage": "Xóa trang",
+    "mouse": "Chuột",
+    "owned": "Sở hữu",
+    "notOwned": "Không sở hữu",
+    "undo": "Hoàn tác",
+    "redo": "Làm lại",
+    "clearPage": "Xóa trang",
+    "clearConfirm": "Xóa tất cả nét vẽ trên trang này?",
+    "clear": "Xóa",
+    "active": "Đang hoạt động",
+    "noPage": "Không có trang",
+    "clickToActivate": "Nhấp để kích hoạt",
+    "addPageButton": "Thêm trang",
+    "spotlightView": "Chế độ nổi bật",
+    "gridView": "Chế độ lưới",
+    "spotlightSharing": "Đang chia sẻ Spotlight",
+    "stopSpotlightShare": "Dừng chia sẻ Spotlight"
+  },
+  "page": {
+    "lock": "Khóa",
+    "noPagesYet": "Chưa có trang",
+    "addPage": "Thêm trang",
+    "addPageTooltip": "Thêm trang mới",
+    "deletePage": "Xóa trang",
+    "owned": "Sở hữu",
+    "notOwned": "Không sở hữu",
+    "mouse": "Chuột"
+  },
+  "toolbar": {
+    "undo": "Hoàn tác",
+    "redo": "Làm lại",
+    "clearPage": "Xóa trang",
+    "clearConfirm": "Xóa tất cả nét vẽ trên trang này?"
+  },
+  "grid": {
+    "reorder": "Sắp xếp lại",
+    "autoLayout": "Bố cục tự động",
+    "changeGrid": "Thay đổi lưới"
+  },
+  "pen": {
+    "notAvailable": "Bút không khả dụng",
+    "connecting": "Đang kết nối...",
+    "authenticating": "Đang xác thực...",
+    "ready": "Bút sẵn sàng",
+    "connect": "Kết nối",
+    "title": "NeoSmartpen",
+    "webBluetoothNotSupported": "Trình duyệt này không hỗ trợ Web Bluetooth. Vui lòng sử dụng Chrome, Edge hoặc Opera.",
+    "connectedReady": "Đã kết nối & Sẵn sàng",
+    "connectedAuth": "Đã kết nối (Đang xác thực...)",
+    "disconnected": "Đã ngắt kết nối",
+    "device": "Thiết bị:",
+    "mac": "MAC:",
+    "battery": "Pin:",
+    "page": "Trang:",
+    "passwordProtected": "Bút được bảo vệ bằng mật khẩu.",
+    "attempt": "(Lần thử {{current}}/{{max}})",
+    "enterPassword": "Nhập mật khẩu",
+    "disconnectButton": "Ngắt kết nối",
+    "connectButton": "Kết nối bút",
+    "logs": "Nhật ký",
+    "clear": "Xóa",
+    "noLogs": "Không có nhật ký",
+    "penSettings": "Cài đặt bút",
+    "paperSize": "Kích thước giấy",
+    "penType": "Loại bút",
+    "pen": "Bút",
+    "highlighter": "Bút đánh dấu",
+    "eraser": "Tẩy",
+    "color": "Màu",
+    "thickness": "Độ dày",
+    "fine": "Fine",
+    "medium": "Medium",
+    "thick": "Thick",
+    "bold": "Bold"
+  },
+  "language": {
+    "select": "Chọn ngôn ngữ",
+    "current": "Ngôn ngữ hiện tại"
+  },
+  "controlBar": {
+    "mute": "Tắt tiếng",
+    "unmute": "Bật tiếng",
+    "muteTip": "Nhấp để tắt tiếng",
+    "unmuteTip": "Nhấp để bật tiếng",
+    "penOn": "Bút Bật",
+    "penOff": "Bút Tắt",
+    "penOnTip": "Đã bật vẽ",
+    "penOffTip": "Đã tắt vẽ",
+    "smartpen": "Bút",
+    "stylusOn": "Chạm",
+    "stylusOff": "Chạm",
+    "stylusPaused": "Dừng",
+    "stylusOnTip": "Đã bật nhập liệu chạm",
+    "stylusOffTip": "Đã tắt nhập liệu chạm",
+    "stylusPausedTip": "Chạm tạm dừng khi nhấn phím CMD/CTRL",
+    "upload": "Tải lên",
+    "uploadTip": "Tải lên tài liệu",
+    "participants": "Thành viên",
+    "participantsTip": "Xem người tham gia",
+    "chat": "Chat",
+    "chatTip": "Mở trò chuyện",
+    "messenger": "Nhắn tin",
+    "messengerTip": "Mở nhắn tin",
+    "settings": "Cài đặt",
+    "settingsTip": "Mở cài đặt",
+    "more": "Thêm",
+    "moreTip": "Tùy chọn khác",
+    "about": "Giới thiệu",
+    "pages": "Trang",
+    "pagesTip": "Xem trang",
+    "myMaterials": "Tài liệu",
+    "myMaterialsTip": "Xem tài liệu của tôi",
+    "sessionHostTip": "Bạn là chủ phòng",
+    "sessionGuestTip": "Bạn là khách",
+    "leave": "Rời",
+    "leaveTip": "Rời phiên",
+    "endSession": "Kết thúc",
+    "endSessionTip": "Kết thúc phiên"
+  },
+  "chat": {
+    "title": "Trò chuyện",
+    "placeholder": "Nhập tin nhắn...",
+    "send": "Gửi",
+    "noMessages": "Chưa có tin nhắn"
+  },
+  "messenger": {
+    "title": "Nhắn tin",
+    "offline": "Ngoại tuyến",
+    "noMessages": "Chưa có tin nhắn",
+    "startDm": "Gửi tin nhắn trực tiếp!",
+    "placeholder": "Nhập tin nhắn...",
+    "typing": "Đang nhập...",
+    "loadMore": "Tải tin nhắn cũ hơn",
+    "selectFriend": "Chọn bạn bè",
+    "selectFriendHint": "để bắt đầu trò chuyện",
+    "selectThread": "Chọn cuộc trò chuyện",
+    "selectThreadHint": "để tiếp tục nhắn tin",
+    "startMessageHint": "Chọn bạn bè để bắt đầu trò chuyện",
+    "noMessageYet": "Chưa có tin nhắn",
+    "tabs": {
+      "friends": "Bạn bè",
+      "messages": "Tin nhắn"
+    },
+    "friends": {
+      "online": "Trực tuyến",
+      "offline": "Ngoại tuyến",
+      "busy": "Bận",
+      "away": "Vắng mặt",
+      "addFriend": "Thêm bạn",
+      "searchPlaceholder": "Tìm kiếm bằng email...",
+      "userNotFound": "Không tìm thấy người dùng",
+      "alreadyFriends": "Đã là bạn bè",
+      "noFriends": "Chưa có bạn bè",
+      "addFriendHint": "Thêm bạn bè để bắt đầu nhắn tin"
+    },
+    "requests": {
+      "title": "Lời mời kết bạn",
+      "accept": "Chấp nhận",
+      "reject": "Từ chối",
+      "pending": "Đang chờ"
+    },
+    "relations": {
+      "friend": "Bạn bè",
+      "teacher": "Giáo viên",
+      "student": "Học sinh",
+      "parent": "Phụ huynh",
+      "child": "Con"
+    },
+    "time": {
+      "today": "Hôm nay",
+      "yesterday": "Hôm qua"
+    }
+  },
+  "settings": {
+    "title": "Cài đặt",
+    "general": "Chung",
+    "display": "Hiển thị",
+    "audio": "Âm thanh",
+    "language": "Ngôn ngữ",
+    "theme": "Giao diện",
+    "themeLight": "Sáng",
+    "themeDark": "Tối",
+    "themeSystem": "Hệ thống"
+  },
+  "leave": {
+    "title": "Rời phiên",
+    "confirmMessage": "Bạn có chắc muốn rời phiên này không?",
+    "confirmEndMessage": "Bạn có chắc muốn kết thúc phiên này không? Tất cả người tham gia sẽ bị ngắt kết nối.",
+    "leaveButton": "Rời",
+    "endButton": "Kết thúc phiên",
+    "cancelButton": "Hủy"
+  },
+  "pages": {
+    "title": "Trang",
+    "addPage": "Thêm trang",
+    "deletePage": "Xóa trang",
+    "pageNumber": "Trang {{number}}",
+    "totalPages": "{{total}} trang"
+  },
+  "pdf": {
+    "title": "Tài liệu PDF",
+    "upload": "Tải lên PDF",
+    "uploading": "Đang tải lên...",
+    "processing": "Đang xử lý...",
+    "error": "Không thể tải PDF"
+  },
+  "myPapers": {
+    "title": "Tài liệu của tôi",
+    "upload": "Tải lên",
+    "recent": "Gần đây",
+    "all": "Tất cả",
+    "empty": "Chưa có tài liệu"
+  },
+  "about": {
+    "title": "Giới thiệu",
+    "version": "Phiên bản",
+    "copyright": "Bản quyền",
+    "license": "Giấy phép"
+  },
+  "voice": {
+    "micPermissionDenied": "Quyền truy cập micrô bị từ chối. Vui lòng cho phép truy cập trong cài đặt trình duyệt.",
+    "micError": "Không thể truy cập micrô.",
+    "noDevices": "Không phát hiện micrô",
+    "noSpeakers": "Mặc định hệ thống",
+    "testMicrophone": "Kiểm tra micrô",
+    "testSpeaker": "Kiểm tra loa",
+    "micTesting": "Đang ghi... (3 giây)",
+    "speakerTesting": "Đang phát...",
+    "transmitNotAllowed": "Micrô đã bị chủ phòng tắt."
+  },
+  "printSettings": {
+    "title": "Cài đặt in",
+    "orientation": "Hướng",
+    "portrait": "Dọc",
+    "landscape": "Ngang",
+    "paperSize": "Kích thước giấy",
+    "quality": "Chất lượng",
+    "print": "In"
+  }
+}

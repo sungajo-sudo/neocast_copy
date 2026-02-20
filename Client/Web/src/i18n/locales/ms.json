@@ -1,0 +1,475 @@
+{
+  "common": {
+    "appName": "NeoCAST",
+    "login": "Log Masuk",
+    "logout": "Log Keluar",
+    "signUp": "Daftar",
+    "profile": "Profil",
+    "confirm": "Sahkan",
+    "cancel": "Batal",
+    "save": "Simpan",
+    "close": "Tutup",
+    "copy": "Salin",
+    "copied": "Disalin!",
+    "start": "Mula",
+    "loading": "Memuatkan...",
+    "processing": "Memproses...",
+    "error": "Ralat berlaku",
+    "yes": "Ya",
+    "no": "Tidak",
+    "ok": "OK",
+    "search": "Cari",
+    "copyright": "© 2026 NeoLAB Convergence. Hak cipta terpelihara."
+  },
+  "landing": {
+    "heroTitle": "Di mana imaginasi",
+    "heroSubtitle": "menjadi kenyataan",
+    "heroDescription": "NeoCAST menyokong pelbagai alat input termasuk Neo Smartpen, stylus, sentuhan dan tetikus. Platform kolaborasi masa nyata di mana anda boleh menulis, melukis dan berkomunikasi dengan bebas, bila-bila masa, di mana-mana sahaja.",
+    "getStarted": "Mula",
+    "section1Title": "Penyelesaian sempurna untuk",
+    "section1Subtitle": "pembelajaran dan mesyuarat jarak jauh",
+    "section1Description": "Guru (hos) boleh memantau tulisan tangan semua pelajar (tetamu) dalam sekelip mata dan memberikan maklum balas individu. Berhubung sehidup seperti berada di dalam kelas, tanpa mengira jarak fizikal.",
+    "feature1": "Perkongsian tulisan dan anotasi masa nyata",
+    "feature2": "Pengurusan berkuasa berpusatkan hos",
+    "section2Title": "Luahkan dengan bebas",
+    "section2Subtitle": "pelbagai kaedah input",
+    "section2Description": "Tulis di atas kertas dengan Neo Smartpen dan lihat ia muncul di skrin serta-merta. Input tetikus dan sentuhan juga disokong sepenuhnya. Gunakan alat paling selesa anda untuk melepaskan kreativiti.",
+    "feature3": "Sokongan tulisan analog Neo Smartpen",
+    "feature4": "Lukisan sentuhan tablet dan tetikus",
+    "section3Title": "Kongsi dan analisis",
+    "section3Subtitle": "proses penulisan",
+    "section3Description": "Rakam dan main semula bukan sahaja hasil akhir, tetapi keseluruhan proses pemikiran. Kongsi dan analisis secara mendalam langkah penyelesaian masalah atau aliran lakaran reka bentuk.",
+    "section4Title": "Sistem jemputan",
+    "section4Subtitle": "biasa dan mudah",
+    "section4Description": "Jemput peserta dengan mudah hanya dengan satu pautan, seperti Zoom, Teams atau Meet. Sertai sesi serta-merta dengan mengklik pautan, tanpa pemasangan atau pendaftaran yang rumit.",
+    "section5Title": "Keselamatan sesi yang teliti",
+    "section5Subtitle": "dan perlindungan privasi",
+    "section5Description": "Idea dan data berharga anda dilindungi dengan selamat. Urus akses sesi dengan teknologi keselamatan yang kukuh dan pastikan maklumat peribadi anda selamat.",
+    "newConcept": {
+      "title": "Cipta",
+      "subtitle": "bilik darjah pintar anda sendiri dengan Ncode",
+      "description": "Tukarkan PDF biasa menjadi buku teks Ncode pintar dan rekod proses pemikiran pelajar secara masa nyata. Analisis dan nilai proses pembelajaran dengan AI dan berikan maklum balas peribadi untuk setiap pelajar.",
+      "feature1": "Teknologi penjanaan PDF Ncode yang dipatenkan",
+      "feature2": "Penilaian berorientasikan proses AI & analisis multimodal"
+    },
+    "targetAudience": {
+      "title": "Siapa yang",
+      "subtitle": "boleh menggunakan?",
+      "description": "Dari bilik darjah hingga mesyuarat perniagaan, NeoCAST merekod dan menghubungkan setiap detik.",
+      "educator": {
+        "title": "Educator",
+        "description": "Guru sekolah, profesor universiti, pengajar pendidikan"
+      },
+      "tutor": {
+        "title": "Tutor",
+        "description": "Tutor persendirian, tutor dalam talian, tutor berkumpulan"
+      },
+      "consultant": {
+        "title": "Consultant",
+        "description": "Perunding perniagaan, perunding teknikal, perunding pengurusan"
+      },
+      "counselor": {
+        "title": "Counselor",
+        "description": "Ahli terapi seni, psikologi, jurulatih kehidupan"
+      }
+    },
+    "technology": {
+      "title": "Teknologi yang",
+      "subtitle": "digunakan",
+      "ncode": {
+        "title": "Teknologi Ncode",
+        "concept": "DNA digital yang tidak kelihatan",
+        "description": "Dengan corak mikro yang dicetak pada kertas, kedudukan hujung pen dapat dikenal pasti dengan tepat. Ini membolehkan pergerakan coretan direkod dengan tepat sehingga 0.1mm, supaya tulisan tangan pada kertas boleh ditukar secara semula jadi kepada digital."
+      },
+      "smartpen": {
+        "title": "Teknologi Smartpen",
+        "concept": "Jambatan antara analog dan digital",
+        "description": "Menyediakan rasa menulis yang sama seperti pen biasa sambil merekod semua coretan dalam masa nyata dan menyegerakkan ke peranti digital. Nikmati keselesaan menulis di atas kertas dengan kemudahan pengurusan digital."
+      },
+      "paperhub": {
+        "title": "Teknologi PaperHub",
+        "concept": "Bekas untuk semua data kertas",
+        "description": "Mengumpul semua data yang dijana pada kertas fizikal dalam masa nyata dan menyimpan serta mengurus dengan selamat di awan. Ini membolehkan pencarian, analisis dan perkongsian nota tulisan tangan pada bila-bila masa, di mana-mana sahaja."
+      },
+      "pod": {
+        "title": "Print On Demand",
+        "concept": "Kertas pintar yang boleh dibuat oleh sesiapa sahaja",
+        "description": "Tanpa kilang khusus, sesiapa sahaja dengan pencetak laser biasa boleh mencetak Ncode dan mencipta kertas pintar. Tukar buku nota, buku kerja dan bahan cetak biasa menjadi kandungan pintar yang disokong digital."
+      },
+      "footer": {
+        "company": "NeoLAB Convergence",
+        "description": "Sejak ditubuhkan pada 2009, telah berinovasi dalam teknologi kertas pintar dan pen selama lebih daripada 15 tahun. Pemegang lebih daripada 170 hak harta intelek berkaitan Ncode di seluruh dunia, dan produk serta perkhidmatan digunakan di lebih daripada 50 negara."
+      }
+    }
+  },
+  "auth": {
+    "loginTitle": "Log Masuk",
+    "signUpTitle": "Daftar",
+    "email": "E-mel",
+    "emailPlaceholder": "pengguna@contoh.com",
+    "password": "Kata laluan",
+    "passwordPlaceholder": "Masukkan kata laluan",
+    "confirmPassword": "Sahkan kata laluan",
+    "name": "Nama",
+    "namePlaceholder": "Masukkan nama anda",
+    "passwordRequirement": "Sekurang-kurangnya 6 aksara",
+    "passwordMismatch": "Kata laluan tidak sepadan",
+    "noAccount": "Belum ada akaun?",
+    "hasAccount": "Sudah ada akaun?",
+    "loginButton": "Log Masuk",
+    "signUpButton": "Daftar",
+    "rememberEmail": "Ingat ID"
+  },
+  "guest": {
+    "title": "Sertai Sesi",
+    "invited": "Anda dijemput ke sesi",
+    "invitedSubtitle": "Sertai dan kongsi idea anda!",
+    "anyoneCanJoin": "Sesiapa boleh sertai",
+    "displayName": "Nama Paparan",
+    "displayNameOptional": "(Pilihan)",
+    "displayNamePlaceholder": "cth: Tetamu-1234",
+    "displayNameHint": "Nama rawak akan dijana jika dibiarkan kosong.",
+    "joinAsGuest": "Sertai sebagai Tetamu",
+    "joining": "Menyertai sesi...",
+    "joinButton": "Sertai",
+    "guestNotAllowed": "Sesi ini tidak membenarkan mod tetamu. Log masuk diperlukan.",
+    "loginRequired": "Sesi ini memerlukan log masuk",
+    "loginToJoin": "Log masuk untuk sertai",
+    "loginToJoinFull": "Log masuk dan sertai",
+    "hasAccount": "Sudah ada akaun?",
+    "noAccountQuestion": "Belum ada akaun?",
+    "joinWithoutLogin": "Sertai tanpa log masuk",
+    "checkingSession": "Memeriksa maklumat sesi..."
+  },
+  "session": {
+    "notFound": "Sesi tidak ditemui",
+    "notFoundDescription": "Pautan jemputan telah tamat tempoh atau tidak sah.\nSila minta pautan baharu daripada hos.",
+    "expiredLink": "Pautan telah tamat tempoh atau tidak sah",
+    "host": "Hos",
+    "guest": "Tetamu",
+    "hostRole": "Hos Sesi",
+    "guestRole": "Tetamu Sesi",
+    "code": "Kod",
+    "participants": "Peserta",
+    "currentParticipants": "Peserta Semasa",
+    "participantCount": "{{count}} menyertai",
+    "participantCountSimple": "{{count}}"
+  },
+  "sessionCreate": {
+    "title": "Cipta Sesi Baharu",
+    "password": "Kata laluan Sesi",
+    "passwordPlaceholder": "Masukkan kata laluan...",
+    "passwordHint": "Kata laluan dijana automatik. Anda boleh ubah suai.",
+    "allowGuest": "Benarkan Mod Tetamu",
+    "allowGuestHint": "Pengguna tanpa log masuk boleh sertai terus melalui pautan jemputan.",
+    "createButton": "Cipta Sesi",
+    "creating": "Mencipta..."
+  },
+  "sessionJoin": {
+    "title": "Sertai Sesi",
+    "welcome": "Sertai Sesi",
+    "code": "Kod Sesi",
+    "codePlaceholder": "ABC123",
+    "password": "Kata laluan Sesi",
+    "passwordOptional": "(jika perlu)",
+    "passwordRequired": "Kata laluan diperlukan.",
+    "joinButton": "Sertai",
+    "joining": "Menyertai...",
+    "checking": "Memeriksa...",
+    "autoConnecting": "Sambung automatik melalui pautan jemputan...",
+    "otherCode": "Sertai dengan kod lain"
+  },
+  "sessionReconnect": {
+    "title": "Sesi sebelumnya terputus",
+    "message": "Kod sesi <code>{{code}}</code> mempunyai <bold>{{count}}</bold> peserta.",
+    "reconnectButton": "Sambung semula",
+    "reconnecting": "Menyambung semula...",
+    "dismissButton": "Abaikan"
+  },
+  "sessionMenu": {
+    "copyCode": "Salin Kod Sesi",
+    "copyLink": "Salin Pautan Jemputan",
+    "endSession": "Tamatkan Sesi",
+    "leaveSession": "Tinggalkan Sesi"
+  },
+  "participant": {
+    "host": "Hos",
+    "guest": "Tetamu",
+    "viewing": "Melihat",
+    "offline": "Luar talian",
+    "promoteToHost": "Naikkan ke Hos",
+    "demoteToGuest": "Turunkan ke Tetamu",
+    "copyCode": "Salin Kod",
+    "copyLink": "Salin Pautan",
+    "kick": "Keluarkan",
+    "kickConfirm": "Keluarkan {{name}} dari sesi?",
+    "kickedMessage": "Anda telah dikeluarkan dari sesi.",
+    "spotlightShare": "Kongsi sebagai Spotlight"
+  },
+  "invite": {
+    "title": "Jemput Peserta",
+    "subtitle": "Peserta boleh sertai melalui pautan jemputan",
+    "copyLink": "Salin Pautan",
+    "hidePrompt": "Jangan tunjukkan jemputan ini lagi?"
+  },
+  "lobby": {
+    "welcome": "Selamat Datang!",
+    "welcomeDescription": "Mulakan sesi baharu atau\nsertai sesi yang sedang berlangsung.",
+    "newSession": "Cipta Sesi Baharu",
+    "newSessionDescription": "Jadi hos dan mulakan kelas atau mesyuarat. Jemput peserta dengan pautan jemputan.",
+    "joinSession": "Sertai",
+    "joinSessionDescription": "Masukkan kod sesi yang dikongsi untuk sertai aktiviti yang sedang berlangsung."
+  },
+  "description": {
+    "title": "Lepaskan",
+    "titleHighlight": "idea",
+    "titleSuffix": " anda di kanvas digital",
+    "subtitle": "NeoCAST adalah platform terbaik untuk kolaborasi masa nyata dan perkongsian tulisan. Sertai sekarang dan alami dunia penciptaan baharu.",
+    "subtitleLogin": "NeoCAST adalah platform terbaik untuk kolaborasi masa nyata dan perkongsian tulisan. Log masuk sekarang dan alami dunia penciptaan baharu.",
+    "featurePen": "Smartpen & Input Sentuhan",
+    "featureCollab": "Kolaborasi Masa Nyata"
+  },
+  "canvas": {
+    "lock": "Kunci",
+    "noPages": "Belum ada halaman",
+    "addPage": "Tambah Halaman",
+    "deletePage": "Padam Halaman",
+    "mouse": "Tetikus",
+    "owned": "Dimiliki",
+    "notOwned": "Tidak dimiliki",
+    "undo": "Buat asal",
+    "redo": "Buat semula",
+    "clearPage": "Kosongkan Halaman",
+    "clearConfirm": "Kosongkan semua coretan di halaman ini?",
+    "clear": "Kosongkan",
+    "active": "Aktif",
+    "noPage": "Tiada Halaman",
+    "clickToActivate": "Klik untuk mengaktifkan",
+    "addPageButton": "Tambah Halaman",
+    "spotlightView": "Paparan Sorotan",
+    "gridView": "Paparan Grid",
+    "spotlightSharing": "Perkongsian Spotlight",
+    "stopSpotlightShare": "Hentikan Perkongsian Spotlight"
+  },
+  "page": {
+    "lock": "Kunci",
+    "noPagesYet": "Belum ada halaman",
+    "addPage": "Tambah Halaman",
+    "addPageTooltip": "Tambah halaman baharu",
+    "deletePage": "Padam Halaman",
+    "owned": "Dimiliki",
+    "notOwned": "Tidak dimiliki",
+    "mouse": "Tetikus"
+  },
+  "toolbar": {
+    "undo": "Buat asal",
+    "redo": "Buat semula",
+    "clearPage": "Kosongkan Halaman",
+    "clearConfirm": "Kosongkan semua coretan di halaman ini?"
+  },
+  "grid": {
+    "reorder": "Susun semula",
+    "autoLayout": "Susun atur Auto",
+    "changeGrid": "Tukar Grid"
+  },
+  "pen": {
+    "notAvailable": "Pen T/A",
+    "connecting": "Menyambung...",
+    "authenticating": "Mengesahkan...",
+    "ready": "Pen Sedia",
+    "connect": "Sambung",
+    "title": "NeoSmartpen",
+    "webBluetoothNotSupported": "Web Bluetooth tidak disokong dalam pelayar ini. Sila gunakan Chrome, Edge atau Opera.",
+    "connectedReady": "Disambung & Sedia",
+    "connectedAuth": "Disambung (Mengesahkan...)",
+    "disconnected": "Terputus",
+    "device": "Peranti:",
+    "mac": "MAC:",
+    "battery": "Bateri:",
+    "page": "Halaman:",
+    "passwordProtected": "Pen dilindungi kata laluan.",
+    "attempt": "(Percubaan {{current}}/{{max}})",
+    "enterPassword": "Masukkan kata laluan",
+    "disconnectButton": "Putuskan",
+    "connectButton": "Sambung Pen",
+    "logs": "Log",
+    "clear": "Kosongkan",
+    "noLogs": "Tiada log",
+    "penSettings": "Tetapan Pen",
+    "paperSize": "Saiz Kertas",
+    "penType": "Jenis Pen",
+    "pen": "Pen",
+    "highlighter": "Penyerlah",
+    "eraser": "Pemadam",
+    "color": "Warna",
+    "thickness": "Ketebalan",
+    "fine": "Fine",
+    "medium": "Medium",
+    "thick": "Thick",
+    "bold": "Bold"
+  },
+  "language": {
+    "select": "Pilih Bahasa",
+    "current": "Bahasa Semasa"
+  },
+  "controlBar": {
+    "mute": "Senyap",
+    "unmute": "Bunyi",
+    "muteTip": "Klik untuk senyap",
+    "unmuteTip": "Klik untuk nyahsenyap",
+    "penOn": "Pen",
+    "penOff": "Pen",
+    "penOnTip": "Melukis diaktifkan",
+    "penOffTip": "Melukis dinyahaktifkan",
+    "smartpen": "Smart pen",
+    "stylusOn": "Sentuh",
+    "stylusOff": "Sentuh",
+    "stylusPaused": "Jeda",
+    "stylusOnTip": "Input sentuh diaktifkan",
+    "stylusOffTip": "Input sentuh dinyahaktifkan",
+    "stylusPausedTip": "Sentuh dijeda semasa kekunci CMD/CTRL ditekan",
+    "upload": "Muat",
+    "uploadTip": "Muat naik dokumen",
+    "participants": "Peserta",
+    "participantsTip": "Lihat peserta",
+    "chat": "Sembang",
+    "chatTip": "Buka sembang",
+    "messenger": "Mesej",
+    "messengerTip": "Buka messenger",
+    "settings": "Tetapan",
+    "settingsTip": "Buka tetapan",
+    "more": "Lagi",
+    "moreTip": "Pilihan lain",
+    "about": "Info",
+    "pages": "Halaman",
+    "pagesTip": "Lihat halaman",
+    "myMaterials": "Fail Saya",
+    "myMaterialsTip": "Lihat bahan saya",
+    "sessionHostTip": "Anda adalah hos",
+    "sessionGuestTip": "Anda adalah tetamu",
+    "leave": "Keluar",
+    "leaveTip": "Keluar sesi",
+    "endSession": "Tamat",
+    "endSessionTip": "Tamatkan sesi"
+  },
+  "chat": {
+    "title": "Sembang",
+    "placeholder": "Taip mesej...",
+    "send": "Hantar",
+    "noMessages": "Tiada mesej lagi"
+  },
+  "messenger": {
+    "title": "Messenger",
+    "offline": "Luar talian",
+    "noMessages": "Tiada mesej lagi",
+    "startDm": "Hantar mesej langsung!",
+    "placeholder": "Taip mesej...",
+    "typing": "Sedang menaip...",
+    "loadMore": "Muat mesej lama",
+    "selectFriend": "Pilih rakan",
+    "selectFriendHint": "untuk memulakan perbualan",
+    "selectThread": "Pilih perbualan",
+    "selectThreadHint": "untuk meneruskan mesej",
+    "startMessageHint": "Pilih rakan untuk memulakan perbualan",
+    "noMessageYet": "Tiada mesej lagi",
+    "tabs": {
+      "friends": "Rakan",
+      "messages": "Mesej"
+    },
+    "friends": {
+      "online": "Dalam talian",
+      "offline": "Luar talian",
+      "busy": "Sibuk",
+      "away": "Tiada",
+      "addFriend": "Tambah Rakan",
+      "searchPlaceholder": "Cari dengan emel...",
+      "userNotFound": "Pengguna tidak dijumpai",
+      "alreadyFriends": "Sudah berkawan",
+      "noFriends": "Tiada rakan lagi",
+      "addFriendHint": "Tambah rakan untuk mula menghantar mesej"
+    },
+    "requests": {
+      "title": "Permintaan Rakan",
+      "accept": "Terima",
+      "reject": "Tolak",
+      "pending": "Menunggu"
+    },
+    "relations": {
+      "friend": "Rakan",
+      "teacher": "Guru",
+      "student": "Pelajar",
+      "parent": "Ibu Bapa",
+      "child": "Anak"
+    },
+    "time": {
+      "today": "Hari ini",
+      "yesterday": "Semalam"
+    }
+  },
+  "settings": {
+    "title": "Tetapan",
+    "general": "Am",
+    "display": "Paparan",
+    "audio": "Audio",
+    "language": "Bahasa",
+    "theme": "Tema",
+    "themeLight": "Cerah",
+    "themeDark": "Gelap",
+    "themeSystem": "Sistem"
+  },
+  "leave": {
+    "title": "Keluar Sesi",
+    "confirmMessage": "Adakah anda pasti mahu keluar dari sesi ini?",
+    "confirmEndMessage": "Adakah anda pasti mahu menamatkan sesi ini? Semua peserta akan diputuskan.",
+    "leaveButton": "Keluar",
+    "endButton": "Tamatkan Sesi",
+    "cancelButton": "Batal"
+  },
+  "pages": {
+    "title": "Halaman",
+    "addPage": "Tambah Halaman",
+    "deletePage": "Padam Halaman",
+    "pageNumber": "Halaman {{number}}",
+    "totalPages": "{{total}} halaman"
+  },
+  "pdf": {
+    "title": "Dokumen PDF",
+    "upload": "Muat Naik PDF",
+    "uploading": "Memuat naik...",
+    "processing": "Memproses...",
+    "error": "Gagal memuatkan PDF"
+  },
+  "myPapers": {
+    "title": "Bahan Saya",
+    "upload": "Muat Naik",
+    "recent": "Terkini",
+    "all": "Semua",
+    "empty": "Tiada bahan lagi"
+  },
+  "about": {
+    "title": "Perihal",
+    "version": "Versi",
+    "copyright": "Hak Cipta",
+    "license": "Lesen"
+  },
+  "voice": {
+    "micPermissionDenied": "Kebenaran mikrofon ditolak. Sila benarkan akses dalam tetapan pelayar.",
+    "micError": "Gagal mengakses mikrofon.",
+    "noDevices": "Tiada mikrofon dikesan",
+    "noSpeakers": "Lalai Sistem",
+    "testMicrophone": "Uji Mikrofon",
+    "testSpeaker": "Uji Pembesar Suara",
+    "micTesting": "Merakam... (3 saat)",
+    "speakerTesting": "Memainkan...",
+    "transmitNotAllowed": "Mikrofon telah dilumpuhkan oleh hos."
+  },
+  "printSettings": {
+    "title": "Tetapan Cetak",
+    "orientation": "Orientasi",
+    "portrait": "Potret",
+    "landscape": "Landskap",
+    "paperSize": "Saiz Kertas",
+    "quality": "Kualiti",
+    "print": "Cetak"
+  }
+}

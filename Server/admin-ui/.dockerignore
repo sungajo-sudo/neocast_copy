@@ -1,0 +1,11 @@
+# Dependencies - will be installed fresh during Docker build
+node_modules/
+
+# Build output - will be generated during Docker build
+dist/
+
+# Development/IDE files
+.idea/
+.vscode/
+*.log
+.DS_Store

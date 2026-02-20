@@ -1,0 +1,3 @@
+[submodule "Client/Web/sub-modules/wasm-pdf-core"]
+	path = Client/Web/sub-modules/wasm-pdf-core
+	url = https://github.com/ottoro/wasm-pdf-core.git

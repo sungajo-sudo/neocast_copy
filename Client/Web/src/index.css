@@ -1,0 +1,69 @@
+@import "tailwindcss";
+
+:root {
+  /* Default font - will be overridden by JavaScript based on language */
+  --font-family: 'Noto Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Override Tailwind's font-sans with language-specific font */
+*, *::before, *::after {
+  font-family: var(--font-family) !important;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* 초대 배너 애니메이션 */
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.95;
+    transform: scale(1.02);
+  }
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 3s ease-in-out infinite;
+}
+
+/* NeoCAST 로고 - 서버 연결 시 그라데이션 흐르는 애니메이션 */
+@keyframes gradient-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.neo-gradient-animated {
+  background: linear-gradient(
+    90deg,
+    #2563eb 0%,
+    #7c3aed 25%,
+    #2563eb 50%,
+    #7c3aed 75%,
+    #2563eb 100%
+  );
+  background-size: 200% 100%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradient-flow 2s linear infinite;
+}
+
+.neo-gradient-static {
+  background: linear-gradient(to right, #2563eb, #7c3aed);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}

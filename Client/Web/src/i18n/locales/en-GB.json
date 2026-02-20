@@ -1,0 +1,478 @@
+{
+  "common": {
+    "appName": "NeoCAST",
+    "login": "Login",
+    "logout": "Logout",
+    "signUp": "Sign Up",
+    "profile": "Profile",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "save": "Save",
+    "close": "Close",
+    "copy": "Copy",
+    "copied": "Copied!",
+    "start": "Get Started",
+    "loading": "Loading...",
+    "processing": "Processing...",
+    "error": "An error occurred",
+    "yes": "Yes",
+    "no": "No",
+    "ok": "OK",
+    "search": "Search",
+    "copyright": "© 2026 NeoLAB Convergence. All rights reserved."
+  },
+  "landing": {
+    "heroTitle": "Where imagination",
+    "heroSubtitle": "becomes reality",
+    "heroDescription": "NeoCAST supports various input tools including Neo Smartpen, stylus, touch, and mouse. A real-time collaboration platform where you can freely write, draw, and communicate anytime, anywhere.",
+    "getStarted": "Get Started",
+    "section1Title": "The perfect solution for",
+    "section1Subtitle": "remote learning and meetings",
+    "section1Description": "Teachers (hosts) can monitor all students' (guests') handwriting at a glance and provide individual feedback. Connect as vividly as if you were in the classroom, regardless of physical distance.",
+    "feature1": "Real-time writing sharing and annotation",
+    "feature2": "Powerful host-centric management",
+    "section2Title": "Express freely with",
+    "section2Subtitle": "diverse input methods",
+    "section2Description": "Write on paper with Neo Smartpen and see it appear on screen instantly. Mouse and touch input are also fully supported. Use your most comfortable tool to unleash creativity.",
+    "feature3": "Neo Smartpen analogue writing support",
+    "feature4": "Tablet touch and mouse drawing",
+    "section3Title": "Share and analyse",
+    "section3Subtitle": "the writing process",
+    "section3Description": "Record and replay not just the final result, but the entire thought process. Share and deeply analyse problem-solving steps or design sketch flows.",
+    "section4Title": "Familiar and simple",
+    "section4Subtitle": "invitation system",
+    "section4Description": "Invite participants easily with just one link, like Zoom, Teams, or Meet. Join sessions instantly by clicking the link, without complex installation or registration.",
+    "section5Title": "Thorough session security",
+    "section5Subtitle": "and privacy protection",
+    "section5Description": "Your valuable ideas and data are protected safely. Manage session access with strong security technology and keep your personal information safe.",
+    "newConcept": {
+      "title": "Create your own",
+      "subtitle": "smart classroom with Ncode",
+      "description": "Transform ordinary PDFs into smart Ncode textbooks and record students' thinking processes in real-time. Analyse and evaluate learning processes with AI and provide personalised feedback for each student.",
+      "feature1": "Patented Ncode PDF generation technology",
+      "feature2": "AI-based process-oriented assessment & multimodal analysis"
+    },
+    "targetAudience": {
+      "title": "Who can",
+      "subtitle": "use it?",
+      "description": "From classrooms to business meetings, NeoCAST records and connects every moment.",
+      "educator": {
+        "title": "Educator",
+        "description": "School teacher, university professor, education instructor"
+      },
+      "tutor": {
+        "title": "Tutor",
+        "description": "Private tutor, online tutor, group tutor"
+      },
+      "consultant": {
+        "title": "Consultant",
+        "description": "Business consultant, technical consultant, management consultant"
+      },
+      "counselor": {
+        "title": "Counsellor",
+        "description": "Art therapist, psychologist, life coach"
+      }
+    },
+    "technology": {
+      "title": "Technologies",
+      "subtitle": "used",
+      "ncode": {
+        "title": "Ncode Technology",
+        "concept": "Invisible Digital DNA",
+        "description": "Microscopic patterns printed on paper, nearly invisible to the eye, but the core technology that enables smartpens to accurately recognise position, pen pressure, and time information."
+      },
+      "smartpen": {
+        "title": "Smartpen Technology",
+        "concept": "Bridge between analogue and digital",
+        "description": "Provides the same writing feel as a regular pen, with built-in high-speed camera and processor tracking coordinates up to 240 times per second and transmitting data."
+      },
+      "paperhub": {
+        "title": "PaperHub Technology",
+        "concept": "Container for all paper data",
+        "description": "Safely stores and manages all data generated on physical paper in digital space, allowing access and search anytime, anywhere."
+      },
+      "pod": {
+        "title": "Print On Demand",
+        "concept": "Anyone can create smart paper",
+        "description": "An eco-friendly solution where anyone with a regular laser printer can print and use Ncode-embedded textbooks or forms without a dedicated factory."
+      },
+      "footer": {
+        "company": "NeoLAB Convergence",
+        "description": "Since our founding in 2009, we have been researching technology that breaks down the boundaries between paper and digital. NeoLAB boasts the world's No.1 market share and technology in smartpen and Ncode technology."
+      }
+    }
+  },
+  "auth": {
+    "loginTitle": "Login",
+    "signUpTitle": "Sign Up",
+    "email": "Email",
+    "emailPlaceholder": "user@example.com",
+    "password": "Password",
+    "passwordPlaceholder": "Enter password",
+    "confirmPassword": "Confirm Password",
+    "name": "Name",
+    "namePlaceholder": "Enter your name",
+    "passwordRequirement": "At least 6 characters",
+    "passwordMismatch": "Passwords do not match",
+    "noAccount": "Don't have an account?",
+    "hasAccount": "Already have an account?",
+    "loginButton": "Login",
+    "signUpButton": "Sign Up",
+    "rememberEmail": "Remember ID"
+  },
+  "guest": {
+    "title": "Join Session",
+    "invited": "You're invited to a session",
+    "invitedSubtitle": "Join and share your ideas!",
+    "anyoneCanJoin": "Anyone can join",
+    "displayName": "Display Name",
+    "displayNameOptional": "(Optional)",
+    "displayNamePlaceholder": "e.g., Guest-1234",
+    "displayNameHint": "A random name will be generated if left blank.",
+    "joinAsGuest": "Join as Guest",
+    "joining": "Joining session...",
+    "joinButton": "Join",
+    "guestNotAllowed": "This session does not allow guest mode. Login is required.",
+    "loginRequired": "This session requires login",
+    "loginToJoin": "Login to Join",
+    "loginToJoinFull": "Login and Join",
+    "hasAccount": "Already have an account?",
+    "noAccountQuestion": "Don't have an account?",
+    "joinWithoutLogin": "Join without login",
+    "checkingSession": "Checking session info..."
+  },
+  "session": {
+    "notFound": "Session not found",
+    "notFoundDescription": "The invitation link has expired or is invalid.\nPlease request a new link from the host.",
+    "expiredLink": "The link has expired or is invalid",
+    "host": "Host",
+    "guest": "Guest",
+    "hostRole": "Session Host",
+    "guestRole": "Session Guest",
+    "code": "Code",
+    "participants": "Participants",
+    "currentParticipants": "Current Participants",
+    "participantCount": "{{count}} participating",
+    "participantCountSimple": "{{count}}"
+  },
+  "sessionCreate": {
+    "title": "Create New Session",
+    "password": "Session Password",
+    "passwordPlaceholder": "Enter password...",
+    "passwordHint": "Auto-generated password. You can modify it.",
+    "allowGuest": "Allow Guest Mode",
+    "allowGuestHint": "Users without login can join directly via invitation link.",
+    "createButton": "Create Session",
+    "creating": "Creating..."
+  },
+  "sessionJoin": {
+    "title": "Join Session",
+    "welcome": "Join a Session",
+    "code": "Session Code",
+    "codePlaceholder": "ABC123",
+    "password": "Session Password",
+    "passwordOptional": "(if required)",
+    "passwordRequired": "Password is required.",
+    "joinButton": "Join",
+    "joining": "Joining...",
+    "checking": "Checking...",
+    "autoConnecting": "Auto-connecting via invite link...",
+    "otherCode": "Join with different code"
+  },
+  "sessionReconnect": {
+    "title": "Previous session disconnected",
+    "message": "Session code <code>{{code}}</code> has <bold>{{count}}</bold> participants.",
+    "reconnectButton": "Reconnect",
+    "reconnecting": "Reconnecting...",
+    "dismissButton": "Dismiss"
+  },
+  "sessionMenu": {
+    "copyCode": "Copy Session Code",
+    "copyLink": "Copy Invite Link",
+    "endSession": "End Session",
+    "leaveSession": "Leave Session"
+  },
+  "participant": {
+    "host": "Host",
+    "guest": "Guest",
+    "viewing": "Viewing",
+    "offline": "Offline",
+    "promoteToHost": "Promote to Host",
+    "demoteToGuest": "Demote to Guest",
+    "copyCode": "Copy Code",
+    "copyLink": "Copy Link",
+    "kick": "Remove",
+    "kickConfirm": "Remove {{name}} from the session?",
+    "kickedMessage": "You have been removed from the session.",
+    "spotlightShare": "Share as Spotlight"
+  },
+  "invite": {
+    "title": "Invite Participants",
+    "subtitle": "Participants can join via the invite link",
+    "copyLink": "Copy Link",
+    "hidePrompt": "Don't show this invitation prompt again?"
+  },
+  "lobby": {
+    "welcome": "Welcome!",
+    "welcomeDescription": "Start a new session or\njoin an ongoing session.",
+    "newSession": "Create New Session",
+    "newSessionDescription": "Become a host and start a class or meeting. Invite participants with the invite link.",
+    "joinSession": "Join",
+    "joinSessionDescription": "Enter the shared session code to join an ongoing activity."
+  },
+  "description": {
+    "title": "Unleash your",
+    "titleHighlight": "ideas",
+    "titleSuffix": " on a digital canvas",
+    "subtitle": "NeoCAST is the ultimate platform for real-time collaboration and writing sharing. Join now and experience a new world of creation.",
+    "subtitleLogin": "NeoCAST is the ultimate platform for real-time collaboration and writing sharing. Login now and experience a new world of creation.",
+    "featurePen": "Smartpen & Touch Input",
+    "featureCollab": "Real-time Collaboration"
+  },
+  "canvas": {
+    "lock": "Lock",
+    "noPages": "No pages yet",
+    "addPage": "Add Page",
+    "deletePage": "Delete Page",
+    "mouse": "Mouse",
+    "owned": "Owned",
+    "notOwned": "Not owned",
+    "undo": "Undo",
+    "redo": "Redo",
+    "clearPage": "Clear Page",
+    "clearConfirm": "Clear all strokes on this page?",
+    "clear": "Clear",
+    "active": "Active",
+    "noPage": "No Page",
+    "clickToActivate": "Click to activate",
+    "addPageButton": "Add Page",
+    "spotlightView": "Spotlight View",
+    "gridView": "Grid View",
+    "spotlightSharing": "Spotlight Sharing",
+    "stopSpotlightShare": "Stop Spotlight Share"
+  },
+  "page": {
+    "lock": "Lock",
+    "noPagesYet": "No pages yet",
+    "addPage": "Add Page",
+    "addPageTooltip": "Add a new page",
+    "deletePage": "Delete Page",
+    "owned": "Owned",
+    "notOwned": "Not owned",
+    "mouse": "Mouse"
+  },
+  "toolbar": {
+    "undo": "Undo",
+    "redo": "Redo",
+    "clearPage": "Clear Page",
+    "clearConfirm": "Clear all strokes on this page?"
+  },
+  "grid": {
+    "reorder": "Reorder",
+    "autoLayout": "Auto Layout",
+    "changeGrid": "Change Grid"
+  },
+  "pen": {
+    "notAvailable": "Pen N/A",
+    "connecting": "Connecting...",
+    "authenticating": "Authenticating...",
+    "ready": "Pen Ready",
+    "connect": "Connect",
+    "title": "NeoSmartpen",
+    "webBluetoothNotSupported": "Web Bluetooth is not supported in this browser. Please use Chrome, Edge, or Opera.",
+    "connectedReady": "Connected & Ready",
+    "connectedAuth": "Connected (Authenticating...)",
+    "disconnected": "Disconnected",
+    "device": "Device:",
+    "mac": "MAC:",
+    "battery": "Battery:",
+    "page": "Page:",
+    "passwordProtected": "Pen is password protected.",
+    "attempt": "(Attempt {{current}}/{{max}})",
+    "enterPassword": "Enter password",
+    "disconnectButton": "Disconnect",
+    "connectButton": "Connect Pen",
+    "logs": "Logs",
+    "clear": "Clear",
+    "noLogs": "No logs",
+    "penSettings": "Pen Settings",
+    "paperSize": "Paper Size",
+    "penType": "Pen Type",
+    "pen": "Pen",
+    "highlighter": "Highlighter",
+    "eraser": "Eraser",
+    "color": "Color",
+    "thickness": "Thickness",
+    "fine": "Fine",
+    "medium": "Medium",
+    "thick": "Thick",
+    "bold": "Bold"
+  },
+  "language": {
+    "select": "Select Language",
+    "current": "Current Language"
+  },
+  "controlBar": {
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "muteTip": "Click to mute",
+    "unmuteTip": "Click to unmute",
+    "penOn": "Pen On",
+    "penOff": "Pen Off",
+    "penOnTip": "Drawing enabled",
+    "penOffTip": "Drawing disabled",
+    "smartpen": "Smart pen",
+    "stylusOn": "Touch",
+    "stylusOff": "Touch",
+    "stylusPaused": "Paused",
+    "stylusOnTip": "Touch input enabled",
+    "stylusOffTip": "Touch input disabled",
+    "stylusPausedTip": "Touch paused while CMD/CTRL key is pressed",
+    "upload": "Upload",
+    "uploadTip": "Upload document",
+    "participants": "People",
+    "participantsTip": "View participants",
+    "chat": "Chat",
+    "chatTip": "Open chat",
+    "messenger": "Messenger",
+    "messengerTip": "Open messenger",
+    "settings": "Settings",
+    "settingsTip": "Open settings",
+    "more": "More",
+    "moreTip": "More options",
+    "about": "About",
+    "pages": "Pages",
+    "pagesTip": "View pages",
+    "myMaterials": "My Files",
+    "myMaterialsTip": "View my materials",
+    "sessionHostTip": "You are the host",
+    "sessionGuestTip": "You are a guest",
+    "leave": "Leave",
+    "leaveTip": "Leave session",
+    "endSession": "End",
+    "endSessionTip": "End session"
+  },
+  "chat": {
+    "title": "Chat",
+    "placeholder": "Type a message...",
+    "send": "Send",
+    "noMessages": "No messages yet"
+  },
+  "messenger": {
+    "title": "Messenger",
+    "offline": "Offline",
+    "noMessages": "No messages yet",
+    "startDm": "Send a direct message!",
+    "placeholder": "Type a message...",
+    "typing": "Typing...",
+    "loadMore": "Load older messages",
+    "selectFriend": "Select a friend",
+    "selectFriendHint": "to start a conversation",
+    "selectThread": "Select a conversation",
+    "selectThreadHint": "to continue messaging",
+    "startMessageHint": "Select a friend to start a conversation",
+    "noMessageYet": "No messages yet",
+    "tabs": {
+      "friends": "Friends",
+      "messages": "Messages"
+    },
+    "friends": {
+      "online": "Online",
+      "offline": "Offline",
+      "busy": "Busy",
+      "away": "Away",
+      "addFriend": "Add Friend",
+      "searchPlaceholder": "Search by email...",
+      "userNotFound": "User not found",
+      "alreadyFriends": "Already friends",
+      "noFriends": "No friends yet",
+      "addFriendHint": "Add friends to start messaging"
+    },
+    "requests": {
+      "title": "Friend Requests",
+      "accept": "Accept",
+      "reject": "Reject",
+      "pending": "Pending"
+    },
+    "relations": {
+      "friend": "Friend",
+      "teacher": "Teacher",
+      "student": "Student",
+      "parent": "Parent",
+      "child": "Child"
+    },
+    "time": {
+      "today": "Today",
+      "yesterday": "Yesterday"
+    },
+    "session": "Session",
+    "sessionChat": "Session Chat",
+    "sessionChatReadOnly": "This is a session chat history. To send messages, join the session."
+  },
+  "settings": {
+    "title": "Settings",
+    "general": "General",
+    "display": "Display",
+    "audio": "Audio",
+    "language": "Language",
+    "theme": "Theme",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "themeSystem": "System"
+  },
+  "leave": {
+    "title": "Leave Session",
+    "confirmMessage": "Are you sure you want to leave this session?",
+    "confirmEndMessage": "Are you sure you want to end this session? All participants will be disconnected.",
+    "leaveButton": "Leave",
+    "endButton": "End Session",
+    "cancelButton": "Cancel"
+  },
+  "pages": {
+    "title": "Pages",
+    "addPage": "Add Page",
+    "deletePage": "Delete Page",
+    "pageNumber": "Page {{number}}",
+    "totalPages": "{{total}} pages"
+  },
+  "pdf": {
+    "title": "PDF Document",
+    "upload": "Upload PDF",
+    "uploading": "Uploading...",
+    "processing": "Processing...",
+    "error": "Failed to load PDF"
+  },
+  "myPapers": {
+    "title": "My Materials",
+    "upload": "Upload",
+    "recent": "Recent",
+    "all": "All",
+    "empty": "No materials yet"
+  },
+  "about": {
+    "title": "About",
+    "version": "Version",
+    "copyright": "Copyright",
+    "license": "Licence"
+  },
+  "voice": {
+    "micPermissionDenied": "Microphone permission denied. Please allow access in browser settings.",
+    "micError": "Failed to access microphone.",
+    "noDevices": "No microphone detected",
+    "noSpeakers": "System Default",
+    "testMicrophone": "Test Microphone",
+    "testSpeaker": "Test Speaker",
+    "micTesting": "Recording... (3 sec)",
+    "speakerTesting": "Playing...",
+    "transmitNotAllowed": "Microphone is disabled by the host."
+  },
+  "printSettings": {
+    "title": "Print Settings",
+    "orientation": "Orientation",
+    "portrait": "Portrait",
+    "landscape": "Landscape",
+    "paperSize": "Paper Size",
+    "quality": "Quality",
+    "print": "Print"
+  }
+}

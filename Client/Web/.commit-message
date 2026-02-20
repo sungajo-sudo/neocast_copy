@@ -1,0 +1,18 @@
+feat: 초대 배너, 로고 리디자인, 다중 호스트 지원
+
+- 호스트 혼자일 때 참가자 초대 배너 표시
+  - 링크 복사 버튼, 닫기 버튼, 10회 닫기 시 영구 비활성화
+  - 반응형 디자인 (700px, 380px 브레이크포인트)
+- NeoCAST 로고 리디자인
+  - 그라데이션 텍스트 (Neo: 파랑→보라, CAST: 회색)
+  - 연결 상태 도트 (녹색/빨간색, ping 애니메이션)
+- 반응형 UI 개선
+  - 참가자 목록, 페이지 네비게이션 브레이크포인트 md→xl
+  - 세션 배지 반응형 개선
+- 호스트 재연결 및 다중 호스트 지원
+  - HOST_DISCONNECTED, HOST_RECONNECTED 이벤트
+  - 호스트 승격/강등 기능
+- 그리드 뷰 새로고침 버그 수정
+- PAGE_ADD에 ownerUserId 추가
+
+Co-Authored-By: Claude Opus 4.5 <noreply@anthropic.com>

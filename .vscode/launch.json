@@ -1,0 +1,57 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Server: Attach",
+      "type": "node",
+      "request": "attach",
+      "port": 9229,
+      "restart": true,
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"]
+    },
+    {
+      "name": "Client/Web: Debug in Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:7190",
+      "webRoot": "${workspaceFolder}/Client/Web/src",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "/*": "${workspaceFolder}/Client/Web/*"
+      }
+    },
+    {
+      "name": "Admin UI: Debug in Chrome",
+      "type": "chrome",
+      "request": "launch",
+      "url": "http://localhost:5173",
+      "webRoot": "${workspaceFolder}/Server/admin-ui/src",
+      "sourceMaps": true,
+      "sourceMapPathOverrides": {
+        "/*": "${workspaceFolder}/Server/admin-ui/*"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Full Stack Debug",
+      "configurations": ["Server: Attach", "Client/Web: Debug in Chrome"],
+      "preLaunchTask": "Start All Dev Servers",
+      "stopAll": true,
+      "presentation": {
+        "order": 1,
+        "group": "fullstack"
+      }
+    },
+    {
+      "name": "Admin + Server Debug",
+      "configurations": ["Server: Attach", "Admin UI: Debug in Chrome"],
+      "preLaunchTask": "Start Admin Dev Servers",
+      "stopAll": true,
+      "presentation": {
+        "order": 2,
+        "group": "fullstack"
+      }
+    }
+  ]
+}

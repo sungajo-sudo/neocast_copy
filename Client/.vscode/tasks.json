@@ -1,0 +1,54 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "PenStreamClient Web: Install",
+      "type": "npm",
+      "script": "install",
+      "path": "Web",
+      "problemMatcher": [],
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared"
+      }
+    },
+    {
+      "label": "PenStreamClient Web: Dev",
+      "type": "npm",
+      "script": "dev",
+      "path": "Web",
+      "problemMatcher": [],
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated"
+      }
+    },
+    {
+      "label": "PenStreamClient Web: Build",
+      "type": "npm",
+      "script": "build",
+      "path": "Web",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": ["$tsc"]
+    },
+    {
+      "label": "PenStreamClient Web: Preview",
+      "type": "npm",
+      "script": "preview",
+      "path": "Web",
+      "problemMatcher": [],
+      "isBackground": true
+    },
+    {
+      "label": "PenStreamClient Web: Lint",
+      "type": "npm",
+      "script": "lint",
+      "path": "Web",
+      "problemMatcher": ["$eslint-stylish"]
+    }
+  ]
+}

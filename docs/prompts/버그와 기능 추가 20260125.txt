@@ -1,0 +1,134 @@
+
+<div>     // 가운데의 콘텐츠 부분
+<aside />   // 왼쪽의 사이드바
+<main />    // 실제 콘텐츠
+<aside />   // 오른쪽의 사이드바
+</div>
+
+에서 오른쪽 사이드바는 100% 높이를 가지는데, 왼쪽의 사이드바는 높이가 "가운데의 콘텐츠 부분"의 100% 높이가 아니다.
+
+그리고 줌 팩터를 나타내는 100% Lock이 가운테 콘텐츠 부분의 오른쪽 아래에 있어야 하는데, "실제 콘텐츠"부분의 오른쪽 아래에 있어서, 오른쪽 사이드바가 열리면 zoom factor의 위치가 달라지는 문제가 있다.
+
+"채팅으로 공유되었습니다" 라는 메시지가 토스트로 나와야 하는데, window.alert()로 나오고 있다. 토스트로 나오도록 바꾸자.
+===
+
+
+
+<header ...>의 세로 padding이 8px인데, 이것을 4px 정도로 낮추자. 그래야 화면을 좀더 크게 쓸 수 있겠다. 그리고 아래쪽에 있는 버튼 리스트는 기본 크기는 60 x 60 으로 하고, 축소되었을 때에는 아이콘과 뱃지만 표시되는데, 32 x 32로 하자. 기본 상태에서 모두를 표시하지 못하는 상태가 되면 (폭이 줄어들면) 축소 사이즈로 표시하도록 해라.
+
+
+아래쪽의 "터치 켜짐(꺼짐)" 버튼은, 맥에서는 CMD, 윈도에서는 CTRL이 눌려진 상태에서는 자동으로 터치 꺼짐이 된다. 왜냐면, CMD+Mouse drag는 펜으로 그리지는 못하고 canvas를 옮기는 일을 하고, CMD+Wheel은 줌인/줌아웃을 하기 때문이다. 그래서 이 상태에서는 터치가 꺼져 있어야 한다. 윈도우에서도 마찬가지로 CTRL+Mouse drag는 canvas를 옮기는 일이고, CTRL+Wheel은 줌인/줌아웃이기 때문이다. 따라서 CMD나 CTRL이 눌려진 상태에서는 자동으로 터치가 꺼지도록 하자. 키보드가 없는 단말에서는 이 버튼을 직접 눌러 ON/OFF 상태를 고정하도록 한다. 버튼을 눌러 OFF된 상태에서도 CMD나  CTRL이 눌려지면 터치는 꺼지도록 한다, 그리고 CMD나 CTRL이 떼어지면 ON 상태로 돌아오게 한다.
+
+---
+
+스마트펜을 통해서 필기가 들어온 경우 (SOBP가 있는 경우)에는 배경을 nc-paperhub에서 가져와야 한다. SOBP@host(SOBP와 호스트명)을 가지고, nc-paperhub에 질의하고, nproj와 pdf를 가져와서 용지 크기를 설정하고, 페이지 배경이 표시되어야 한다. 지금 "내 자료"에는 5.255.0.804가 있는데, 배경이 제대로 표시되고 있지 않다. 이 문제를 해결하자.
+--
+
+호스트는 스마트펜의 입력을 원하는 게스트에도 입력할 수 있도록 한다. 이 때에는 선택된 게스트의 입력으로 들어가도록 한다. 그러기 위해서는 다음의 몇가지를 수정하자. 1) 메인에서 선택된(그러니까
+  Active된) 게스트(또는 호스트)의 캔버스와 연동되게 참가자 리스트의 파란 박스도 표시해 주라. 2) 스마트펜의 입력을 받는 캔버스를 명확하게 표시하기 위해서, 스마트펜의 아이콘을 캔버스에도 참가자
+  리스트에도 표시하자. 3) 참가자 리스트의 ... 메뉴에서 스마트펜 입력을 선택할 수 있도록 "스마트펜 입력"의 메뉴가 있도록 하자. 4) 호스트가 손쉽게 자신의 캔버스로 스마트펜의 입력을 돌리기 위해서,
+  참가자 리스트의 위쪽 아이콘 메뉴에 스마트펜 입력 캔버스 되돌리기의 아이콘을 만들자. 5) 호스트가 게스트의 캔버스에 스마트펜의 입력으로 획을 그릴 때에는 기본 색상은 "빨간색"의 "펜"으로 한다.
+  게스트의 이름 옆에 있는 스마트펜버튼(활성화 되어 있건 아니건)을 눌러서 색상을 변경할 수 있는 팔레트 팝업 메뉴가 뜨도록 한다. 이 메뉴가 화면 밖으로 나가서는 안된다.
+  --
+
+  화면 상단의 header의 NeoCAST가 표시되는 부분의 뒤에 서버 연결을 나타내는 원(연결되면 녹색, 연결 안되면 빨간색)이 있는데, 그 원을 없애주라. 대신 서버에 연결되면 NeoCAST 라는 글자에서 Neo의 그라데이션이 왼쪽에서 오른쪽으로 계속 흐르는 느낌으로 바꿔주라. 서버 연결이 안되면 그 애니메이션은 기본 상태로 멈춘다.
+--
+
+이제 메신저를 구현하자. 메신저는 그림에 그린대로, 오른쪽의 버튼 탭(빨간색)이 (친구)와 (메시지)로 나눠지고, 그 오른쪽의 패널(녹색 부분)에는 친구 리스트와 메시지 리스트가 표시된다. 친구 리스트에는 친구의 상태 (온라인, 오프라인, 바쁨 등)가 표시되고, 메시지 리스트에는 최근 메시지들이 표시된다. 친구를 클릭하면 그 친구와의 대화창이 열리고, (메시지) 버튼탭이 선택된 상태가 된다. 채팅을 입력한 경우에는 (메시지) 버튼탭에 채팅yyyy-mm-dd hhmmss의 형식으로 채팅의 최종 시간이 표시되어 이전에 채팅했던 사람들에게 메시지를 보낼 수 있도록 한다. 메신저의 메시지가 선택된 상태에서는 (파란색)의 ...버튼을 누르면 참가자들의 리스트가 나오고, 친구를 추가할 수도 있다.
+
+친구 리스트를 관리하기 위해서 DB의 table을 더 추가설계해야 할 수도 있겠네. 친구와의 관계는 친구, 선생, 학생, 부모, 자녀 의 관계가 플래그로 설치될 수 있다. 즉, A 라는 유저는 B에 대해 부모이면서 학생일수도 있다. 그리고 자신의 친구를 그룹으로도 묶을 수 있게 친구 그룹의 컬럼도 있어야 하겠네.
+--
+
+세션에서 생성된 채팅에서 채팅의 내용이 있으면, 그 대화방의 내용도 메신저의 대화 목록에서 불러올 수 있도록 메신저의 대화 DB에 저장되도록 한다. 대화 내용도 저장되어야 한다.
+---
+
+
+친구 요청을 수락했는데, 서버 에러를 내고 수락이 안되어 있는 상태이다.
+
+**클라이언트 로그**
+friend-service.ts:164   POST http://localhost:8190/api/friends/requests/1c6f5851-a6e3-4d7d-819d-f69757e92781/accept 500 (Internal Server Error)
+acceptRequest @ friend-service.ts:164
+handleAcceptRequest @ FriendList.tsx:98
+onClick @ FriendList.tsx:332
+executeDispatch @ react-dom-client.development.js:19116
+runWithFiberInDEV @ react-dom-client.development.js:871
+processDispatchQueue @ react-dom-client.development.js:19166
+(anonymous) @ react-dom-client.development.js:19767
+batchedUpdates$1 @ react-dom-client.development.js:3255
+dispatchEventForPluginEventSystem @ react-dom-client.development.js:19320
+dispatchEvent @ react-dom-client.development.js:23585
+dispatchDiscreteEvent @ react-dom-client.development.js:23553
+<button>
+exports.jsxDEV @ react-jsx-dev-runtime.development.js:335
+(anonymous) @ FriendList.tsx:330
+FriendList @ FriendList.tsx:318
+react_stack_bottom_frame @ react-dom-client.development.js:25904
+renderWithHooksAgain @ react-dom-client.development.js:7762
+renderWithHooks @ react-dom-client.development.js:7674
+updateFunctionComponent @ react-dom-client.development.js:10166
+beginWork @ react-dom-client.development.js:11778
+runWithFiberInDEV @ react-dom-client.development.js:871
+performUnitOfWork @ react-dom-client.development.js:17641
+workLoopSync @ react-dom-client.development.js:17469
+renderRootSync @ react-dom-client.development.js:17450
+performWorkOnRoot @ react-dom-client.development.js:16504
+performSyncWorkOnRoot @ react-dom-client.development.js:18972
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:18814
+processRootScheduleInMicrotask @ react-dom-client.development.js:18853
+(anonymous) @ react-dom-client.development.js:18991
+<FriendList>
+exports.jsxDEV @ react-jsx-dev-runtime.development.js:335
+MessengerModal @ MessengerModal.tsx:168
+react_stack_bottom_frame @ react-dom-client.development.js:25904
+renderWithHooksAgain @ react-dom-client.development.js:7762
+renderWithHooks @ react-dom-client.development.js:7674
+updateFunctionComponent @ react-dom-client.development.js:10166
+beginWork @ react-dom-client.development.js:11778
+runWithFiberInDEV @ react-dom-client.development.js:871
+performUnitOfWork @ react-dom-client.development.js:17641
+workLoopSync @ react-dom-client.development.js:17469
+renderRootSync @ react-dom-client.development.js:17450
+performWorkOnRoot @ react-dom-client.development.js:16504
+performSyncWorkOnRoot @ react-dom-client.development.js:18972
+flushSyncWorkAcrossRoots_impl @ react-dom-client.development.js:18814
+processRootScheduleInMicrotask @ react-dom-client.development.js:18853
+(anonymous) @ react-dom-client.development.js:18991
+installHook.js:1  Failed to accept request: Error: Body cannot be empty when content-type is set to 'application/json'
+    at FriendService.handleResponse (friend-service.ts:42:13)
+    at async FriendService.acceptRequest (friend-service.ts:171:18)
+    at async handleAcceptRequest (FriendList.tsx:98:7)
+
+
+**서버 로그**
+[2026-01-25 21:51:54.471 +0900] ERROR: Unhandled error
+    err: {
+      "type": "FastifyError",
+      "message": "Body cannot be empty when content-type is set to 'application/json'",
+      "stack":
+          FastifyError: Body cannot be empty when content-type is set to 'application/json'
+              at Parser.defaultJsonParser [as fn] (/Users/kitty/work/NL-LIB/NeoCAST/Server/node_modules/fastify/lib/contentTypeParser.js:295:19)
+              at IncomingMessage.onEnd (/Users/kitty/work/NL-LIB/NeoCAST/Server/node_modules/fastify/lib/contentTypeParser.js:283:27)
+              at IncomingMessage.emit (node:events:519:28)
+              at endReadableNT (node:internal/streams/readable:1698:12)
+              at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+      "code": "FST_ERR_CTP_EMPTY_JSON_BODY",
+      "name": "FastifyError",
+      "statusCode": 400
+    }
+--
+
+1) 스마트펜 입력에 관한 UI 개선 사항
+게스트에만 [...] 메뉴가 있고, 그 안에 스마트펜 입력 토글이 있는데, 호스트에도 [...] 메뉴가 있고, 그 안에 스마트펜 입력 토글이 있도록 하자.
+스마트펜 입력이 될때 빨간색 펜 아이콘이 표시되는데, 스마트펜 입력이 아닌 사람들에게도 회색의 펜 아이콘이 그려지게 하자. 그 아이콘을 선택하면 펜 입력이 토글된다. 펜입력이 아무도 선택되지 않은 상태는 호스트로 스마트펜 입력이 들어간다.
+
+2) 설정 페이지의 개선 사항
+shimizu-demo-2026에 있는 설정 페이지의 "스마트펜"의 설정과, "Ncode 부여"에 대한 설정을 가져와서 추가한다.
+오디오 설정은 지금은 필요 없다. 일반 설정도 필요 없다.
+
+즉, shimizu-demo-2026의 설정 페이지를 거의 그대로 가져와서 구현해 주라.
+
+3) 오른쪽 사이드바의 너비 조정 추가
+오른쪽 사이드바도 왼쪽 사이드바 처럼, 너비를 조정할 수 있도록 하자.
+
+4) 사이드바 너비 조정된 값을 저장
+LocalStorage에 사이드바의 너비 조정된 값을 저장해서, 다음에 열었을 때에도 그 너비가 유지되도록 하자.

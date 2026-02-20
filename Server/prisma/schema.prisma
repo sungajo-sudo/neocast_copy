@@ -1,0 +1,338 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  isGuest      Boolean  @default(false) @map("is_guest")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  hostedSessions   Session[]          @relation("HostedSessions")
+  participants     Participant[]
+  ncodeAllocations NcodeAllocation[]
+  userPapers       UserPaper[]
+
+  // 친구 관계
+  friends      Friendship[] @relation("UserFriends")
+  friendOf     Friendship[] @relation("FriendOf")
+  friendGroups FriendGroup[]
+
+  // 친구 요청
+  sentRequests     FriendRequest[] @relation("SentRequests")
+  receivedRequests FriendRequest[] @relation("ReceivedRequests")
+
+  // DM
+  dmThreads1   DirectMessageThread[] @relation("ThreadUser1")
+  dmThreads2   DirectMessageThread[] @relation("ThreadUser2")
+  sentMessages DirectMessage[]       @relation("SentMessages")
+
+  @@map("users")
+}
+
+model Session {
+  id              String        @id @default(uuid())
+  code            String        @unique @db.VarChar(6)
+  passwordHash    String?       @map("password_hash")
+  inviteToken     String?       @map("invite_token") @db.VarChar(32)
+  hostId          String        @map("host_id")
+  status          SessionStatus @default(ACTIVE)
+  maxGuests       Int           @default(100) @map("max_guests")
+  allowGuestVoice Boolean       @default(true) @map("allow_guest_voice")
+  allowGuestMode  Boolean       @default(true) @map("allow_guest_mode")
+  autoArchive     Boolean       @default(true) @map("auto_archive")
+  linkedArchiveId String?       @map("linked_archive_id")
+  createdAt       DateTime      @default(now()) @map("created_at")
+  closedAt        DateTime?     @map("closed_at")
+
+  host         User          @relation("HostedSessions", fields: [hostId], references: [id])
+  participants Participant[]
+  strokes      Stroke[]
+  pages        Page[]
+  permissions  Permission[]
+  archive      Archive?
+  chatMessages SessionChatMessage[]
+
+  @@index([code])
+  @@index([hostId])
+  @@index([status])
+  @@map("sessions")
+}
+
+model Participant {
+  id        String          @id @default(uuid())
+  sessionId String          @map("session_id")
+  userId    String          @map("user_id")
+  role      ParticipantRole
+  joinedAt  DateTime        @default(now()) @map("joined_at")
+  leftAt    DateTime?       @map("left_at")
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([sessionId, userId])
+  @@index([sessionId])
+  @@index([userId])
+  @@map("participants")
+}
+
+model Stroke {
+  id          String   @id @default(uuid())
+  sessionId   String   @map("session_id")
+  userId      String   @map("user_id")
+  ownerUserId String   @map("owner_user_id")
+  // Ncode page address (section.owner.book.page)
+  section     Int      @default(1024) // 1024 = mouse input
+  owner       Int      @default(1)
+  book        Int      @default(1)
+  page        Int      @default(1)
+  color       BigInt
+  thickness   Float
+  penType     Int      @map("pen_type")
+  flags       Int      @default(0)
+  points      Bytes
+  timestamp   BigInt
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId])
+  @@index([sessionId, section, owner, book, page])
+  @@index([ownerUserId])
+  @@map("strokes")
+}
+
+model Page {
+  id          String   @id @default(uuid())
+  sessionId   String   @map("session_id")
+  ownerUserId String   @map("owner_user_id")
+  // Ncode page address (section.owner.book.page)
+  section     Int      @default(1024)
+  owner       Int      @default(1)
+  book        Int      @default(1)
+  page        Int      @default(1)
+  width       Float    @default(210) // mm
+  height      Float    @default(297) // mm
+  pageType    Int      @default(0) @map("page_type") // 0=blank, 1=lined, 2=grid, 3=dot
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, ownerUserId, section, owner, book, page])
+  @@index([sessionId])
+  @@index([sessionId, ownerUserId])
+  @@map("pages")
+}
+
+model Permission {
+  id        String @id @default(uuid())
+  sessionId String @map("session_id")
+  guestId   String @map("guest_id")
+  sourceId  String @map("source_id")
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, guestId, sourceId])
+  @@index([sessionId])
+  @@index([guestId])
+  @@map("permissions")
+}
+
+model Archive {
+  id                String   @id @default(uuid())
+  originalSessionId String   @unique @map("original_session_id")
+  hostId            String   @map("host_id")
+  totalStrokes      Int      @map("total_strokes")
+  totalPages        Int      @map("total_pages")
+  duration          Int
+  linkedPrevId      String?  @map("linked_prev_id")
+  data              Bytes
+  createdAt         DateTime @default(now()) @map("created_at")
+
+  session Session @relation(fields: [originalSessionId], references: [id])
+
+  @@index([hostId])
+  @@map("archives")
+}
+
+enum SessionStatus {
+  ACTIVE
+  PAUSED
+  CLOSED
+  ARCHIVED
+}
+
+enum ParticipantRole {
+  HOST
+  GUEST
+}
+
+// ============================================
+// NcPaperHub Models (이용자별 SOBP 관리)
+// ============================================
+
+/// 이용자별 NCode 할당 상태 추적
+model NcodeAllocation {
+  id           String @id @default(uuid())
+  userId       String @map("user_id")
+  section      Int    @default(5)
+  owner        Int    @default(255) // 255부터 감소
+  currentBook  Int    @default(0) @map("current_book")
+  nextPage     Int    @default(0) @map("next_page")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, section, owner])
+  @@index([userId])
+  @@map("ncode_allocations")
+}
+
+/// 이용자별 페이퍼 정보 (PDF + NPROJ)
+model UserPaper {
+  id           String   @id @default(uuid())
+  userId       String   @map("user_id")
+  paperGroupId String   @unique @map("paper_group_id")
+  sobKey       String   @map("sob_key") // "section.owner.book" 형식
+  title        String
+  section      Int
+  owner        Int
+  book         Int
+  pageStart    Int      @map("page_start")
+  pageEnd      Int      @map("page_end")
+  pageCount    Int      @map("page_count")
+  nprojXml     String   @map("nproj_xml") @db.Text
+  pdfPath      String   @map("pdf_path") // 파일 저장 경로
+  pdfSize      Int      @map("pdf_size") // 파일 크기 (bytes)
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([userId, sobKey])
+  @@index([sobKey])
+  @@index([sobKey, pageStart, pageEnd]) // SOBP 검색 최적화
+  @@map("user_papers")
+}
+
+// ============================================
+// Messenger Models (친구 관리 및 다이렉트 메시지)
+// ============================================
+
+/// 관계 플래그 비트마스크
+/// FRIEND=1, TEACHER=2, STUDENT=4, PARENT=8, CHILD=16
+model Friendship {
+  id            String       @id @default(uuid())
+  userId        String       @map("user_id")
+  friendId      String       @map("friend_id")
+  relationFlags Int          @default(1) @map("relation_flags")
+  groupId       String?      @map("group_id")
+  createdAt     DateTime     @default(now()) @map("created_at")
+
+  user   User         @relation("UserFriends", fields: [userId], references: [id], onDelete: Cascade)
+  friend User         @relation("FriendOf", fields: [friendId], references: [id], onDelete: Cascade)
+  group  FriendGroup? @relation(fields: [groupId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, friendId])
+  @@index([userId])
+  @@index([friendId])
+  @@map("friendships")
+}
+
+model FriendRequest {
+  id          String              @id @default(uuid())
+  fromUserId  String              @map("from_user_id")
+  toUserId    String              @map("to_user_id")
+  status      FriendRequestStatus @default(PENDING)
+  message     String?
+  createdAt   DateTime            @default(now()) @map("created_at")
+  respondedAt DateTime?           @map("responded_at")
+
+  fromUser User @relation("SentRequests", fields: [fromUserId], references: [id], onDelete: Cascade)
+  toUser   User @relation("ReceivedRequests", fields: [toUserId], references: [id], onDelete: Cascade)
+
+  @@unique([fromUserId, toUserId])
+  @@index([toUserId, status])
+  @@map("friend_requests")
+}
+
+enum FriendRequestStatus {
+  PENDING
+  ACCEPTED
+  REJECTED
+}
+
+model FriendGroup {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  name      String
+  color     String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  friendships Friendship[]
+
+  @@unique([userId, name])
+  @@map("friend_groups")
+}
+
+model DirectMessageThread {
+  id            String    @id @default(uuid())
+  participant1  String    @map("participant1_id")
+  participant2  String    @map("participant2_id")
+  lastMessageAt DateTime? @map("last_message_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  user1    User            @relation("ThreadUser1", fields: [participant1], references: [id], onDelete: Cascade)
+  user2    User            @relation("ThreadUser2", fields: [participant2], references: [id], onDelete: Cascade)
+  messages DirectMessage[]
+
+  @@unique([participant1, participant2])
+  @@index([participant1])
+  @@index([participant2])
+  @@map("dm_threads")
+}
+
+model DirectMessage {
+  id        String    @id @default(uuid())
+  threadId  String    @map("thread_id")
+  senderId  String    @map("sender_id")
+  content   String
+  metadata  String?   @db.Text
+  readAt    DateTime? @map("read_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  thread DirectMessageThread @relation(fields: [threadId], references: [id], onDelete: Cascade)
+  sender User                @relation("SentMessages", fields: [senderId], references: [id])
+
+  @@index([threadId, createdAt])
+  @@map("direct_messages")
+}
+
+// ============================================
+// Session Chat Models (세션 채팅 영구 저장)
+// ============================================
+
+/// 세션 채팅 메시지 저장
+model SessionChatMessage {
+  id        String   @id @default(uuid())
+  sessionId String   @map("session_id")
+  userId    String   @map("user_id")
+  userName  String   @map("user_name")
+  content   String
+  type      String   @default("message") // message, system, file
+  metadata  String?  @db.Text // JSON for attachments, etc.
+  createdAt DateTime @default(now()) @map("created_at")
+
+  session Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@map("session_chat_messages")
+}

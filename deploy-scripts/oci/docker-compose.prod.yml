@@ -1,0 +1,75 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-penstream}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required}
+      POSTGRES_DB: ${DB_NAME:-penstream}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-penstream}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    image: neocast-api:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8190:3000"
+    environment:
+      HOST: "0.0.0.0"
+      PORT: "3000"
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://${DB_USER:-penstream}:${DB_PASSWORD}@postgres:5432/${DB_NAME:-penstream}"
+      REDIS_URL: "redis://redis:6379"
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET is required}
+      CORS_ORIGINS: ${CORS_ORIGINS:-https://neocast.neolab.net,https://neocast-dev.neolab.net}
+      STORAGE_TYPE: oci
+      OCI_BUCKET_PREFIX: ${OCI_BUCKET_PREFIX:-neocast}
+      OCI_COMPARTMENT_ID: ${OCI_COMPARTMENT_ID}
+      OCI_REGION: ${OCI_REGION:-ap-seoul-1}
+      OCI_NAMESPACE: ${OCI_NAMESPACE:-}
+      OCI_TENANCY_ID: ${OCI_TENANCY_ID}
+      OCI_USER_ID: ${OCI_USER_ID}
+      OCI_FINGERPRINT: ${OCI_FINGERPRINT}
+      OCI_PRIVATE_KEY: ${OCI_PRIVATE_KEY}
+      OCI_PASSPHRASE: ${OCI_PASSPHRASE:-}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      NDP_LICENSE_KEY: ${NDP_LICENSE_KEY:-}
+      NDP_API_URL: ${NDP_API_URL:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  web:
+    image: neocast-web:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+
+  admin:
+    image: neocast-admin:latest
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8081:8080"
+
+volumes:
+  postgres_data:
+  redis_data:
