@@ -1,67 +1,67 @@
-# 🚀 NeoCast — Real-time Handwriting Collaboration Platform (Demo)
+# 🚀 NeoCast — 실시간 필기 협업 플랫폼 (데모 버전)
 
-This repository contains the **Demo Version** of NeoCast, optimized for showcasing real-time handwriting collaboration and remote annotation features.
+본 저장소는 실시간 필기 공유 및 원격 첨삭 기능을 시연하기 위해 최적화된 NeoCast의 **데모 버전**입니다.
 
-> **Note:** This project was developed and refined using **Anthropic's Claude Code (Agentic Coding AI)**.
+> **알림:** 이 프로젝트의 모든 설계, 로직 구현 및 UI 디자인은 **Anthropic의 Claude Code (에이전틱 AI)**를 통해 진행되었습니다.
 
 ---
 
-## 📌 Project Overview
+## 📌 프로젝트 개요
 
-NeoCast is a session-based collaboration platform designed for real-time education and feedback. This demo focuses on the **Annotation (Red-pen) Workflow**, allowing hosts to monitor multiple students simultaneously and provide direct feedback on their canvases.
+NeoCast는 실시간 교육과 피드백을 위한 세션 기반 협업 플랫폼입니다. 이번 데모 버전은 **첨삭(빨간펜) 워크플로우**에 집중하여, 호스트가 여러 학생의 화면을 동시에 모니터링하고 가상 캔버스 위에 실시간으로 피드백을 남기는 기능을 핵심적으로 보여줍니다.
 
-## ✨ Key Features (Implemented in Demo)
+## ✨ 핵심 기능 (데모 구현 완료)
 
-- **Real-time Stroke Sync**: Ultra-low latency handwriting synchronization using binary data and pako compression.
-- **Monitoring Mode**: A dashboard for hosts to view all connected students' screens in a live grid.
-- **Remote Annotation**: Hosts can enter a student's view and draw corrections (the "Red Pen" feature) which appear in real-time on the student's device.
-- **Simplified Session Entry**: Quick access via nickname and session code, removing complex auth hurdles for the demo.
-- **AI Analysis Preview**: Mock-up and UI implementation of student achievement reports based on session activity.
+- **실시간 스트로크 동기화**: Binary 데이터 전송 및 pako 압축을 통한 초저지연 필기 공유.
+- **모니터링 모드 (Dashboard)**: 접속된 모든 학생의 화면을 한눈에 볼 수 있는 실시간 그리드 뷰.
+- **원격 첨삭 (Red Pen)**: 호스트가 특정 학생의 캔버스에 진입하여 직접 빨간펜으로 첨삭하면 학생 화면에 실시간 노출.
+- **간편 세션 입장**: 별도의 복잡한 인증 없이 닉네임과 세션 코드만으로 즉시 참여 가능.
+- **AI 학습 분석 프리뷰**: 세션 활동 데이터를 기반으로 한 학생별 성취도 리포트 UI 및 결과 분석 기능.
 
-## 🛠 Tech Stack
+## 🛠 기술 스택
 
 - **Frontend**: React, TypeScript, Vite
 - **Backend**: Node.js, Socket.IO
 - **Communication**: Socket.IO (Namespaces: `/stroke`, `/control`)
-- **Data Compression**: Pako (zlib) for binary handwriting data
-- **Styling**: Modern, premium CSS with rich aesthetics and responsive layouts
+- **Data Compression**: Pako (zlib)를 이용한 바이너리 필기 데이터 압축
+- **Styling**: 모던하고 프리미엄한 디자인의 Vanilla CSS (다크 모드 및 글래스모피즘 적용)
 
-## 🚀 Getting Started
+## 🚀 시작하기
 
-The demo is designed to be easy to run in a local environment.
+데모는 로컬 환경에서 간편하게 실행할 수 있도록 설계되었습니다.
 
-### Prerequisites
+### 사전 준비 사항
 
-- Node.js (v18 or higher recommended)
-- npm or yarn
+- Node.js (v18 이상 권장)
+- npm 또는 yarn
 
-### Quick Start
+### 빠른 실행 방법
 
-Run the following command in the root directory:
+루트 디렉토리에서 아래 명령어를 실행하세요:
 
 ```bash
 sh demo-start.sh
 ```
 
-This script will simultaneously start:
-- **Server**: [http://localhost:3001](http://localhost:3001)
-- **Client**: [http://localhost:3000](http://localhost:3000)
+이 스크립트는 다음 기능을 동시에 실행합니다:
+- **서버 (Backend)**: [http://localhost:3001](http://localhost:3001)
+- **클라이언트 (Frontend)**: [http://localhost:3000](http://localhost:3000)
 
-## 📂 Repository Structure (dev branch)
+## 📂 저장소 구조 (dev 브런치)
 
-- `/client`: React application containing the monitoring views, canvases, and student reports.
-- `/server`: Node.js server handling socket connections and session state in-memory.
-- `demo-start.sh`: Shell script for one-click startup.
-
----
-
-## 🤖 Developed with Claude Code
-
-The entire structure, implementation of real-time logic, and the premium UI design of this demo were orchestrated by **Claude Code**. 
-- **Automated Implementation**: Rapid prototyping of complex features like binary stroke handling.
-- **Design Excellence**: Curated color palettes and smooth animations for a premium user experience.
-- **Integrated Environment**: Seamless development from plan to deployment.
+- `/client`: 모니터링 뷰, 캔버스, 학생 리포트 등을 포함한 React 애플리케이션.
+- `/server`: 세션 상태를 관리하고 소켓 연결을 처리하는 Node.js 서버.
+- `demo-start.sh`: 원클릭 실행을 위한 쉘 스크립트.
 
 ---
 
-**Branch Info:** This is the `dev` branch. `main` is reserved for stable releases.
+## 🤖 Claude Code와 함께한 개발 프로세스
+
+이 데모의 전체 구조와 실시간 로직, 그리고 프리미엄 UI 디자인은 **Claude Code**의 가이드에 따라 구축되었습니다.
+- **자동화된 구현**: 바이너리 스트로크 처리와 같은 복잡한 로직의 신속한 프로토타이핑.
+- **디자인 엑설런스**: 사용자 경험을 극대화하는 세련된 컬러 팔레트와 부드러운 애니메이션 적용.
+- **통합된 개발 환경**: 기획부터 코드 작성, 테스트까지 일관된 컨텍스트 유지.
+
+---
+
+**브런지 정보:** 현재 보시는 브런치는 `dev`입니다. `main` 브런치는 안정 버전 릴리즈를 위해 예약되어 있습니다.
