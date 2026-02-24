@@ -117,15 +117,17 @@ NeoCAST 호스트 홈
 
 ### 작업 세션 분리 계획
 
-| 세션 | 목표 | 구현 방식 |
-|------|------|----------|
-| **Session 1** | 호스트 홈 — 세션 목록 탭 | 목업 데이터 + Room API 연결 |
-| **Session 2** | 호스트 홈 — 수업 결과 탭 + AI 리포트 화면 (FLOW 8) | 목업 데이터만 (차트 포함) |
-| **Session 3** | 게스트 입장(/join) + 대기(/waiting) | Room API 연결 + 폴링 |
-| **Session 4** | 버그 수정 — 학생 필기 미전송 / 입장 미표시 | 소켓 이벤트 디버깅 |
-| **Session 5** | 로그인 화면 추가 | 선생님/학생 선택 버튼 2개 |
-| **Session 6** | 세션 입장 UI 개선 | 코드+링크+비밀번호 입력 |
-| **Session 7** | 결과 화면 PDF 다운로드 | jsPDF + html2canvas |
+| 세션 | 목표 | 구현 방식 | 상태 |
+|------|------|----------|------|
+| **Session 1** | 호스트 홈 — 세션 목록 탭 | 목업 데이터 + Room API 연결 | ✅ 완료 |
+| **Session 2** | 호스트 홈 — 수업 결과 탭 + AI 리포트 화면 (FLOW 8) | 목업 데이터만 (차트 포함) | ✅ 완료 |
+| **Session 3** | 게스트 입장(/join) + 대기(/waiting) | Room API 연결 + 폴링 | ✅ 완료 |
+| **Session 4** | 버그 수정 — 학생 필기 미전송 / 입장 미표시 | 소켓 이벤트 디버깅 | ⬜ 미확인 |
+| **Session 5** | 로그인 화면 추가 | 선생님/학생 선택 버튼 2개 | ✅ 완료 |
+| **Session 6** | 세션 입장 UI 개선 | 코드+링크+비밀번호 입력 | ✅ 완료 |
+| **Session 7** | 결과 화면 PDF 다운로드 | jsPDF + html2canvas | ✅ 완료 |
+| **Session 8-1** | 게스트 캔버스 — 펜/형광펜/지우개 툴바 | B안: 로컬 state + demoStrokeStore 어댑터 | ✅ 완료 |
+| **Session 8-2** | 호스트 모니터링 뷰 + 컨트롤바 | 툴바/펜도구/하단 컨트롤바 추가 | ⬜ 미완료 |
 
 ### Session별 시작 프롬프트
 
@@ -205,6 +207,26 @@ ReportDetail.tsx 학생 목록 각 행에 [PDF 다운로드] 버튼 추가해줘
 - 파일명: {학생이름}_{세션명}_{회차}.pdf
 끝나면 멈추고 기다려줘.
 ```
+
+Session 8-1 진행해줘.
+
+neocast_copy-main의 판서 화면을 demo로 이식할 건데 단계별로 나눠서 할 거야.
+
+8-1 목표: 게스트 캔버스부터
+- neocast_copy-main의 components/canvas/ 파일들 확인해서
+- demo GuestCanvas.tsx를 펜 색상/굵기 선택, 지우개 있는 버전으로 교체
+- store는 B안 — 기존 demo store 유지, 어댑터로 연결
+- 서버 URL http://localhost:7191/demo 유지
+- 다른 파일 건드리지 말고 GuestCanvas.tsx 하나만
+끝나면 멈추고 기다려줘.
+
+Session 8-2 진행해줘.
+
+8-2 목표: 호스트 모니터링 뷰 + 컨트롤바
+- neocast_copy-main의 MonitoringView, ControlBar 이식
+- 툴바, 펜 도구, 하단 컨트롤바 추가
+- 서버 URL http://localhost:7191/demo 유지
+끝나면 멈추고 기다려줘.
 
 ---
 

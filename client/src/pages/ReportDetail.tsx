@@ -1,4 +1,7 @@
+import { useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import html2canvas from 'html2canvas';
 import watercolorBg from '../assets/watercolor-bg.png';
 
 interface Student {
@@ -80,6 +83,29 @@ export default function ReportDetail() {
     const { archiveId } = useParams<{ archiveId: string }>();
     const r = MOCK_REPORT;
 
+    const [generatingPdf, setGeneratingPdf] = useState<string | null>(null);
+    const [pdfStudent, setPdfStudent] = useState<Student | null>(null);
+    const pdfRef = useRef<HTMLDivElement>(null);
+
+    async function downloadPdf(student: Student) {
+        setGeneratingPdf(student.id);
+        setPdfStudent(student);
+        await new Promise(resolve => setTimeout(resolve, 150));
+        if (!pdfRef.current) { setGeneratingPdf(null); setPdfStudent(null); return; }
+        try {
+            const canvas = await html2canvas(pdfRef.current, { scale: 2, backgroundColor: '#ffffff', useCORS: true });
+            const imgData = canvas.toDataURL('image/png');
+            const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+            const pdfW = pdf.internal.pageSize.getWidth();
+            const pdfH = (canvas.height * pdfW) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pdfW, pdfH);
+            pdf.save(`${student.name}_${r.sessionName}_${r.round}회차.pdf`);
+        } finally {
+            setGeneratingPdf(null);
+            setPdfStudent(null);
+        }
+    }
+
     return (
         <div className="h-screen flex flex-col overflow-hidden font-sans relative">
             {/* Watercolor BG */}
@@ -148,6 +174,7 @@ export default function ReportDetail() {
                                         <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500">첨삭수</th>
                                         <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500">참여도</th>
                                         <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500">상세</th>
+                                        <th className="text-center px-4 py-3 text-xs font-semibold text-gray-500">PDF</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -188,6 +215,15 @@ export default function ReportDetail() {
                                                     보기
                                                 </button>
                                             </td>
+                                            <td className="text-center px-4 py-3.5">
+                                                <button
+                                                    onClick={() => downloadPdf(s)}
+                                                    disabled={generatingPdf === s.id}
+                                                    className="px-3 py-1.5 text-xs font-semibold bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors border border-red-100 disabled:opacity-50 disabled:cursor-wait"
+                                                >
+                                                    {generatingPdf === s.id ? '생성 중...' : '⬇ PDF'}
+                                                </button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -197,6 +233,85 @@ export default function ReportDetail() {
 
                 </div>
             </main>
+
+            {/* ─── 숨겨진 PDF 렌더링 영역 ─── */}
+            {pdfStudent && (
+                <div
+                    ref={pdfRef}
+                    style={{
+                        position: 'fixed',
+                        top: '-9999px',
+                        left: '-9999px',
+                        width: '794px',
+                        backgroundColor: '#ffffff',
+                        fontFamily: 'system-ui, -apple-system, sans-serif',
+                        padding: '48px',
+                        boxSizing: 'border-box',
+                    }}
+                >
+                    {/* 헤더 */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px', borderBottom: '2px solid #e5e7eb', paddingBottom: '20px' }}>
+                        <div>
+                            <div style={{ fontSize: '22px', fontWeight: 800, color: '#1e40af' }}>NeoCAST</div>
+                            <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>수업 결과 리포트</div>
+                        </div>
+                        <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontSize: '14px', fontWeight: 700, color: '#374151' }}>{r.sessionName}</div>
+                            <div style={{ fontSize: '12px', color: '#6b7280', marginTop: '4px' }}>{r.round}회차 · {r.date}</div>
+                        </div>
+                    </div>
+
+                    {/* 학생 이름 */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '28px' }}>
+                        <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: 'linear-gradient(135deg, #60a5fa, #a855f7)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '22px', fontWeight: 800 }}>
+                            {pdfStudent.name.charAt(0)}
+                        </div>
+                        <div>
+                            <div style={{ fontSize: '20px', fontWeight: 800, color: '#111827' }}>{pdfStudent.name}</div>
+                            <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '2px' }}>개인 수업 리포트</div>
+                        </div>
+                    </div>
+
+                    {/* 통계 카드 4개 */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '28px' }}>
+                        {[
+                            { label: '참여 시간', value: `${pdfStudent.durationMin}분` },
+                            { label: '필기량', value: pdfStudent.strokeVolume },
+                            { label: '첨삭 횟수', value: `${pdfStudent.annotationCount}회` },
+                            { label: '참여도', value: `${pdfStudent.participationScore}/5` },
+                        ].map(card => (
+                            <div key={card.label} style={{ background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '16px', textAlign: 'center' }}>
+                                <div style={{ fontSize: '20px', fontWeight: 800, color: '#1d4ed8' }}>{card.value}</div>
+                                <div style={{ fontSize: '11px', color: '#6b7280', marginTop: '4px' }}>{card.label}</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* 참여도 바 */}
+                    <div style={{ background: '#f8fafc', border: '1px solid #e5e7eb', borderRadius: '12px', padding: '20px', marginBottom: '28px' }}>
+                        <div style={{ fontSize: '13px', fontWeight: 700, color: '#374151', marginBottom: '14px' }}>참여도 상세</div>
+                        {[
+                            { label: '수업 참여', pct: (pdfStudent.durationMin / 48) * 100 },
+                            { label: '참여도 점수', pct: (pdfStudent.participationScore / 5) * 100 },
+                            { label: '필기 활동', pct: pdfStudent.strokeVolume === '많음' ? 90 : pdfStudent.strokeVolume === '보통' ? 60 : 30 },
+                        ].map(row => (
+                            <div key={row.label} style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '10px' }}>
+                                <div style={{ width: '80px', fontSize: '12px', color: '#6b7280', flexShrink: 0 }}>{row.label}</div>
+                                <div style={{ flex: 1, height: '8px', background: '#e5e7eb', borderRadius: '4px', overflow: 'hidden' }}>
+                                    <div style={{ width: `${Math.min(row.pct, 100)}%`, height: '100%', background: 'linear-gradient(90deg, #3b82f6, #6366f1)', borderRadius: '4px' }} />
+                                </div>
+                                <div style={{ width: '36px', fontSize: '12px', fontWeight: 700, color: '#2563eb', textAlign: 'right' }}>{Math.round(Math.min(row.pct, 100))}%</div>
+                            </div>
+                        ))}
+                    </div>
+
+                    {/* 푸터 */}
+                    <div style={{ borderTop: '1px solid #e5e7eb', paddingTop: '16px', display: 'flex', justifyContent: 'space-between', fontSize: '11px', color: '#9ca3af' }}>
+                        <span>NeoCAST — 실시간 필기 협업 플랫폼</span>
+                        <span>생성일: {r.date}</span>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
