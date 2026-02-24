@@ -1,4 +1,4 @@
-*26-02-23 클로드코드 토큰 한도로 세션 6까지 진행,기존 main의 판서 화면 코드 분석하다 멈춤. 이어서 작업 필요.
+*26-02-24 기준 Session 8-2까지 완료. 게스트 입장/필기 표시 버그 수정 포함.
 
 # 🚀 NeoCast — 실시간 필기 협업 플랫폼 (데모 버전)
 
@@ -19,14 +19,29 @@ NeoCast는 실시간 교육과 피드백을 위한 세션 기반 협업 플랫�
 - **원격 첨삭 (Red Pen)**: 호스트가 특정 학생의 캔버스에 진입하여 직접 빨간펜으로 첨삭하면 학생 화면에 실시간 노출.
 - **간편 세션 입장**: 별도의 복잡한 인증 없이 닉네임과 세션 코드만으로 즉시 참여 가능.
 - **AI 학습 분석 프리뷰**: 세션 활동 데이터를 기반으로 한 학생별 성취도 리포트 UI 및 결과 분석 기능.
+- **PDF 다운로드**: 학생별 필기 및 첨삭 내용을 PDF로 저장 (jsPDF + html2canvas).
 
 ## 🛠 기술 스택
 
-- **Frontend**: React, TypeScript, Vite
+- **Frontend**: React, TypeScript, Vite, Tailwind CSS v4
 - **Backend**: Node.js, Socket.IO
 - **Communication**: Socket.IO (Namespaces: `/stroke`, `/control`)
 - **Data Compression**: Pako (zlib)를 이용한 바이너리 필기 데이터 압축
-- **Styling**: 모던하고 프리미엄한 디자인의 Vanilla CSS (다크 모드 및 글래스모피즘 적용)
+- **Styling**: 수채화 배경 + 글래스모피즘 디자인
+
+## ✅ 완료된 작업
+
+| 세션 | 내용 |
+|------|------|
+| Session 1 | 호스트 홈 — 세션 목록 탭 (Room API 연결) |
+| Session 2 | 수업 결과 탭 + AI 리포트 화면 (ReportDetail, StudentReport) |
+| Session 3 | 게스트 입장(/join) + 세션 대기(/waiting) |
+| Session 4 | 버그 수정 — 학생 필기 미전송 / 입장 미표시 / socketService 세션 재연결 |
+| Session 5 | 로그인 화면 (선생님/학생 선택) |
+| Session 6 | 세션 개설 UI 개선 (비밀번호 + 초대링크) |
+| Session 7 | 결과 화면 PDF 다운로드 (jsPDF + html2canvas) |
+| Session 8-1 | 게스트 캔버스 neocast UI 이식 (수채화BG + 툴바 + 하단 컨트롤바) |
+| Session 8-2 | 호스트 모니터링 뷰 neocast UI 이식 (그리드 기본뷰 + 하단 컨트롤바) |
 
 ## 🚀 시작하기
 
@@ -46,13 +61,25 @@ sh demo-start.sh
 ```
 
 이 스크립트는 다음 기능을 동시에 실행합니다:
-- **서버 (Backend)**: [http://localhost:3001](http://localhost:3001)
+- **서버 (Backend)**: [http://localhost:7191](http://localhost:7191)
 - **클라이언트 (Frontend)**: [http://localhost:3000](http://localhost:3000)
 
-## 📂 저장소 구조 (dev 브런치)
+### 개별 실행
+
+```bash
+# 서버 (port 7191)
+cd server
+npx tsx demo-server.ts
+
+# 클라이언트 (port 3000)
+cd client
+npm run dev
+```
+
+## 📂 저장소 구조 (dev 브랜치)
 
 - `/client`: 모니터링 뷰, 캔버스, 학생 리포트 등을 포함한 React 애플리케이션.
-- `/server`: 세션 상태를 관리하고 소켓 연결을 처리하는 Node.js 서버.
+- `/server`: 세션 상태를 관리하고 소켓 연결을 처리하는 Node.js 서버 (`http://localhost:7191`).
 - `demo-start.sh`: 원클릭 실행을 위한 쉘 스크립트.
 
 ---
@@ -66,4 +93,4 @@ sh demo-start.sh
 
 ---
 
-**브런지 정보:** 현재 보시는 브런치는 `dev`입니다. `main` 브런치는 안정 버전 릴리즈를 위해 예약되어 있습니다.
+**브랜치 정보:** 현재 보시는 브랜치는 `dev`입니다. `main` 브랜치는 안정 버전 릴리즈를 위해 예약되어 있습니다.
