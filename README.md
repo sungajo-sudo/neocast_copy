@@ -1,4 +1,4 @@
-*26-02-24 기준 Session 8-2까지 완료. 게스트 입장/필기 표시 버그 수정 포함.
+*26-02-24 기준 STEP 1 완료 (master_instructions_v2 기준 — 스토어 구조 이식). Session 8-2까지 완료 포함.
 
 # 🚀 NeoCast — 실시간 필기 협업 플랫폼 (데모 버전)
 
@@ -31,6 +31,8 @@ NeoCast는 실시간 교육과 피드백을 위한 세션 기반 협업 플랫�
 
 ## ✅ 완료된 작업
 
+### Session 시리즈 (초기 구축)
+
 | 세션 | 내용 |
 |------|------|
 | Session 1 | 호스트 홈 — 세션 목록 탭 (Room API 연결) |
@@ -42,6 +44,16 @@ NeoCast는 실시간 교육과 피드백을 위한 세션 기반 협업 플랫�
 | Session 7 | 결과 화면 PDF 다운로드 (jsPDF + html2canvas) |
 | Session 8-1 | 게스트 캔버스 neocast UI 이식 (수채화BG + 툴바 + 하단 컨트롤바) |
 | Session 8-2 | 호스트 모니터링 뷰 neocast UI 이식 (그리드 기본뷰 + 하단 컨트롤바) |
+
+### master_instructions_v2 시리즈 (main 기능 이식)
+
+| STEP | 내용 | 상태 |
+|------|------|------|
+| STEP 1 | 호스트 세션 진입 — panel-store / page-store / demoStrokeStore main 구조 이식 | ✅ 완료 |
+| STEP 2 | 페이지 기능 이식 — PagesButton + PagesPanel | ⬜ 예정 |
+| STEP 3 | PDF 업로드 + 캔버스 우측 미리보기 패널 (60:40) | ⬜ 예정 |
+| STEP 4 | 참가자 패널 이식 + 필기중 뱃지 | ⬜ 예정 |
+| STEP 5 | 그리드뷰 수정 — 캔버스 전용 미니 프리뷰 + 전체화면 확대 | ⬜ 예정 |
 
 ## 🚀 시작하기
 
