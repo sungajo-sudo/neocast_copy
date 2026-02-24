@@ -1,5 +1,5 @@
 // 데모용 stroke 스토어 (zustand)
-// 기존 neocast의 stroke-store와 독립적으로 동작
+// pageId 차원 추가 (STEP 1)
 import { create } from 'zustand';
 
 export interface StrokePoint {
@@ -11,6 +11,7 @@ export interface StrokePoint {
 export interface Stroke {
     id: string;
     userId: string;
+    pageId?: string;   // 페이지 식별자 (없으면 단일 페이지)
     color: string;
     lineWidth: number;
     points: StrokePoint[];
@@ -18,7 +19,7 @@ export interface Stroke {
 }
 
 export interface DemoStrokeStore {
-    // userId → Stroke[]
+    // userId → Stroke[]  (하위호환)
     strokes: Map<string, Stroke[]>;
     activeStrokes: Map<string, Stroke>; // strokeId → Stroke
 
@@ -26,7 +27,9 @@ export interface DemoStrokeStore {
     updateActiveStroke: (strokeId: string, stroke: Stroke) => void;
     finalizeStroke: (strokeId: string) => void;
     clearUserStrokes: (userId: string) => void;
-    getStrokes: (userId: string) => Stroke[];
+    clearPageStrokes: (userId: string, pageId: string) => void;
+    getStrokes: (userId: string) => Stroke[];                          // 하위호환: 전체
+    getStrokesByPage: (userId: string, pageId: string) => Stroke[];    // 페이지별 조회
 }
 
 export const useDemoStrokeStore = create<DemoStrokeStore>((set, get) => ({
@@ -74,8 +77,17 @@ export const useDemoStrokeStore = create<DemoStrokeStore>((set, get) => ({
         });
     },
 
-    getStrokes: (userId) => {
-        const state = get();
-        return state.strokes.get(userId) ?? [];
+    clearPageStrokes: (userId, pageId) => {
+        set(state => {
+            const next = new Map(state.strokes);
+            const arr = (next.get(userId) ?? []).filter(s => s.pageId !== pageId);
+            next.set(userId, arr);
+            return { strokes: next };
+        });
     },
+
+    getStrokes: (userId) => get().strokes.get(userId) ?? [],
+
+    getStrokesByPage: (userId, pageId) =>
+        (get().strokes.get(userId) ?? []).filter(s => !s.pageId || s.pageId === pageId),
 }));

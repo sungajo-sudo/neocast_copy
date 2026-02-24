@@ -8,6 +8,12 @@ import { useDemoStrokeStore } from '../stores/demoStrokeStore';
 import { getStrokeSocket, getControlSocket } from '../services/socketService';
 import StudentMiniCanvas from './StudentMiniCanvas';
 import StudentDetailView from './StudentDetailView';
+import SmartpenButton from './control-bar/SmartpenButton';
+import PdfUploadButton from './control-bar/PdfUploadButton';
+import PdfUploadModal from './layout/PdfUploadModal';
+import HostCanvas from './host-canvas/HostCanvas';
+import { usePanelStore } from '../stores/panel-store';
+import { usePageStore } from '../stores/page-store';
 import type { Stroke } from '../stores/demoStrokeStore';
 import watercolorBg from '../assets/watercolor-bg.png';
 
@@ -108,11 +114,20 @@ export default function MonitoringView() {
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [selectedGuest, setSelectedGuest] = useState<Participant | null>(null);
     const [annotatingGuestId, setAnnotatingGuestId] = useState<string | null>(null);
+    const [activeTab, setActiveTab] = useState<'grid' | 'myCanvas'>('grid');
     const [, forceUpdate] = useState(0);
 
     // 컨트롤바 토글 상태
-    const [micOn, setMicOn] = useState(false);
+    const isPdfUploadOpen = usePanelStore(s => s.isPdfUploadOpen);
+    const isMicOn = usePanelStore(s => s.isMicOn);
+    const toggleMic = usePanelStore(s => s.toggleMic);
+    const isPenStreamOn = usePanelStore(s => s.isPenStreamOn);
+    const togglePenStream = usePanelStore(s => s.togglePenStream);
     const [touchPaused, setTouchPaused] = useState(false);
+
+    // 첫 페이지 초기화
+    const initializeFirstPage = usePageStore(s => s.initializeFirstPage);
+    useEffect(() => { initializeFirstPage(); }, []);
 
     const addStroke = useDemoStrokeStore(s => s.addStroke);
     const updateActiveStroke = useDemoStrokeStore(s => s.updateActiveStroke);
@@ -343,19 +358,24 @@ export default function MonitoringView() {
                     display: 'flex', padding: '8px 16px 0',
                     gap: 4, flexShrink: 0,
                 }}>
-                    <div style={{
-                        background: 'rgba(255,255,255,0.85)',
-                        border: '1px solid rgba(0,0,0,0.1)',
-                        borderBottom: '1px solid rgba(255,255,255,0.85)',
-                        borderRadius: '6px 6px 0 0',
-                        padding: '4px 14px',
-                        fontSize: '0.75rem', fontWeight: 600, color: '#374151',
-                    }}>
-                        참가자 그리드 {guests.length > 0 && `(${guests.length}명)`}
-                    </div>
+                    {[
+                        { id: 'grid' as const, label: `참가자 그리드${guests.length > 0 ? ` (${guests.length}명)` : ''}` },
+                        { id: 'myCanvas' as const, label: '✏️ 내 캔버스' },
+                    ].map(tab => (
+                        <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{
+                            background: activeTab === tab.id ? 'rgba(255,255,255,0.85)' : 'rgba(255,255,255,0.4)',
+                            border: '1px solid rgba(0,0,0,0.1)',
+                            borderBottom: activeTab === tab.id ? '1px solid rgba(255,255,255,0.85)' : '1px solid rgba(0,0,0,0.08)',
+                            borderRadius: '6px 6px 0 0',
+                            padding: '4px 14px',
+                            fontSize: '0.75rem', fontWeight: 600,
+                            color: activeTab === tab.id ? '#374151' : '#94a3b8',
+                            cursor: 'pointer',
+                        }}>{tab.label}</button>
+                    ))}
                 </div>
 
-                {/* 그리드 영역 */}
+                {/* 탭 콘텐츠 영역 */}
                 <div style={{
                     flex: 1, overflow: 'auto',
                     background: 'rgba(255,255,255,0.55)',
@@ -365,6 +385,8 @@ export default function MonitoringView() {
                     borderRadius: '0 6px 6px 6px',
                     padding: '20px',
                 }}>
+                {activeTab === 'myCanvas' && <HostCanvas />}
+                {activeTab === 'grid' && <>
                     {guests.length === 0 ? (
                         <div style={{
                             height: '100%', display: 'flex', flexDirection: 'column',
@@ -402,6 +424,7 @@ export default function MonitoringView() {
                             })}
                         </div>
                     )}
+                </>}
                 </div>
                 <div style={{ height: 8, flexShrink: 0 }} />
             </main>
@@ -418,28 +441,28 @@ export default function MonitoringView() {
                 {/* 왼쪽 버튼 그룹 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                     {/* 펜 그룹 */}
-                    <CtrlBtn icon={<IcoPen />} label="스마트펜" />
+                    <SmartpenButton />
                     <CtrlBtn
                         icon={<IcoTouch />}
                         label="터치 일시중지"
-                        active={touchPaused}
+                        active={!isPenStreamOn}
                         activeColor="#60a5fa"
-                        onClick={() => setTouchPaused(v => !v)}
+                        onClick={togglePenStream}
                     />
                     <CtrlBtn
                         icon={<IcoMic />}
-                        label={micOn ? '음소거' : '음소거 해제'}
-                        active={micOn}
+                        label={isMicOn ? '음소거' : '음소거 해제'}
+                        active={isMicOn}
                         activeColor="#34d399"
                         hasDropdown
-                        onClick={() => setMicOn(v => !v)}
+                        onClick={toggleMic}
                     />
 
                     <Divider />
 
                     {/* 문서 그룹 */}
                     <CtrlBtn icon={<IcoPages />} label="페이지" />
-                    <CtrlBtn icon={<IcoUpload />} label="업로드" />
+                    <PdfUploadButton />
                     <CtrlBtn icon={<IcoFolder />} label="내 자료" />
 
                     <Divider />
@@ -468,6 +491,9 @@ export default function MonitoringView() {
                 {/* 오른쪽: 종료 */}
                 <CtrlBtn icon={<IcoLeave />} label="종료" danger onClick={handleLeave} />
             </div>
+
+            {/* PDF 업로드 모달 */}
+            {isPdfUploadOpen && <PdfUploadModal />}
 
             {/* StudentDetailView 모달 (기존 유지) */}
             {selectedGuest && (
