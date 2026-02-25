@@ -109,8 +109,31 @@ export function CreateSessionModal({ isOpen, onClose }: Props) {
       navigate(`/session/${sess.code}`);
       onClose();
     } catch (err) {
-      const msg = err instanceof Error ? err.message : '세션 생성에 실패했습니다.';
-      setError(msg);
+      // DEV 모드: 백엔드 없이 Mock 세션으로 진입
+      if (import.meta.env.DEV && user) {
+        const mockCode = 'DEV' + Math.random().toString(36).slice(2, 5).toUpperCase();
+        setCurrentUserId(user.id);
+        setSession({
+          id: `mock-${mockCode}`,
+          code: mockCode,
+          status: SessionStatus.Active,
+          hostId: user.id,
+          participants: [{
+            userId: user.id,
+            userName: user.name,
+            role: ParticipantRole.Host,
+            joinedAt: Date.now(),
+            isMuted: false,
+            isSpeaking: false,
+          }],
+          createdAt: Date.now(),
+          hasPassword: !!password,
+        });
+        navigate(`/session/${mockCode}`);
+        onClose();
+        return;
+      }
+      setError(err instanceof Error ? err.message : '세션 생성에 실패했습니다.');
     } finally {
       setIsLoading(false);
     }

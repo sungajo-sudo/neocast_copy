@@ -4,3 +4,5 @@ export { ParticipantList } from './ParticipantList';
 export { SessionLobby } from './SessionLobby';
 export { SessionInvite } from './SessionInvite';
 export { GridSelector } from './GridSelector';
+export { HostSessionView } from './HostSessionView';
+export { ParticipantModeView } from './ParticipantModeView';

@@ -2,7 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { Routes, Route, Navigate, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CanvasContainer } from './components/canvas';
-import { SessionLobby } from './components/session';
+import { SessionLobby, HostSessionView } from './components/session';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { LobbyPage } from './pages/LobbyPage';
@@ -547,6 +547,12 @@ function SessionPage() {
     return null;
   }
 
+  // 호스트: 뷰 탭 포함 (기본 뷰 / 참가자 모드 뷰)
+  if (isHost) {
+    return <HostSessionView canInput={canInput} />;
+  }
+
+  // 게스트: 캔버스만
   return <CanvasContainer className="flex-1" inputEnabled={canInput} />;
 }
 
