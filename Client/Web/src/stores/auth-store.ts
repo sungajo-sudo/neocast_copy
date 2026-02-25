@@ -18,6 +18,8 @@ interface AuthStore {
   login: (email: string, password: string) => Promise<boolean>;
   register: (email: string, password: string, name: string) => Promise<boolean>;
   loginAsGuest: (userId: string, accessToken: string, displayName: string) => void; // 게스트 로그인 (userId는 실제 UUID)
+  /** 개발환경 전용: 백엔드 없이 인증 상태를 직접 설정 */
+  devMockLogin: (role: 'host' | 'guest') => void;
   logout: () => void;
   refreshToken: () => Promise<boolean>;
   updateUser: (data: { name?: string; currentPassword?: string; newPassword?: string }) => Promise<boolean>;
@@ -75,6 +77,21 @@ export const useAuthStore = create<AuthStore>()(
           set({ error: message, isLoading: false });
           return false;
         }
+      },
+
+      devMockLogin: (role) => {
+        const mockUsers = {
+          host: { id: 'mock-host-0000', email: 'host@abc.com', name: '선생님 (Mock)', createdAt: new Date().toISOString() },
+          guest: { id: 'mock-guest-0000', email: 'guest@abc.com', name: '학생 (Mock)', createdAt: new Date().toISOString() },
+        };
+        set({
+          user: mockUsers[role],
+          tokens: { accessToken: 'mock-dev-token', refreshToken: 'mock-dev-refresh' },
+          isAuthenticated: true,
+          isGuest: false,
+          isLoading: false,
+          error: null,
+        });
       },
 
       loginAsGuest: (userId, accessToken, displayName) => {

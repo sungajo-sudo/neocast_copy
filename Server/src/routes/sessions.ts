@@ -8,6 +8,9 @@ import { broadcastRoleChange, broadcastParticipantKick } from '../socket/index.j
 
 // 세션 생성 요청 스키마
 const createSessionSchema = z.object({
+  title: z.string().max(200).optional(), // 수업 제목
+  scheduledAt: z.string().datetime().optional(), // 예정 일시 (ISO 8601)
+  expectedParticipants: z.number().int().min(1).max(1000).optional(), // 참가 예정 인원
   password: z.string().min(1).max(100).optional(), // 세션 비밀번호
   maxGuests: z.number().min(1).max(100).optional(), // 최대 게스트 수
   allowGuestVoice: z.boolean().optional(), // 게스트 음성 허용 여부
@@ -70,15 +73,21 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
       throw new ValidationError('Invalid input', result.error.flatten().fieldErrors);
     }
 
-    const session = await sessionService.createSession(user.userId, result.data);
+    const session = await sessionService.createSession(user.userId, {
+      ...result.data,
+      scheduledAt: result.data.scheduledAt ? new Date(result.data.scheduledAt) : undefined,
+    });
 
     return reply.status(201).send({
       success: true,
       session: {
         id: session.id,
         code: session.code,
+        title: session.title,
+        scheduledAt: session.scheduledAt,
+        expectedParticipants: session.expectedParticipants,
         hasPassword: session.hasPassword,
-        inviteToken: session.inviteToken, // 비밀번호가 필요한 세션에 대한 초대 링크 생성용
+        inviteToken: session.inviteToken,
         status: session.status,
         hostId: session.hostId,
         maxGuests: session.maxGuests,
@@ -87,6 +96,13 @@ export const sessionRoutes: FastifyPluginAsync = async (app) => {
         createdAt: session.createdAt,
       },
     });
+  });
+
+  // 내가 호스팅한 세션 목록 (인증 필요)
+  app.get('/my', async (request, reply) => {
+    const user = getAuthUser(request);
+    const sessions = await sessionService.getHostSessions(user.userId);
+    return reply.send({ success: true, sessions });
   });
 
   // 세션 코드로 공개 정보 조회 (인증 불필요)

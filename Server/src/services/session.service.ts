@@ -17,6 +17,9 @@ export interface SessionInfo {
   inviteToken: string | null;
   hostId: string;
   status: SessionStatus;
+  title: string;
+  scheduledAt: Date | null;
+  expectedParticipants: number | null;
   maxGuests: number;
   allowGuestVoice: boolean;
   allowGuestMode: boolean;
@@ -88,6 +91,9 @@ function generateInviteToken(): string {
 export async function createSession(
   hostId: string,
   options?: {
+    title?: string;
+    scheduledAt?: Date;
+    expectedParticipants?: number;
     password?: string;
     maxGuests?: number;
     allowGuestVoice?: boolean;
@@ -116,6 +122,9 @@ export async function createSession(
         passwordHash,
         inviteToken,
         hostId,
+        title: options?.title ?? '',
+        scheduledAt: options?.scheduledAt ?? null,
+        expectedParticipants: options?.expectedParticipants ?? null,
         maxGuests: options?.maxGuests ?? config.session.maxGuests,
         allowGuestVoice: options?.allowGuestVoice ?? true,
         allowGuestMode: options?.allowGuestMode ?? true,
@@ -1119,4 +1128,45 @@ export async function kickParticipant(
   });
 
   logger.info({ sessionId, kickerId, targetUserId }, 'Participant kicked from session');
+}
+
+/**
+ * 호스트가 생성한 세션 목록 조회 (최신순)
+ */
+export async function getHostSessions(hostId: string): Promise<Array<{
+  id: string;
+  code: string;
+  title: string;
+  status: SessionStatus;
+  scheduledAt: Date | null;
+  expectedParticipants: number | null;
+  createdAt: Date;
+  closedAt: Date | null;
+  hasPassword: boolean;
+  allowGuestMode: boolean;
+  participantCount: number;
+}>> {
+  const sessions = await prisma.session.findMany({
+    where: { hostId },
+    orderBy: { createdAt: 'desc' },
+    include: {
+      _count: {
+        select: { participants: true },
+      },
+    },
+  });
+
+  return sessions.map((s) => ({
+    id: s.id,
+    code: s.code,
+    title: s.title,
+    status: s.status,
+    scheduledAt: s.scheduledAt,
+    expectedParticipants: s.expectedParticipants,
+    createdAt: s.createdAt,
+    closedAt: s.closedAt,
+    hasPassword: !!s.passwordHash,
+    allowGuestMode: s.allowGuestMode,
+    participantCount: s._count.participants,
+  }));
 }

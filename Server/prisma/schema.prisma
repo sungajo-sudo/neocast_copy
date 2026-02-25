@@ -39,19 +39,22 @@ model User {
 }
 
 model Session {
-  id              String        @id @default(uuid())
-  code            String        @unique @db.VarChar(6)
-  passwordHash    String?       @map("password_hash")
-  inviteToken     String?       @map("invite_token") @db.VarChar(32)
-  hostId          String        @map("host_id")
-  status          SessionStatus @default(ACTIVE)
-  maxGuests       Int           @default(100) @map("max_guests")
-  allowGuestVoice Boolean       @default(true) @map("allow_guest_voice")
-  allowGuestMode  Boolean       @default(true) @map("allow_guest_mode")
-  autoArchive     Boolean       @default(true) @map("auto_archive")
-  linkedArchiveId String?       @map("linked_archive_id")
-  createdAt       DateTime      @default(now()) @map("created_at")
-  closedAt        DateTime?     @map("closed_at")
+  id                   String        @id @default(uuid())
+  code                 String        @unique @db.VarChar(6)
+  passwordHash         String?       @map("password_hash")
+  inviteToken          String?       @map("invite_token") @db.VarChar(32)
+  hostId               String        @map("host_id")
+  status               SessionStatus @default(ACTIVE)
+  title                String        @default("") // 수업 제목
+  scheduledAt          DateTime?     @map("scheduled_at") // 예정 일시
+  expectedParticipants Int?          @map("expected_participants") // 참가 예정 인원 수
+  maxGuests            Int           @default(100) @map("max_guests")
+  allowGuestVoice      Boolean       @default(true) @map("allow_guest_voice")
+  allowGuestMode       Boolean       @default(true) @map("allow_guest_mode")
+  autoArchive          Boolean       @default(true) @map("auto_archive")
+  linkedArchiveId      String?       @map("linked_archive_id")
+  createdAt            DateTime      @default(now()) @map("created_at")
+  closedAt             DateTime?     @map("closed_at")
 
   host         User          @relation("HostedSessions", fields: [hostId], references: [id])
   participants Participant[]

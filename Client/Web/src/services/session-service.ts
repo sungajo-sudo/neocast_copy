@@ -19,6 +19,9 @@ export class ApiRequestError extends Error {
 }
 
 interface CreateSessionOptions {
+  title?: string;
+  scheduledAt?: string; // ISO 8601
+  expectedParticipants?: number;
   password?: string;
   maxGuests?: number;
   allowGuestVoice?: boolean;
@@ -26,11 +29,28 @@ interface CreateSessionOptions {
   allowGuestMode?: boolean; // 비회원 게스트 참가 허용
 }
 
+export interface HostSessionItem {
+  id: string;
+  code: string;
+  title: string;
+  status: string;
+  scheduledAt: string | null;
+  expectedParticipants: number | null;
+  createdAt: string;
+  closedAt: string | null;
+  hasPassword: boolean;
+  allowGuestMode: boolean;
+  participantCount: number;
+}
+
 interface SessionResponse {
   success: boolean;
   session: {
     id: string;
     code: string;
+    title: string;
+    scheduledAt: string | null;
+    expectedParticipants: number | null;
     hasPassword: boolean;
     inviteToken?: string | null; // Token for password-free join via invite link (hosts only)
     status: string;
@@ -143,6 +163,20 @@ class SessionService {
       body: JSON.stringify(options),
     });
     return this.handleResponse<SessionResponse>(response);
+  }
+
+  /**
+   * 내가 호스팅한 세션 목록 조회
+   */
+  async getHostSessions(accessToken: string): Promise<{ success: boolean; sessions: HostSessionItem[] }> {
+    const response = await fetch(`${this.baseUrl}/sessions/my`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    return this.handleResponse<{ success: boolean; sessions: HostSessionItem[] }>(response);
   }
 
   async getSessionByCode(code: string): Promise<SessionInfoResponse> {

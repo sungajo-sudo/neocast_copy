@@ -10,7 +10,7 @@ const IS_DEV = import.meta.env.DEV;
 
 export function LoginPage() {
   const { t } = useTranslation();
-  const { isAuthenticated, isGuest, login } = useAuthStore();
+  const { isAuthenticated, isGuest, login, devMockLogin } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
   const [testLoginLoading, setTestLoginLoading] = useState<'host' | 'guest' | null>(null);
@@ -36,6 +36,7 @@ export function LoginPage() {
   }
 
   // 테스트 로그인 핸들러 (개발 환경 전용)
+  // 백엔드 실행 중이면 실제 API 사용, 없으면 Mock 상태로 폴백
   const handleTestLogin = async (role: 'host' | 'guest') => {
     setTestLoginLoading(role);
     const credentials = {
@@ -43,7 +44,11 @@ export function LoginPage() {
       guest: { email: 'guest@abc.com', password: '1234' },
     };
     const { email, password } = credentials[role];
-    await login(email, password);
+    const success = await login(email, password);
+    if (!success) {
+      // 백엔드 미실행 시 Mock으로 UI 확인
+      devMockLogin(role);
+    }
     setTestLoginLoading(null);
   };
 
