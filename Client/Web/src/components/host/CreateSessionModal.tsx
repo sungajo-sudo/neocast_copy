@@ -107,7 +107,7 @@ export function CreateSessionModal({ isOpen, onClose }: Props) {
         inviteToken: sess.inviteToken,
       });
 
-      navigate(`/session/${sess.code}`);
+      navigate(`/session/${sess.code}`, { state: { justJoined: true } });
       onClose();
     } catch (err) {
       // DEV 모드: 백엔드 없이 Mock 세션으로 진입
@@ -137,9 +137,9 @@ export function CreateSessionModal({ isOpen, onClose }: Props) {
             isSpeaking: false,
           }],
           createdAt: Date.now(),
-          hasPassword: !!password,
+          hasPassword: false, // DEV mock 세션은 비밀번호 없음 (inviteToken도 없으므로 링크 복사 가능하도록)
         });
-        navigate(`/session/${mockCode}`);
+        navigate(`/session/${mockCode}`, { state: { justJoined: true } });
         onClose();
         return;
       }

@@ -179,7 +179,7 @@ function GuestJoinPage() {
   const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
-  const { isAuthenticated, loginAsGuest } = useAuthStore();
+  const { isAuthenticated, isGuest, loginAsGuest } = useAuthStore();
   const { serverUrl, connect } = useConnectionStore();
   const { setSession, setCurrentUserId, session } = useSessionStore();
 
@@ -202,12 +202,12 @@ function GuestJoinPage() {
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // 이미 로그인되어 있으면 /join으로 리다이렉트
+  // 이미 로그인되어 있으면 /join으로 리다이렉트 (게스트 제외 — loginAsGuest 후 무한루프 방지)
   useEffect(() => {
-    if (isAuthenticated && inviteData) {
+    if (isAuthenticated && !isGuest && inviteData) {
       navigate(`/join/${inviteData.code}`, { replace: true });
     }
-  }, [isAuthenticated, inviteData, navigate]);
+  }, [isAuthenticated, isGuest, inviteData, navigate]);
 
   // 세션이 활성화되면 세션 페이지로 이동
   // (handleGuestJoin에서 직접 navigate를 호출하므로 isLoading 체크로 중복 방지)
@@ -523,7 +523,7 @@ function JoinPage() {
   // 세션이 활성화되면 세션 페이지로 이동
   useEffect(() => {
     if (session) {
-      navigate(`/session/${session.code}`, { replace: true });
+      navigate(`/session/${session.code}`, { replace: true, state: { justJoined: true } });
     }
   }, [session, navigate]);
 

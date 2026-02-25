@@ -13,7 +13,7 @@ export function LobbyPage() {
   // 세션이 활성화되면 세션 페이지로 이동
   useEffect(() => {
     if (session) {
-      navigate(`/session/${session.code}`, { replace: true });
+      navigate(`/session/${session.code}`, { replace: true, state: { justJoined: true } });
     }
   }, [session, navigate]);
 
