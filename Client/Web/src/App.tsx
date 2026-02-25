@@ -511,14 +511,57 @@ function GuestJoinPage() {
  */
 function JoinPage() {
   const session = useSessionStore((state) => state.session);
+  const setSession = useSessionStore((state) => state.setSession);
+  const setCurrentUserId = useSessionStore((state) => state.setCurrentUserId);
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuthStore();
+  const autoJoinAttempted = useRef(false);
 
   // 초대 데이터 파싱 (state에서 전달된 것 우선, 없으면 경로에서 파싱)
   // 로그인 후 리다이렉트 시 state로 inviteData가 전달됨 (inviteToken 포함)
   const inviteDataFromState = (location.state as { inviteData?: InviteData })?.inviteData;
   const inviteDataFromPath = parseInviteFromPath(location.pathname);
   const inviteData: InviteData | undefined = inviteDataFromState || inviteDataFromPath || undefined;
+
+  // DEV 모드: devBridge에 세션이 있으면 스토어 직접 세팅해 자동 참가
+  useEffect(() => {
+    if (!import.meta.env.DEV) return;
+    if (!inviteData?.code || !user || session || autoJoinAttempted.current) return;
+
+    const devSession = devBridge.getSession(inviteData.code);
+    if (!devSession) return;
+
+    autoJoinAttempted.current = true;
+    const guestId = `guest-${user.id}-${Date.now()}`;
+    setCurrentUserId(guestId);
+    setSession({
+      id: devSession.id,
+      code: devSession.code,
+      status: SessionStatus.Active,
+      hostId: devSession.hostId,
+      participants: [
+        {
+          userId: devSession.hostId,
+          userName: devSession.hostName,
+          role: ParticipantRole.Host,
+          joinedAt: devSession.createdAt,
+          isMuted: false,
+          isSpeaking: false,
+        },
+        {
+          userId: guestId,
+          userName: user.name,
+          role: ParticipantRole.Guest,
+          joinedAt: Date.now(),
+          isMuted: false,
+          isSpeaking: false,
+        },
+      ],
+      createdAt: devSession.createdAt,
+      hasPassword: false,
+    });
+  }, [inviteData, user, session, setSession, setCurrentUserId]);
 
   // 세션이 활성화되면 세션 페이지로 이동
   useEffect(() => {
