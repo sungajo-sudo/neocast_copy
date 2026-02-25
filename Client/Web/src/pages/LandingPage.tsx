@@ -23,7 +23,7 @@ import techPod from '../assets/images/tech-pod.png';
 export function LandingPage() {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, isGuest } = useAuthStore();
 
   return (
     <div className="min-h-screen relative overflow-x-hidden font-sans">
@@ -64,7 +64,7 @@ export function LandingPage() {
           </p>
 
           <button
-            onClick={() => navigate(isAuthenticated ? '/lobby' : '/login')}
+            onClick={() => navigate(isAuthenticated && !isGuest ? '/host' : isAuthenticated ? '/lobby' : '/login')}
             className="group relative inline-flex items-center justify-center px-10 py-5 text-xl font-bold text-white transition-all duration-200 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full shadow-lg hover:shadow-xl hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 overflow-hidden"
           >
             <span className="relative z-10">{t('landing.getStarted')}</span>

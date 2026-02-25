@@ -32,6 +32,11 @@ import { penInputService } from './services/pen-input.service';
 import { messengerService } from './services/messenger-service';
 import { createInviteLink, parseInviteFromPath } from './utils/invite';
 import { FEATURE_FLAGS } from './utils/feature-flags';
+import { HostLayout } from './components/host/HostLayout';
+import { HostHomePage } from './pages/host/HostHomePage';
+import { SessionListPage } from './pages/host/SessionListPage';
+import { WorksheetPage } from './pages/host/WorksheetPage';
+import { LessonResultPage } from './pages/host/LessonResultPage';
 import { copyToClipboard } from './utils/clipboard';
 import type { InviteData } from './utils/invite';
 import watercolorBg from './assets/images/watercolor-bg.png';
@@ -119,6 +124,23 @@ function RequireAuth({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/**
+ * 호스트 전용 가드
+ * 인증된 일반 사용자(비게스트)만 접근 허용
+ * 미인증 → /login, 게스트 → /lobby
+ */
+function RequireHost({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isGuest } = useAuthStore();
+  const location = useLocation();
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  if (isGuest) {
+    return <Navigate to="/lobby" replace />;
+  }
+  return <>{children}</>;
+}
 
 
 /**
@@ -850,7 +872,7 @@ function App() {
             {/* 로고 - headerVeryCompact가 아닐 때만 표시 */}
             {!headerVeryCompact && (
               <div
-                onClick={() => navigate(isAuthenticated ? '/lobby' : '/')}
+                onClick={() => navigate(isAuthenticated && !isGuest ? '/host' : isAuthenticated ? '/lobby' : '/')}
                 className="flex items-center gap-1.5 cursor-pointer group"
               >
                 {/* headerCompact일 때는 항상 아이콘만 표시 */}
@@ -1063,6 +1085,22 @@ function App() {
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/guest-join" element={<GuestJoinPage />} />
             <Route path="/" element={<LandingPage />} />
+
+            {/* 호스트 대시보드 (LNB 레이아웃) */}
+            <Route
+              path="/host"
+              element={
+                <RequireHost>
+                  <HostLayout />
+                </RequireHost>
+              }
+            >
+              <Route index element={<HostHomePage />} />
+              <Route path="sessions" element={<SessionListPage />} />
+              <Route path="worksheets" element={<WorksheetPage />} />
+              <Route path="results" element={<LessonResultPage />} />
+            </Route>
+
             <Route
               path="/lobby"
               element={

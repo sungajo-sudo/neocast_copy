@@ -10,7 +10,7 @@ const IS_DEV = import.meta.env.DEV;
 
 export function LoginPage() {
   const { t } = useTranslation();
-  const { isAuthenticated, login } = useAuthStore();
+  const { isAuthenticated, isGuest, login } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
   const [testLoginLoading, setTestLoginLoading] = useState<'host' | 'guest' | null>(null);
@@ -20,12 +20,16 @@ export function LoginPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      // 이전 페이지로 또는 로비로 리다이렉트
-      // inviteData가 있으면 함께 전달 (비밀번호 없이 세션 참가 가능하도록)
-      const from = (location.state as { from?: Location })?.from?.pathname || '/';
-      navigate(from, { replace: true, state: { inviteData } });
+      // 이전 페이지(from)가 있으면 거기로 (예: /join/:code 흐름)
+      // 없으면 호스트는 /host, 게스트는 /lobby로 이동
+      const from = (location.state as { from?: Location })?.from?.pathname;
+      if (from && from !== '/') {
+        navigate(from, { replace: true, state: { inviteData } });
+      } else {
+        navigate(isGuest ? '/lobby' : '/host', { replace: true, state: { inviteData } });
+      }
     }
-  }, [isAuthenticated, location, navigate, inviteData]);
+  }, [isAuthenticated, isGuest, location, navigate, inviteData]);
 
   if (isAuthenticated) {
     return null;
