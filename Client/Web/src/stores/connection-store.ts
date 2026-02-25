@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { io, Socket } from 'socket.io-client';
 import { ConnectionState, ParticipantRole } from '../types';
 import { useSessionStore } from './session-store';
+import { useAnnotationStore } from './annotation-store';
 import { chatService } from '../services/chat-service';
 import { voiceService } from '../services/voice-service';
 import { strokeService } from '../services/stroke-service';
@@ -36,6 +37,7 @@ interface ControlMessage {
   newHostId?: string; // HOST_CHANGED 메시지용
   newRole?: 'host' | 'guest'; // ROLE_CHANGED 메시지용
   inviteToken?: string | null; // ROLE_CHANGED 메시지용 - 호스트 승격 시 초대 토큰
+  points?: { x: number; y: number }[]; // ANNOTATION_STROKE 메시지용
   timestamp: number;
 }
 
@@ -207,6 +209,21 @@ export const useConnectionStore = create<ConnectionStore>((set, get) => ({
           case 'SPOTLIGHT_SHARE':
             sessionStore.setSpotlightShare(message.userId ?? null);
             break;
+
+          case 'ANNOTATION_STROKE': {
+            // 게스트: 호스트의 첨삭 수신 → annotation-store 업데이트
+            if (message.points && Array.isArray(message.points)) {
+              const myUserId = sessionStore.currentUserId;
+              if (myUserId) {
+                useAnnotationStore.getState().addAnnotation(myUserId, {
+                  points: message.points,
+                  color: '#FF3B30',
+                  lineWidth: 3,
+                });
+              }
+            }
+            break;
+          }
 
           case 'SESSION_STATUS':
             // TODO: Handle session status changes (closed, paused, etc.)

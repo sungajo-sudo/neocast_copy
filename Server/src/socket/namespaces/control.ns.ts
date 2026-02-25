@@ -210,6 +210,26 @@ export function setupControlNamespace(namespace: Namespace): void {
       }
     });
 
+    // annotation:stroke — 호스트가 특정 게스트의 캔버스에 첨삭 전송
+    socket.on('annotation:stroke', async (data: { targetUserId: string; points: { x: number; y: number }[] }) => {
+      try {
+        const isHostUser = await sessionService.isHost(sessionId, userId);
+        if (!isHostUser) {
+          socket.emit('error', { code: 'NOT_HOST', message: 'Only host can annotate' });
+          return;
+        }
+        namespace.to(getUserRoom(data.targetUserId)).emit('control', {
+          type: ControlEventType.ANNOTATION_STROKE,
+          fromUserId: userId,
+          points: data.points,
+          timestamp: Date.now(),
+        });
+        logger.info({ sessionId, from: userId, to: data.targetUserId, pts: data.points.length }, 'Annotation stroke forwarded');
+      } catch (error) {
+        logger.error({ socketId: socket.id, error }, 'Error handling annotation:stroke');
+      }
+    });
+
     socket.on('error', (error) => {
       logger.error({ socketId: socket.id, error }, 'Socket error in control namespace');
     });
