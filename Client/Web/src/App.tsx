@@ -2,7 +2,10 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { Routes, Route, Navigate, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { CanvasContainer } from './components/canvas';
-import { SessionLobby, HostSessionView } from './components/session';
+import { SessionLobby, HostSessionView, GuestAnnotationOverlay } from './components/session';
+import { useDevBridgeHost } from './hooks/useDevBridgeHost';
+import { useDevBridgeGuest } from './hooks/useDevBridgeGuest';
+import { devBridge } from './services/dev-bridge';
 import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { LobbyPage } from './pages/LobbyPage';
@@ -224,6 +227,20 @@ function GuestJoinPage() {
     const checkSession = async () => {
       setIsCheckingSession(true);
       try {
+        // DEV 모드: 브릿지에서 세션 정보 조회 (백엔드 없이 동작)
+        if (import.meta.env.DEV) {
+          const devSession = devBridge.getSession(inviteData.code);
+          if (devSession) {
+            setSessionInfo({
+              allowGuestMode: true,
+              hasPassword: false,
+              hostName: devSession.hostName,
+              participantCount: 1,
+            });
+            setIsCheckingSession(false);
+            return;
+          }
+        }
         const response = await sessionService.getSessionByCode(inviteData.code);
         setSessionInfo({
           allowGuestMode: response.session.allowGuestMode,
@@ -253,6 +270,56 @@ function GuestJoinPage() {
     setError(null);
 
     try {
+      // DEV 모드: 브릿지를 통해 백엔드 없이 참가
+      if (import.meta.env.DEV) {
+        const devSession = devBridge.getSession(inviteData.code);
+        if (devSession) {
+          const guestId = 'guest-' + Math.random().toString(36).slice(2, 9);
+          const guestName = displayName.trim() || '게스트';
+
+          loginAsGuest(guestId, 'dev-token', guestName);
+
+          // 호스트 탭에 참가 알림
+          devBridge.send({
+            type: 'GUEST_JOIN',
+            userId: guestId,
+            userName: guestName,
+            code: inviteData.code,
+          });
+
+          setCurrentUserId(guestId);
+          setSession({
+            id: devSession.id,
+            code: devSession.code,
+            status: SessionStatus.Active,
+            hostId: devSession.hostId,
+            participants: [
+              {
+                userId: guestId,
+                userName: guestName,
+                role: ParticipantRole.Guest,
+                joinedAt: Date.now(),
+                isMuted: false,
+                isSpeaking: false,
+              },
+            ],
+            createdAt: devSession.createdAt,
+            hasPassword: false,
+          });
+
+          if (displayName.trim()) {
+            localStorage.setItem(DISPLAY_NAME_KEY, displayName.trim());
+          }
+
+          navigate(`/session/${devSession.code}`, {
+            replace: true,
+            state: { justJoined: true },
+          });
+          setIsLoading(false);
+          return;
+        }
+      }
+
       // 게스트로 세션 참가 (inviteToken 또는 password 사용)
       const response = await sessionService.joinAsGuest(inviteData.code, {
         password: inviteData.password,
@@ -492,6 +559,10 @@ function SessionPage() {
   const isHost = useSessionStore((state) => state.isHost);
   const navigate = useNavigate();
 
+  // DEV 브릿지 훅 (백엔드 없이 멀티탭 테스트)
+  useDevBridgeHost(isHost ? (session?.code ?? null) : null);
+  useDevBridgeGuest(!isHost ? (session?.code ?? null) : null, currentUserId);
+
   // 방금 세션에 참가했는지 확인 (GuestJoinPage/JoinPage에서 전달)
   const justJoined = (location.state as { justJoined?: boolean })?.justJoined;
 
@@ -552,8 +623,13 @@ function SessionPage() {
     return <HostSessionView canInput={canInput} />;
   }
 
-  // 게스트: 캔버스만
-  return <CanvasContainer className="flex-1" inputEnabled={canInput} />;
+  // 게스트: 캔버스 + 첨삭 오버레이
+  return (
+    <>
+      <CanvasContainer className="flex-1" inputEnabled={canInput} />
+      {currentUserId && <GuestAnnotationOverlay userId={currentUserId} />}
+    </>
+  );
 }
 
 /**

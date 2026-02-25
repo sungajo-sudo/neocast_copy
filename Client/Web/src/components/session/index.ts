@@ -8,3 +8,4 @@ export { HostSessionView } from './HostSessionView';
 export { ParticipantModeView } from './ParticipantModeView';
 export { StudentCard } from './StudentCard';
 export { StudentDetailModal } from './StudentDetailModal';
+export { GuestAnnotationOverlay } from './GuestAnnotationOverlay';

@@ -5,6 +5,7 @@ import { useSessionStore } from '../../stores/session-store';
 import { useConnectionStore } from '../../stores/connection-store';
 import { sessionService } from '../../services/session-service';
 import { SessionStatus, ParticipantRole } from '../../types';
+import { devBridge } from '../../services/dev-bridge';
 
 interface Props {
   isOpen: boolean;
@@ -112,6 +113,15 @@ export function CreateSessionModal({ isOpen, onClose }: Props) {
       // DEV 모드: 백엔드 없이 Mock 세션으로 진입
       if (import.meta.env.DEV && user) {
         const mockCode = 'DEV' + Math.random().toString(36).slice(2, 5).toUpperCase();
+        // DEV 브릿지에 세션 등록 (게스트 탭이 참가할 수 있도록)
+        devBridge.announceSession({
+          id: `mock-${mockCode}`,
+          code: mockCode,
+          title: title.trim(),
+          hostId: user.id,
+          hostName: user.name,
+          createdAt: Date.now(),
+        });
         setCurrentUserId(user.id);
         setSession({
           id: `mock-${mockCode}`,

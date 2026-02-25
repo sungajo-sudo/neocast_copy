@@ -3,6 +3,7 @@ import { useSessionStore } from '../../stores/session-store';
 import { useConnectionStore } from '../../stores/connection-store';
 import { StudentCard } from './StudentCard';
 import { StudentDetailModal } from './StudentDetailModal';
+import { devBridge } from '../../services/dev-bridge';
 import type { Participant } from '../../types';
 
 /**
@@ -20,7 +21,17 @@ export function ParticipantModeView() {
 
   const handleAnnotationStroke = (targetUserId: string, points: { x: number; y: number }[]) => {
     setAnnotatingUserId(targetUserId);
-    controlSocket?.emit('annotation:stroke', { targetUserId, points });
+    if (controlSocket) {
+      controlSocket.emit('annotation:stroke', { targetUserId, points });
+    } else if (import.meta.env.DEV) {
+      // DEV 모드: 소켓 없이 BroadcastChannel로 게스트에게 전달
+      devBridge.send({
+        type: 'ANNOTATION_ADDED',
+        targetUserId,
+        annotation: { points, color: '#FF3B30', lineWidth: 3 },
+        code: session?.code ?? '',
+      });
+    }
     // 3초 후 "첨삭중" 배지 해제
     setTimeout(() => {
       setAnnotatingUserId((prev) => (prev === targetUserId ? null : prev));
