@@ -14,6 +14,7 @@ import {
   MoreButton,
   LeaveButton,
 } from '../control-bar';
+import { FEATURE_FLAGS } from '../../utils/feature-flags';
 
 interface ControlBarProps {
   onCopySessionCode?: () => void;
@@ -109,10 +110,10 @@ export const ControlBar: React.FC<ControlBarProps> = ({
           <div className="flex items-center justify-between px-4 pt-0.5 pb-1">
             {/* 왼쪽 정렬 그룹 */}
             <div className="flex items-center gap-1">
-              {/* 펜 입력 그룹: Smartpen, Stylus, Mic (필수) */}
+              {/* 펜 입력 그룹: Smartpen, Stylus, Mic */}
               <SmartpenButton />
               <StylusButton />
-              <MicrophoneButton />
+              {FEATURE_FLAGS.VOICE_ENABLED && <MicrophoneButton />}
 
               {/* 구분선 */}
               <div className={`w-px ${compact ? 'h-6' : 'h-8'} bg-white/20 mx-2`} />

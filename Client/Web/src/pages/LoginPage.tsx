@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { AuthPanel } from '../components/auth';
@@ -6,11 +6,14 @@ import { useAuthStore } from '../stores/auth-store';
 import type { InviteData } from '../utils/invite';
 import watercolorBg from '../assets/images/watercolor-bg.png';
 
+const IS_DEV = import.meta.env.DEV;
+
 export function LoginPage() {
   const { t } = useTranslation();
-  const { isAuthenticated } = useAuthStore();
+  const { isAuthenticated, login } = useAuthStore();
   const location = useLocation();
   const navigate = useNavigate();
+  const [testLoginLoading, setTestLoginLoading] = useState<'host' | 'guest' | null>(null);
 
   // 초대 링크로 접속한 경우 inviteData 확인
   const inviteData: InviteData | undefined = (location.state as { inviteData?: InviteData })?.inviteData;
@@ -27,6 +30,18 @@ export function LoginPage() {
   if (isAuthenticated) {
     return null;
   }
+
+  // 테스트 로그인 핸들러 (개발 환경 전용)
+  const handleTestLogin = async (role: 'host' | 'guest') => {
+    setTestLoginLoading(role);
+    const credentials = {
+      host: { email: 'host@abc.com', password: '1234' },
+      guest: { email: 'guest@abc.com', password: '1234' },
+    };
+    const { email, password } = credentials[role];
+    await login(email, password);
+    setTestLoginLoading(null);
+  };
 
   // "로그인 없이 참가" 버튼 클릭 핸들러
   const handleGuestJoin = () => {
@@ -93,6 +108,33 @@ export function LoginPage() {
             </div>
 
             <AuthPanel initialMode="login" />
+
+            {/* 개발 환경 전용: 테스트 로그인 버튼 */}
+            {IS_DEV && (
+              <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-xl">
+                <p className="text-xs text-yellow-700 font-medium mb-2 text-center">
+                  🛠 개발 환경 — 테스트 로그인
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => handleTestLogin('host')}
+                    disabled={testLoginLoading !== null}
+                    className="flex-1 py-2 px-3 bg-blue-500 text-white rounded-lg text-sm font-medium hover:bg-blue-600 disabled:opacity-50 transition-colors"
+                  >
+                    {testLoginLoading === 'host' ? '로그인 중...' : '🎓 호스트'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTestLogin('guest')}
+                    disabled={testLoginLoading !== null}
+                    className="flex-1 py-2 px-3 bg-green-500 text-white rounded-lg text-sm font-medium hover:bg-green-600 disabled:opacity-50 transition-colors"
+                  >
+                    {testLoginLoading === 'guest' ? '로그인 중...' : '👤 게스트'}
+                  </button>
+                </div>
+              </div>
+            )}
 
             {/* 초대 링크로 접속한 경우 게스트 참가 버튼 표시 */}
             {inviteData && (

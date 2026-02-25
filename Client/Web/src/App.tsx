@@ -31,6 +31,7 @@ import { sessionService } from './services/session-service';
 import { penInputService } from './services/pen-input.service';
 import { messengerService } from './services/messenger-service';
 import { createInviteLink, parseInviteFromPath } from './utils/invite';
+import { FEATURE_FLAGS } from './utils/feature-flags';
 import { copyToClipboard } from './utils/clipboard';
 import type { InviteData } from './utils/invite';
 import watercolorBg from './assets/images/watercolor-bg.png';
@@ -825,7 +826,7 @@ function App() {
   // - 읽지 않은 메시지/친구요청 수 로드
   // - 실시간 알림을 위한 소켓 연결
   useEffect(() => {
-    if (isAuthenticated && !isGuest) {
+    if (FEATURE_FLAGS.MESSENGER_ENABLED && isAuthenticated && !isGuest) {
       // 읽지 않은 수 초기화 및 소켓 연결
       messengerService.initializeUnreadCount();
       messengerService.connect();
@@ -903,7 +904,7 @@ function App() {
             {!headerUltraCompact && <LanguageSelector />}
 
             {/* 메신저 버튼 - 로그인한 일반 사용자만 표시 (게스트 제외) */}
-            {isAuthenticated && !isGuest && (
+            {FEATURE_FLAGS.MESSENGER_ENABLED && isAuthenticated && !isGuest && (
               <button
                 type="button"
                 onClick={toggleMessenger}
@@ -1158,7 +1159,7 @@ function App() {
       {/* 모달들 */}
       <LeaveConfirmModal onConfirm={handleLeaveSession} />
       <SettingsModal />
-      <MessengerModal />
+      {FEATURE_FLAGS.MESSENGER_ENABLED && <MessengerModal />}
       <PdfUploadModal />
       <AboutModal />
 
