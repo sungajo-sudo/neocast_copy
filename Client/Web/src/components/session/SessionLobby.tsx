@@ -4,6 +4,7 @@ import { useAuthStore } from '../../stores/auth-store';
 import { useConnectionStore } from '../../stores/connection-store';
 import { useSessionStore } from '../../stores/session-store';
 import { sessionService, ApiRequestError } from '../../services/session-service';
+import { devBridge } from '../../services/dev-bridge';
 import { ConnectionState, SessionStatus, ParticipantRole } from '../../types';
 import type { InviteData } from '../../utils/invite';
 
@@ -193,6 +194,12 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({
   const checkSessionPassword = async (code: string) => {
     if (code.length !== 6) return;
 
+    // DEV 모드: 브릿지 세션이면 비밀번호 불필요
+    if (import.meta.env.DEV && devBridge.getSession(code)) {
+      setNeedsPassword(false);
+      return;
+    }
+
     setIsCheckingSession(true);
     try {
       const response = await sessionService.getSessionByCode(code);
@@ -217,21 +224,21 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({
     }
   };
 
-  // 비밀번호 또는 초대 토큰이 포함된 초대 링크로 접속 시 자동 참가
+  // 초대 링크로 접속 시 자동 참가
+  // - 비밀번호/초대 토큰이 있는 경우 (일반)
+  // - DEV 모드에서 devBridge 세션이 존재하는 경우 (비밀번호/토큰 없이도 자동 참가)
   useEffect(() => {
-    if (
-      (initialInviteData?.password || initialInviteData?.inviteToken) &&
-      tokens?.accessToken &&
-      user &&
-      !autoJoinAttempted.current &&
-      !isJoining &&
-      !session
-    ) {
+    if (!initialInviteData || !tokens?.accessToken || !user || autoJoinAttempted.current || isJoining || session) return;
+
+    const hasCredentials = !!(initialInviteData.password || initialInviteData.inviteToken);
+    const hasDevSession = import.meta.env.DEV && !!initialInviteData.code && !!devBridge.getSession(initialInviteData.code);
+
+    if (hasCredentials || hasDevSession) {
       autoJoinAttempted.current = true;
       // 약간의 지연 후 자동 참가 시도
       const timer = setTimeout(() => {
         handleJoinSession();
-      }, 500);
+      }, 300);
       return () => clearTimeout(timer);
     }
   }, [initialInviteData, tokens, user, isJoining, session]);
@@ -326,6 +333,36 @@ export const SessionLobby: React.FC<SessionLobbyProps> = ({
     setJoinError(null);
 
     try {
+      // DEV 모드: 브릿지 세션이면 백엔드 없이 참가
+      if (import.meta.env.DEV) {
+        const devSession = devBridge.getSession(joinCode);
+        if (devSession) {
+          // 호스트와 ID 충돌 방지: 항상 별도 게스트 ID 생성
+          const guestId = 'guest-' + Math.random().toString(36).slice(2, 9);
+          const guestName = user.name + ' (게스트)';
+          setCurrentUserId(guestId);
+          setSession({
+            id: devSession.id,
+            code: devSession.code,
+            status: SessionStatus.Active,
+            hostId: devSession.hostId,
+            participants: [{
+              userId: guestId,
+              userName: guestName,
+              role: ParticipantRole.Guest,
+              joinedAt: Date.now(),
+              isMuted: false,
+              isSpeaking: false,
+            }],
+            createdAt: devSession.createdAt,
+            hasPassword: false,
+          });
+          devBridge.send({ type: 'GUEST_JOIN', userId: guestId, userName: guestName, code: devSession.code });
+          setIsJoining(false);
+          return;
+        }
+      }
+
       // 1. REST API로 세션 참가 (inviteToken 또는 비밀번호 사용)
       const response = await sessionService.joinSession(
         tokens.accessToken,

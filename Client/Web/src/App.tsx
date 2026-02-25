@@ -607,15 +607,13 @@ function SessionPage() {
   }, [session, code, navigate, justJoined]);
 
   if (!session) {
-    // 방금 참가한 경우 로딩 표시
-    if (justJoined) {
-      return (
-        <div className="flex-1 flex items-center justify-center">
-          <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full" />
-        </div>
-      );
-    }
-    return null;
+    // session이 없으면 항상 로딩 스피너 표시 (return null로 인한 빈 화면 방지)
+    // useEffect가 redirect를 처리함 (justJoined일 때는 redirect하지 않고 session을 기다림)
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="animate-spin w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full" />
+      </div>
+    );
   }
 
   // 호스트: 뷰 탭 포함 (기본 뷰 / 참가자 모드 뷰)
