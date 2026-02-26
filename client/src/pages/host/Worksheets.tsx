@@ -129,22 +129,6 @@ export default function Worksheets() {
                     </div>
                 </div>
             )}
-
-            {/* 안내 정보 */}
-            {worksheets.length > 0 && (
-                <div className="mt-6 p-4 bg-blue-50 rounded-xl">
-                    <div className="flex gap-3">
-                        <span className="text-blue-600 text-xl flex-shrink-0">ℹ️</span>
-                        <div className="flex-1">
-                            <h4 className="text-sm font-medium text-blue-900 mb-1">다운로드 옵션 안내</h4>
-                            <ul className="text-sm text-blue-800 space-y-1">
-                                <li>• <strong>NCode PDF</strong>: NCode 패턴이 인쇄된 PDF 파일 (실물 출력용)</li>
-                                <li>• <strong>.np2</strong>: Neo smartpen 전용 파일 형식</li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
