@@ -1,81 +1,16 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-
-interface StudentInfo {
-    id: string;
-    name: string;
-    activityTime: number; // 분
-    participatedPages: number;
-    feedbackCount: number;
-}
-
-interface Feedback {
-    id: string;
-    pageNumber: number;
-    timestamp: string;
-    imageUrl: string; // 첨삭 이미지 (실제로는 canvas data URL)
-    comment?: string;
-}
-
-interface PageParticipation {
-    pageNumber: number;
-    writingTime: number; // 초
-    strokeCount: number;
-    firstWriteTime: string;
-    lastWriteTime: string;
-}
-
-// 더미 학생 정보
-const DUMMY_STUDENT_INFO: StudentInfo = {
-    id: 's1',
-    name: '김민지',
-    activityTime: 45,
-    participatedPages: 8,
-    feedbackCount: 3,
-};
-
-// 더미 피드백 데이터
-const DUMMY_FEEDBACKS: Feedback[] = [
-    {
-        id: 'fb1',
-        pageNumber: 1,
-        timestamp: '14:12',
-        imageUrl: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23f3f4f6" width="200" height="150"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" fill="%236b7280" font-size="14"%3E첨삭 이미지%3C/text%3E%3C/svg%3E',
-        comment: '이차방정식 풀이 과정이 명확합니다',
-    },
-    {
-        id: 'fb2',
-        pageNumber: 3,
-        timestamp: '14:25',
-        imageUrl: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23f3f4f6" width="200" height="150"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" fill="%236b7280" font-size="14"%3E첨삭 이미지%3C/text%3E%3C/svg%3E',
-        comment: '근의 공식 적용 시 부호 주의',
-    },
-    {
-        id: 'fb3',
-        pageNumber: 5,
-        timestamp: '14:38',
-        imageUrl: 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="200" height="150"%3E%3Crect fill="%23f3f4f6" width="200" height="150"/%3E%3Ctext x="50%25" y="50%25" text-anchor="middle" fill="%236b7280" font-size="14"%3E첨삭 이미지%3C/text%3E%3C/svg%3E',
-    },
-];
-
-// 더미 페이지 참여 데이터
-const DUMMY_PAGE_PARTICIPATION: PageParticipation[] = [
-    { pageNumber: 1, writingTime: 420, strokeCount: 145, firstWriteTime: '14:05', lastWriteTime: '14:12' },
-    { pageNumber: 2, writingTime: 380, strokeCount: 132, firstWriteTime: '14:13', lastWriteTime: '14:19' },
-    { pageNumber: 3, writingTime: 450, strokeCount: 168, firstWriteTime: '14:20', lastWriteTime: '14:27' },
-    { pageNumber: 4, writingTime: 360, strokeCount: 125, firstWriteTime: '14:28', lastWriteTime: '14:34' },
-    { pageNumber: 5, writingTime: 520, strokeCount: 189, firstWriteTime: '14:35', lastWriteTime: '14:43' },
-    { pageNumber: 6, writingTime: 290, strokeCount: 98, firstWriteTime: '14:44', lastWriteTime: '14:49' },
-    { pageNumber: 7, writingTime: 340, strokeCount: 115, firstWriteTime: '14:50', lastWriteTime: '14:55' },
-    { pageNumber: 8, writingTime: 180, strokeCount: 62, firstWriteTime: '14:56', lastWriteTime: '14:59' },
-];
+import { getStudentDetailData, type StudentInfo, type Feedback, type PageParticipation } from '../../data/dummyStudentData';
 
 export default function StudentReportDetail() {
     const { sessionId, studentId } = useParams();
     const navigate = useNavigate();
-    const [studentInfo] = useState<StudentInfo>(DUMMY_STUDENT_INFO);
-    const [feedbacks] = useState<Feedback[]>(DUMMY_FEEDBACKS);
-    const [pageParticipation] = useState<PageParticipation[]>(DUMMY_PAGE_PARTICIPATION);
+
+    // 학생 데이터 로드 (공유 데이터 사용)
+    const studentData = getStudentDetailData(studentId || 's1', '학생', 8);
+    const [studentInfo] = useState<StudentInfo>(studentData.info);
+    const [feedbacks] = useState<Feedback[]>(studentData.feedbacks);
+    const [pageParticipation] = useState<PageParticipation[]>(studentData.pageParticipation);
 
     // 필기 재생 플레이어 상태 (UI만)
     const [isPlaying, setIsPlaying] = useState(false);

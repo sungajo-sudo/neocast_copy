@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { generateStudentReportPDF } from '../../utils/pdfGenerator';
+import { getStudentDetailData } from '../../data/dummyStudentData';
 
 interface StudentData {
     id: string;
@@ -57,30 +58,18 @@ export default function SessionDetail() {
                 return;
             }
 
-            // 페이지별 참여 데이터 생성 (더미)
-            const pageParticipation = Array.from({ length: student.participatedPages }, (_, i) => {
-                const pageNum = i + 1;
-                const baseTime = 300 + Math.floor(Math.random() * 200); // 300-500초
-                const baseStrokes = 100 + Math.floor(Math.random() * 100); // 100-200획
+            // 공유 데이터 소스에서 학생 상세 데이터 가져오기
+            const studentData = getStudentDetailData(studentId, studentName, student.participatedPages);
 
-                return {
-                    pageNumber: pageNum,
-                    writingTime: baseTime,
-                    strokeCount: baseStrokes,
-                    firstWriteTime: `14:${(5 + i * 7).toString().padStart(2, '0')}`,
-                    lastWriteTime: `14:${(12 + i * 7).toString().padStart(2, '0')}`,
-                };
-            });
-
-            // PDF 생성
+            // PDF 생성 (StudentReportDetail과 동일한 데이터 사용)
             await generateStudentReportPDF({
-                studentName: student.name,
+                studentName: studentData.info.name,
                 sessionName,
                 sessionDate,
-                activityTime: student.activityTime,
-                participatedPages: student.participatedPages,
-                feedbackCount: student.feedbackCount,
-                pageParticipation,
+                activityTime: studentData.info.activityTime,
+                participatedPages: studentData.info.participatedPages,
+                feedbackCount: studentData.info.feedbackCount,
+                pageParticipation: studentData.pageParticipation,
             });
         } catch (error) {
             console.error('PDF 생성 실패:', error);
