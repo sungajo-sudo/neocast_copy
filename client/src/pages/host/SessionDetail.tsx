@@ -2,27 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { generateStudentReportPDF } from '../../utils/pdfGenerator';
 import { getStudentDetailData } from '../../data/dummyStudentData';
-
-interface StudentData {
-    id: string;
-    name: string;
-    activityTime: number; // 분
-    participatedPages: number;
-    feedbackCount: number;
-    hasNoActivity: boolean;
-}
-
-// 더미 학생 데이터
-const DUMMY_STUDENTS: StudentData[] = [
-    { id: 's1', name: '김민지', activityTime: 45, participatedPages: 8, feedbackCount: 3, hasNoActivity: false },
-    { id: 's2', name: '이서준', activityTime: 38, participatedPages: 7, feedbackCount: 2, hasNoActivity: false },
-    { id: 's3', name: '박지우', activityTime: 52, participatedPages: 10, feedbackCount: 4, hasNoActivity: false },
-    { id: 's4', name: '최수아', activityTime: 0, participatedPages: 0, feedbackCount: 0, hasNoActivity: true },
-    { id: 's5', name: '정현우', activityTime: 41, participatedPages: 9, feedbackCount: 3, hasNoActivity: false },
-    { id: 's6', name: '강예린', activityTime: 0, participatedPages: 0, feedbackCount: 0, hasNoActivity: true },
-    { id: 's7', name: '윤도현', activityTime: 47, participatedPages: 8, feedbackCount: 2, hasNoActivity: false },
-    { id: 's8', name: '한소민', activityTime: 44, participatedPages: 9, feedbackCount: 3, hasNoActivity: false },
-];
+import { DUMMY_STUDENTS } from '../../data/dummyData';
 
 export default function SessionDetail() {
     const { sessionId } = useParams();

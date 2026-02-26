@@ -1,70 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import CreateSessionModal from '../../components/modals/CreateSessionModal';
-
-// 더미 세션 데이터 (필기가 중요한 수업)
-const DUMMY_SESSIONS = [
-    {
-        id: '1',
-        title: '중등 수학 2-1 이차방정식 문제풀이',
-        date: '2026-02-26',
-        time: '14:00',
-        instructor: '김민수',
-        expectedStudents: 20,
-        actualStudents: 18,
-        worksheet: '이차방정식_문제지.pdf',
-        status: 'scheduled' as const,
-        code: 'ABC123',
-    },
-    {
-        id: '2',
-        title: '고등 영어 독해 - 수능 유형 분석',
-        date: '2026-02-26',
-        time: '16:00',
-        instructor: '이영희',
-        expectedStudents: 15,
-        actualStudents: 15,
-        worksheet: '수능영어_독해.pdf',
-        status: 'in-progress' as const,
-        code: 'DEF456',
-    },
-    {
-        id: '3',
-        title: '중학 과학 화학반응식 정리',
-        date: '2026-02-27',
-        time: '10:00',
-        instructor: '박철수',
-        expectedStudents: 25,
-        actualStudents: 0,
-        worksheet: '화학반응식_정리.pdf',
-        status: 'scheduled' as const,
-        code: 'GHI789',
-    },
-    {
-        id: '4',
-        title: '한국사 근현대사 연표 암기',
-        date: '2026-02-27',
-        time: '15:00',
-        instructor: '최지원',
-        expectedStudents: 12,
-        actualStudents: 0,
-        worksheet: '근현대사_연표.pdf',
-        status: 'scheduled' as const,
-        code: 'JKL012',
-    },
-    {
-        id: '5',
-        title: '국어 문학 - 현대시 감상 및 필기',
-        date: '2026-02-28',
-        time: '13:00',
-        instructor: '정수연',
-        expectedStudents: 18,
-        actualStudents: 0,
-        worksheet: '현대시_작품집.pdf',
-        status: 'scheduled' as const,
-        code: 'MNO345',
-    },
-];
+import { DUMMY_SESSIONS } from '../../data/dummyData';
 
 export default function Dashboard() {
     const [filterTab, setFilterTab] = useState<'today' | 'upcoming'>('today');
