@@ -79,17 +79,14 @@ export default function Results() {
 
     const loadResults = () => {
         try {
+            // localStorage에서 종료된 세션 로드 시도
             const savedRooms = JSON.parse(localStorage.getItem('nc_rooms') || '[]') as Room[];
-
-            // 종료된 세션만 필터링 (24시간 이상 경과한 세션)
             const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
             const completedSessions = savedRooms.filter(room =>
                 room.createdAt < oneDayAgo && !room.isOpen
             );
 
-            // SessionResult 형식으로 변환 (더미 데이터 추가)
             const sessionResults: SessionResult[] = completedSessions.map(room => {
-                // 날짜/시간 파싱
                 let date = '';
                 let time = '';
                 if (room.schedule) {
@@ -103,13 +100,16 @@ export default function Results() {
                     name: room.name,
                     date,
                     time,
-                    duration: Math.floor(Math.random() * 60) + 30, // 더미: 30-90분
-                    participants: Math.floor(Math.random() * 15) + 5, // 더미: 5-20명
+                    duration: Math.floor(Math.random() * 60) + 30,
+                    participants: Math.floor(Math.random() * 15) + 5,
                 };
             });
 
+            // localStorage에 데이터가 없으면 더미 데이터 사용
+            const finalResults = sessionResults.length > 0 ? sessionResults : DUMMY_COMPLETED_SESSIONS;
+
             // 최신순 정렬
-            const sorted = sessionResults.sort((a, b) => {
+            const sorted = finalResults.sort((a, b) => {
                 const dateA = new Date(a.date).getTime();
                 const dateB = new Date(b.date).getTime();
                 return dateB - dateA;
@@ -118,6 +118,8 @@ export default function Results() {
             setResults(sorted);
         } catch (error) {
             console.error('수업 결과 로드 실패:', error);
+            // 에러 시에도 더미 데이터 표시
+            setResults(DUMMY_COMPLETED_SESSIONS);
         } finally {
             setLoading(false);
         }
