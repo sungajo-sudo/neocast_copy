@@ -24,6 +24,50 @@ interface SessionResult {
     participants: number;
 }
 
+// 더미 종료 세션 데이터 (필기가 중요한 수업)
+const DUMMY_COMPLETED_SESSIONS: SessionResult[] = [
+    {
+        roomId: 'session-1',
+        name: '중등 수학 2-1 이차방정식 문제풀이',
+        date: '2026-02-25',
+        time: '14:00',
+        duration: 60,
+        participants: 18,
+    },
+    {
+        roomId: 'session-2',
+        name: '고등 영어 독해 - 수능 유형 분석',
+        date: '2026-02-24',
+        time: '16:00',
+        duration: 50,
+        participants: 22,
+    },
+    {
+        roomId: 'session-3',
+        name: '중학 과학 화학반응식 정리',
+        date: '2026-02-23',
+        time: '10:00',
+        duration: 45,
+        participants: 16,
+    },
+    {
+        roomId: 'session-4',
+        name: '한국사 근현대사 연표 암기',
+        date: '2026-02-22',
+        time: '15:00',
+        duration: 55,
+        participants: 20,
+    },
+    {
+        roomId: 'session-5',
+        name: '국어 문학 - 현대시 감상 및 필기',
+        date: '2026-02-21',
+        time: '13:00',
+        duration: 50,
+        participants: 19,
+    },
+];
+
 export default function Results() {
     const navigate = useNavigate();
     const [results, setResults] = useState<SessionResult[]>([]);
