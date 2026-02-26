@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import CreateSessionModal from '../../components/modals/CreateSessionModal';
 
 // 더미 세션 데이터
 const DUMMY_SESSIONS = [
@@ -68,6 +69,7 @@ const DUMMY_SESSIONS = [
 export default function Dashboard() {
     const [filterTab, setFilterTab] = useState<'today' | 'upcoming'>('today');
     const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+    const [showCreateModal, setShowCreateModal] = useState(false);
 
     const nickname = localStorage.getItem('nc_host_nickname') || '선생님';
 
@@ -114,7 +116,7 @@ export default function Dashboard() {
                     <div className="flex items-center justify-between mb-4">
                         <h2 className="text-2xl font-bold">새 세션 시작</h2>
                         <button
-                            onClick={() => alert('세션 만들기 모달 열기 (3단계에서 구현)')}
+                            onClick={() => setShowCreateModal(true)}
                             className="w-12 h-12 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center text-3xl transition-colors"
                         >
                             +
@@ -271,6 +273,16 @@ export default function Dashboard() {
                     </div>
                 )}
             </div>
+
+            {/* 세션 만들기 모달 */}
+            <CreateSessionModal
+                isOpen={showCreateModal}
+                onClose={() => setShowCreateModal(false)}
+                onSuccess={(code) => {
+                    console.log('세션 생성 완료:', code);
+                    // 목록 새로고침은 다음 단계에서 구현
+                }}
+            />
         </div>
     );
 }
