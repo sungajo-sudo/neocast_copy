@@ -14,6 +14,7 @@ import SessionList from './pages/host/SessionList';
 import Worksheets from './pages/host/Worksheets';
 import Results from './pages/host/Results';
 import SessionDetail from './pages/host/SessionDetail';
+import StudentReportDetail from './pages/host/StudentReportDetail';
 
 export default function App() {
     return (
@@ -29,6 +30,7 @@ export default function App() {
                     <Route path="worksheets" element={<Worksheets />} />
                     <Route path="results" element={<Results />} />
                     <Route path="results/:sessionId" element={<SessionDetail />} />
+                    <Route path="results/:sessionId/student/:studentId" element={<StudentReportDetail />} />
                 </Route>
 
                 {/* 기존 라우트 (절대 수정 금지) */}
