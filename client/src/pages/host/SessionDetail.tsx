@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
+import { generateStudentReportPDF } from '../../utils/pdfGenerator';
 
 interface StudentData {
     id: string;
@@ -47,8 +48,44 @@ export default function SessionDetail() {
         navigate(`/host/results/${sessionId}/student/${studentId}`);
     };
 
-    const handleDownloadPDF = (studentId: string, studentName: string) => {
-        alert(`${studentName} 학생 PDF 다운로드\n(실제 PDF 생성은 9단계에서 구현됩니다)`);
+    const handleDownloadPDF = async (studentId: string, studentName: string) => {
+        try {
+            // 해당 학생 데이터 찾기
+            const student = DUMMY_STUDENTS.find(s => s.id === studentId);
+            if (!student) {
+                alert('학생 데이터를 찾을 수 없습니다.');
+                return;
+            }
+
+            // 페이지별 참여 데이터 생성 (더미)
+            const pageParticipation = Array.from({ length: student.participatedPages }, (_, i) => {
+                const pageNum = i + 1;
+                const baseTime = 300 + Math.floor(Math.random() * 200); // 300-500초
+                const baseStrokes = 100 + Math.floor(Math.random() * 100); // 100-200획
+
+                return {
+                    pageNumber: pageNum,
+                    writingTime: baseTime,
+                    strokeCount: baseStrokes,
+                    firstWriteTime: `14:${(5 + i * 7).toString().padStart(2, '0')}`,
+                    lastWriteTime: `14:${(12 + i * 7).toString().padStart(2, '0')}`,
+                };
+            });
+
+            // PDF 생성
+            await generateStudentReportPDF({
+                studentName: student.name,
+                sessionName,
+                sessionDate,
+                activityTime: student.activityTime,
+                participatedPages: student.participatedPages,
+                feedbackCount: student.feedbackCount,
+                pageParticipation,
+            });
+        } catch (error) {
+            console.error('PDF 생성 실패:', error);
+            alert('PDF 생성 중 오류가 발생했습니다.');
+        }
     };
 
     useEffect(() => {
