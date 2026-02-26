@@ -6,13 +6,12 @@ import { useNavigate } from 'react-router-dom';
 import { useSessionStore } from '../stores/sessionStore';
 import { useDemoStrokeStore } from '../stores/demoStrokeStore';
 import { getStrokeSocket, getControlSocket } from '../services/socketService';
-import { penInputService } from '../services/pen-input.service';
 import StudentMiniCanvas from './StudentMiniCanvas';
 import StudentDetailView from './StudentDetailView';
-import SmartpenButton from './control-bar/SmartpenButton';
-import PdfUploadButton from './control-bar/PdfUploadButton';
-import PdfUploadModal from './layout/PdfUploadModal';
-import HostCanvas from './host-canvas/HostCanvas';
+// import SmartpenButton from './control-bar/SmartpenButton';
+// import PdfUploadButton from './control-bar/PdfUploadButton';
+// import PdfUploadModal from './layout/PdfUploadModal';
+// import HostCanvas from './host-canvas/HostCanvas';
 import { usePanelStore } from '../stores/panel-store';
 import { usePageStore } from '../stores/page-store';
 import type { Stroke } from '../stores/demoStrokeStore';
@@ -115,7 +114,6 @@ export default function MonitoringView() {
     const [participants, setParticipants] = useState<Participant[]>([]);
     const [selectedGuest, setSelectedGuest] = useState<Participant | null>(null);
     const [annotatingGuestId, setAnnotatingGuestId] = useState<string | null>(null);
-    const [writingUserIds, setWritingUserIds] = useState<Set<string>>(new Set());
     const [activeTab, setActiveTab] = useState<'grid' | 'myCanvas'>('grid');
     const [, forceUpdate] = useState(0);
 
@@ -131,12 +129,6 @@ export default function MonitoringView() {
     const initializeFirstPage = usePageStore(s => s.initializeFirstPage);
     useEffect(() => { initializeFirstPage(); }, []);
 
-    // 펜 입력 서비스 초기화
-    useEffect(() => {
-        penInputService.initialize();
-        console.log('[MonitoringView] Pen input service initialized');
-    }, []);
-
     const addStroke = useDemoStrokeStore(s => s.addStroke);
     const updateActiveStroke = useDemoStrokeStore(s => s.updateActiveStroke);
     const finalizeStroke = useDemoStrokeStore(s => s.finalizeStroke);
@@ -145,115 +137,6 @@ export default function MonitoringView() {
     const activeStrokesMap = useDemoStrokeStore(s => s.activeStrokes);
 
     const controlSocketRef = useRef<ReturnType<typeof getControlSocket> | null>(null);
-
-    // 🧪 로컬 모드: 호스트 자신을 participants에 등록
-    useEffect(() => {
-        if (!sessionId || !userId) return;
-
-        const sessionKey = `nc_participants_${sessionId}`;
-        const participants = JSON.parse(localStorage.getItem(sessionKey) || '[]');
-
-        // 호스트 추가
-        const hostExists = participants.find((p: Participant) => p.userId === userId);
-        if (!hostExists) {
-            participants.push({ userId, nickname: nickname || '호스트', role: 'host' });
-            localStorage.setItem(sessionKey, JSON.stringify(participants));
-        }
-
-        // 컴포넌트 언마운트 시 제거
-        return () => {
-            const currentParticipants = JSON.parse(localStorage.getItem(sessionKey) || '[]');
-            const filtered = currentParticipants.filter((p: Participant) => p.userId !== userId);
-            localStorage.setItem(sessionKey, JSON.stringify(filtered));
-        };
-    }, [sessionId, userId, nickname]);
-
-    // 🧪 로컬 모드: localStorage 폴링으로 참가자 목록 업데이트
-    useEffect(() => {
-        if (!sessionId) return;
-
-        const sessionKey = `nc_participants_${sessionId}`;
-
-        const updateParticipants = () => {
-            const savedParticipants = JSON.parse(localStorage.getItem(sessionKey) || '[]');
-            setParticipants(savedParticipants);
-        };
-
-        updateParticipants();
-        const interval = setInterval(updateParticipants, 1000); // 1초마다 체크
-
-        return () => clearInterval(interval);
-    }, [sessionId]);
-
-    // 🧪 로컬 모드: 필기중 상태 폴링 (필기중 뱃지용)
-    useEffect(() => {
-        if (!sessionId) return;
-
-        const checkWritingStatus = () => {
-            const now = Date.now();
-            const writing = new Set<string>();
-
-            // 모든 참가자의 필기 상태 체크
-            participants.forEach(p => {
-                const writingKey = `nc_writing_${sessionId}_${p.userId}`;
-                const timestamp = localStorage.getItem(writingKey);
-
-                if (timestamp) {
-                    const elapsed = now - parseInt(timestamp);
-                    // 3초 이내 필기 시작 → 필기중으로 간주
-                    if (elapsed < 3000) {
-                        writing.add(p.userId);
-                    } else {
-                        // 오래된 플래그 제거
-                        localStorage.removeItem(writingKey);
-                    }
-                }
-            });
-
-            setWritingUserIds(writing);
-        };
-
-        checkWritingStatus();
-        const interval = setInterval(checkWritingStatus, 500); // 0.5초마다 체크
-
-        return () => clearInterval(interval);
-    }, [sessionId, participants]);
-
-    // 🧪 로컬 모드: 게스트 스트로크 폴링
-    useEffect(() => {
-        if (!sessionId) return;
-
-        const loadedStrokeIds = new Set<string>();
-
-        const updateGuestStrokes = () => {
-            participants.forEach(participant => {
-                if (participant.role === 'guest') {
-                    const strokeKey = `nc_strokes_${sessionId}_${participant.userId}`;
-                    const strokes = JSON.parse(localStorage.getItem(strokeKey) || '[]');
-
-                    strokes.forEach((stroke: any) => {
-                        // 이미 로드한 스트로크는 건너뛰기
-                        if (!loadedStrokeIds.has(stroke.id)) {
-                            loadedStrokeIds.add(stroke.id);
-                            addStroke(participant.userId, {
-                                id: stroke.id,
-                                userId: stroke.userId,
-                                color: stroke.color,
-                                lineWidth: stroke.lineWidth,
-                                points: stroke.points,
-                                done: true
-                            });
-                        }
-                    });
-                }
-            });
-        };
-
-        updateGuestStrokes();
-        const interval = setInterval(updateGuestStrokes, 500); // 0.5초마다 체크
-
-        return () => clearInterval(interval);
-    }, [sessionId, participants, addStroke]);
 
     // ── 소켓 연결 (기존 로직 유지) ──────────────────────────
     useEffect(() => {
@@ -328,24 +211,9 @@ export default function MonitoringView() {
         arr.push({ color: '#FF3B30', lineWidth: 3, points });
         annotationsMap.set(guestId, arr);
         forceUpdate(n => n + 1);
-
-        // 🧪 로컬 모드: localStorage에 첨삭 저장
-        if (sessionId) {
-            const annotationKey = `nc_annotations_${sessionId}_${guestId}`;
-            const annotations = JSON.parse(localStorage.getItem(annotationKey) || '[]');
-            annotations.push({
-                id: `annotation-${Date.now()}`,
-                color: '#FF3B30',
-                lineWidth: 3,
-                points,
-                timestamp: Date.now()
-            });
-            localStorage.setItem(annotationKey, JSON.stringify(annotations));
-        }
-
         controlSocketRef.current?.emit('annotation:stroke', { guestId, pageId: 'page-1', points });
         setTimeout(() => setAnnotatingGuestId(null), 3000);
-    }, [sessionId]);
+    }, []);
 
     function handleLeave() {
         if (confirm('세션을 종료하고 나가시겠습니까?')) navigate('/host');
@@ -542,7 +410,6 @@ export default function MonitoringView() {
                             {guests.map(p => {
                                 const strokes = allStrokes.get(p.userId) ?? [];
                                 const active = Array.from(activeStrokesMap.values()).filter(s => s.userId === p.userId);
-                                const isWriting = writingUserIds.has(p.userId);
                                 return (
                                     <StudentMiniCanvas
                                         key={p.userId}
@@ -551,7 +418,6 @@ export default function MonitoringView() {
                                         strokes={strokes}
                                         activeStrokes={active}
                                         isAnnotating={annotatingGuestId === p.userId}
-                                        isWriting={isWriting}
                                         onClick={() => setSelectedGuest(p)}
                                     />
                                 );

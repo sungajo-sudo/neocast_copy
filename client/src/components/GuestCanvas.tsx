@@ -7,6 +7,8 @@ import { useSessionStore } from '../stores/sessionStore';
 import { useDemoStrokeStore } from '../stores/demoStrokeStore';
 import { getStrokeSocket, getControlSocket } from '../services/socketService';
 import DemoStrokeCanvas from './canvas/DemoStrokeCanvas';
+import SmartpenButton from './control-bar/SmartpenButton';
+import { penInputService } from '../services/pen-input.service';
 import type { Stroke } from '../stores/demoStrokeStore';
 import { v4 as uuidv4 } from 'uuid';
 import watercolorBg from '../assets/watercolor-bg.png';
@@ -163,6 +165,34 @@ export default function GuestCanvas() {
     useEffect(() => { penColorRef.current = penColor; }, [penColor]);
     useEffect(() => { lineWidthRef.current = lineWidth; }, [lineWidth]);
 
+    // 🧪 로컬 모드: 게스트 자신을 participants에 등록
+    useEffect(() => {
+        if (!sessionId || !userId) return;
+
+        const sessionKey = `nc_participants_${sessionId}`;
+        const participants = JSON.parse(localStorage.getItem(sessionKey) || '[]');
+
+        // 게스트 추가
+        const guestExists = participants.find((p: any) => p.userId === userId);
+        if (!guestExists) {
+            participants.push({ userId, nickname: nickname || '게스트', role: 'guest' });
+            localStorage.setItem(sessionKey, JSON.stringify(participants));
+        }
+
+        // 컴포넌트 언마운트 시 제거
+        return () => {
+            const currentParticipants = JSON.parse(localStorage.getItem(sessionKey) || '[]');
+            const filtered = currentParticipants.filter((p: any) => p.userId !== userId);
+            localStorage.setItem(sessionKey, JSON.stringify(filtered));
+        };
+    }, [sessionId, userId, nickname]);
+
+    // 펜 입력 서비스 초기화
+    useEffect(() => {
+        penInputService.initialize();
+        console.log('[GuestCanvas] Pen input service initialized');
+    }, []);
+
     // ── 소켓 연결 (기존 로직 유지) ──────────────────────────
     useEffect(() => {
         if (!sessionId || !userId) return;
@@ -179,6 +209,80 @@ export default function GuestCanvas() {
 
         return () => { controlSock.off('annotation:stroke'); };
     }, [sessionId, userId]);
+
+    // 🧪 로컬 모드: localStorage 폴링으로 첨삭 받기
+    useEffect(() => {
+        if (!sessionId || !userId) return;
+
+        const annotationKey = `nc_annotations_${sessionId}_${userId}`;
+        let lastCheckTime = Date.now();
+
+        const checkAnnotations = () => {
+            const annotations = JSON.parse(localStorage.getItem(annotationKey) || '[]');
+
+            // 마지막 체크 이후의 새로운 첨삭만 추가
+            const newAnnotations = annotations.filter((a: any) => a.timestamp > lastCheckTime);
+
+            if (newAnnotations.length > 0) {
+                newAnnotations.forEach((annotation: any) => {
+                    setAnnotationStrokes(prev => [...prev, {
+                        color: annotation.color,
+                        lineWidth: annotation.lineWidth,
+                        points: annotation.points
+                    }]);
+                });
+
+                setShowBadge(true);
+                if (badgeTimerRef.current) clearTimeout(badgeTimerRef.current);
+                badgeTimerRef.current = setTimeout(() => setShowBadge(false), 3000);
+
+                lastCheckTime = Date.now();
+            }
+        };
+
+        const interval = setInterval(checkAnnotations, 500); // 0.5초마다 체크
+
+        return () => clearInterval(interval);
+    }, [sessionId, userId]);
+
+    // 🧪 로컬 모드: 호스트 스트로크 폴링
+    useEffect(() => {
+        if (!sessionId) return;
+
+        const loadedStrokeIds = new Set<string>();
+
+        const loadHostStrokes = () => {
+            // participants에서 호스트 찾기
+            const sessionKey = `nc_participants_${sessionId}`;
+            const participants = JSON.parse(localStorage.getItem(sessionKey) || '[]');
+            const host = participants.find((p: any) => p.role === 'host');
+
+            if (host) {
+                const strokeKey = `nc_strokes_${sessionId}_${host.userId}`;
+                const strokes = JSON.parse(localStorage.getItem(strokeKey) || '[]');
+
+                strokes.forEach((stroke: any) => {
+                    // 이미 로드한 스트로크는 건너뛰기
+                    if (!loadedStrokeIds.has(stroke.id)) {
+                        loadedStrokeIds.add(stroke.id);
+                        addStroke(host.userId, {
+                            id: stroke.id,
+                            userId: stroke.userId,
+                            color: stroke.color,
+                            lineWidth: stroke.lineWidth,
+                            points: stroke.points,
+                            done: true
+                        });
+                    }
+                });
+            }
+        };
+
+        loadHostStrokes();
+        const interval = setInterval(loadHostStrokes, 500); // 0.5초마다 체크
+
+        return () => clearInterval(interval);
+    }, [sessionId, addStroke]);
 
     function getPointFromEvent(e: React.MouseEvent | React.TouchEvent): { x: number; y: number; pressure: number } {
         const container = canvasContainerRef.current;
@@ -202,6 +306,11 @@ export default function GuestCanvas() {
         currentStrokeIdRef.current = strokeId;
         const pt = getPointFromEvent(e);
         currentPointsRef.current = [pt];
+
+        // 🧪 로컬 모드: 필기 시작 상태 저장 (필기중 뱃지용)
+        if (sessionId && userId) {
+            localStorage.setItem(`nc_writing_${sessionId}_${userId}`, Date.now().toString());
+        }
 
         const props = getStrokeProps(penTypeRef.current, penColorRef.current, lineWidthRef.current);
         const stroke: Stroke = {
@@ -237,10 +346,29 @@ export default function GuestCanvas() {
                 strokeId, color: stroke.color, lineWidth: stroke.lineWidth,
                 points: currentPointsRef.current,
             });
+
+            // 🧪 로컬 모드: localStorage에 스트로크 저장
+            if (sessionId && userId) {
+                const strokeKey = `nc_strokes_${sessionId}_${userId}`;
+                const strokes = JSON.parse(localStorage.getItem(strokeKey) || '[]');
+                strokes.push({
+                    id: strokeId,
+                    userId,
+                    color: stroke.color,
+                    lineWidth: stroke.lineWidth,
+                    points: currentPointsRef.current,
+                    timestamp: Date.now(),
+                    done: true
+                });
+                localStorage.setItem(strokeKey, JSON.stringify(strokes));
+
+                // 🧪 로컬 모드: 필기 완료 상태 제거 (필기중 뱃지용)
+                localStorage.removeItem(`nc_writing_${sessionId}_${userId}`);
+            }
         }
         finalizeStroke(strokeId);
         currentPointsRef.current = [];
-    }, [finalizeStroke, sendStrokePacket]);
+    }, [finalizeStroke, sendStrokePacket, sessionId, userId]);
 
     function handleClear() {
         if (userId) clearUserStrokes(userId);
@@ -251,13 +379,27 @@ export default function GuestCanvas() {
         if (confirm('세션에서 나가시겠습니까?')) navigate('/join');
     }
 
-    const myStrokes = getStrokes(userId ?? '');
+    // 🧪 호스트 스트로크와 내 스트로크 분리
+    const allStrokesMap = useDemoStrokeStore(s => s.strokes);
+
+    // 호스트 스트로크 (별도 표시용)
+    const [hostUserId, setHostUserId] = useState<string | null>(null);
+    useEffect(() => {
+        if (!sessionId) return;
+        const sessionKey = `nc_participants_${sessionId}`;
+        const participants = JSON.parse(localStorage.getItem(sessionKey) || '[]');
+        const host = participants.find((p: any) => p.role === 'host');
+        if (host) setHostUserId(host.userId);
+    }, [sessionId]);
+
+    const hostStrokes = hostUserId ? (allStrokesMap.get(hostUserId) ?? []) : [];
+    const myStrokes = userId ? (allStrokesMap.get(userId) ?? []) : [];
     const myActive = Array.from(activeStrokesMap.values()).filter(s => s.userId === userId);
     const canvasCursor = penType === 'eraser' ? 'cell' : 'crosshair';
 
-    // 캔버스 크기: 툴바(64px) 제외한 영역에 맞춤
-    const CANVAS_W = Math.min(window.innerWidth - 64 - 80, 900);
-    const CANVAS_H = Math.round(CANVAS_W * 0.65);
+    // 캔버스 크기: A4 세로 비율 (1:√2 ≈ 1:1.414)
+    const CANVAS_W = 700;
+    const CANVAS_H = Math.round(CANVAS_W * Math.sqrt(2)); // A4 세로 비율 (700 × 990)
 
     return (
         <div style={{
@@ -519,35 +661,91 @@ export default function GuestCanvas() {
                         border: '1px solid rgba(0,0,0,0.06)',
                         margin: '0 16px',
                         borderRadius: '0 6px 6px 6px',
-                        display: 'flex', flexDirection: 'column',
-                        alignItems: 'center', justifyContent: 'center',
+                        display: 'flex',
+                        flexDirection: 'row',
+                        justifyContent: hostStrokes.length > 0 ? 'flex-start' : 'center',
                         padding: '20px',
+                        gap: 20,
                     }}>
-                        <div style={{ color: 'rgba(100,116,139,0.7)', fontSize: '0.78rem', marginBottom: 12 }}>
-                            마우스를 드래그해 필기하세요 · 선생님에게 실시간 전달됩니다
-                        </div>
+                        {/* 선생님 판서 영역 */}
+                        {hostStrokes.length > 0 && (
+                            <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                                <div style={{
+                                    color: 'rgba(100,116,139,0.9)',
+                                    fontSize: '0.75rem',
+                                    fontWeight: 600,
+                                    marginBottom: 8,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: 6,
+                                }}>
+                                    <span>📺</span>
+                                    <span>선생님 판서</span>
+                                    <span style={{ color: 'rgba(100,116,139,0.5)', fontSize: '0.7rem' }}>
+                                        (읽기 전용)
+                                    </span>
+                                </div>
+                                <div style={{
+                                    position: 'relative',
+                                    width: CANVAS_W,
+                                    height: CANVAS_H,
+                                    background: '#f8fafc',
+                                    borderRadius: 12,
+                                    overflow: 'hidden',
+                                    boxShadow: '0 2px 12px rgba(0,0,0,0.08)',
+                                    border: '2px solid rgba(59,130,246,0.2)',
+                                }}>
+                                    <DemoStrokeCanvas
+                                        strokes={hostStrokes}
+                                        activeStrokes={[]}
+                                        annotationStrokes={[]}
+                                        width={CANVAS_W}
+                                        height={CANVAS_H}
+                                    />
+                                </div>
+                            </div>
+                        )}
 
-                        <div
-                            ref={canvasContainerRef}
-                            style={{
-                                position: 'relative',
-                                width: CANVAS_W, height: CANVAS_H,
-                                background: '#fff',
-                                borderRadius: 12, overflow: 'hidden',
-                                boxShadow: '0 4px 24px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06)',
-                                cursor: canvasCursor,
-                                touchAction: 'none',
-                            }}
-                            onMouseDown={handleStart}
-                            onMouseMove={handleMove}
-                            onMouseUp={handleEnd}
-                            onMouseLeave={handleEnd}
-                            onTouchStart={handleStart}
-                            onTouchMove={handleMove}
-                            onTouchEnd={handleEnd}
-                        >
-                            <DemoStrokeCanvas
-                                strokes={myStrokes}
+                        {/* 내 필기 영역 */}
+                        <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                            <div style={{
+                                color: 'rgba(100,116,139,0.9)',
+                                fontSize: '0.75rem',
+                                fontWeight: 600,
+                                marginBottom: 8,
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: 6,
+                            }}>
+                                <span>📝</span>
+                                <span>내 필기</span>
+                                <span style={{ color: 'rgba(100,116,139,0.5)', fontSize: '0.7rem' }}>
+                                    마우스를 드래그해 필기하세요
+                                </span>
+                            </div>
+                            <div
+                                ref={canvasContainerRef}
+                                style={{
+                                    position: 'relative',
+                                    width: '100%',
+                                    height: CANVAS_H,
+                                    background: '#fff',
+                                    borderRadius: 12,
+                                    overflow: 'hidden',
+                                    boxShadow: '0 4px 24px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.06)',
+                                    cursor: canvasCursor,
+                                    touchAction: 'none',
+                                }}
+                                onMouseDown={handleStart}
+                                onMouseMove={handleMove}
+                                onMouseUp={handleEnd}
+                                onMouseLeave={handleEnd}
+                                onTouchStart={handleStart}
+                                onTouchMove={handleMove}
+                                onTouchEnd={handleEnd}
+                            >
+                                <DemoStrokeCanvas
+                                    strokes={myStrokes}
                                 activeStrokes={myActive}
                                 annotationStrokes={annotationStrokes}
                                 width={CANVAS_W}
@@ -563,6 +761,7 @@ export default function GuestCanvas() {
                                     ✏️ 선생님 첨삭 중
                                 </div>
                             )}
+                        </div>
                         </div>
 
                         {annotationStrokes.length > 0 && (
@@ -586,7 +785,7 @@ export default function GuestCanvas() {
             }}>
                 {/* 왼쪽 버튼 그룹 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <CtrlBtn icon={<IcoPen />} label="스마트펜" />
+                    <SmartpenButton />
                     <CtrlBtn
                         icon={<IcoTouch />}
                         label="터치 일시중지"

@@ -68,19 +68,17 @@ export default function HostHome() {
 
     const fetchRooms = useCallback(async () => {
         try {
-            const res = await fetch(`${API}/api/rooms?hostId=${hostId}`);
-            if (res.ok) {
-                const data = await res.json();
-                // 열린 세션 먼저, 이후 최신순
-                const sorted = (data.rooms as Room[]).sort(
-                    (a, b) => (b.isOpen ? 1 : 0) - (a.isOpen ? 1 : 0) || b.createdAt - a.createdAt
-                );
-                setRooms(sorted);
-            }
+            // 🧪 로컬 모드: localStorage에서 읽기
+            const savedRooms = JSON.parse(localStorage.getItem('nc_rooms') || '[]') as Room[];
+            // 열린 세션 먼저, 이후 최신순
+            const sorted = savedRooms.sort(
+                (a, b) => (b.isOpen ? 1 : 0) - (a.isOpen ? 1 : 0) || b.createdAt - a.createdAt
+            );
+            setRooms(sorted);
         } finally {
             setLoading(false);
         }
-    }, [API, hostId]);
+    }, []);
 
     useEffect(() => {
         if (nickname) fetchRooms();
@@ -101,17 +99,31 @@ export default function HostHome() {
         if (!newName.trim()) return;
         setCreating(true);
         try {
-            const res = await fetch(`${API}/api/rooms`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ hostId, hostNickname: nickname, name: newName.trim(), schedule: newSchedule.trim() }),
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setCreatedRoom({ name: newName.trim(), code: data.room.code });
-                setNewName(''); setNewSchedule('');
-                await fetchRooms();
-            }
+            // 🧪 로컬 모드: localStorage에 세션 저장
+            const code = String(Math.floor(100000 + Math.random() * 900000));
+            const roomId = `room-${Date.now()}`;
+            const newRoom: Room = {
+                roomId,
+                name: newName.trim(),
+                schedule: newSchedule.trim(),
+                maxGuests: 50,
+                code,
+                isOpen: false,
+                activeSessionId: null,
+                createdAt: Date.now(),
+            };
+
+            // localStorage에 저장
+            const savedRooms = JSON.parse(localStorage.getItem('nc_rooms') || '[]');
+            savedRooms.push(newRoom);
+            localStorage.setItem('nc_rooms', JSON.stringify(savedRooms));
+
+            setCreatedRoom({ name: newName.trim(), code });
+            setNewName('');
+            setNewSchedule('');
+
+            // 목록 새로고침
+            await fetchRooms();
         } finally {
             setCreating(false);
         }
@@ -120,16 +132,19 @@ export default function HostHome() {
     async function openRoom(room: Room) {
         setActionId(room.roomId);
         try {
-            const res = await fetch(`${API}/api/rooms/${room.roomId}/open`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nickname }),
-            });
-            if (res.ok) {
-                const data = await res.json();
-                setSession({ sessionId: data.sessionId, userId: data.userId, nickname, role: 'host', code: data.code });
-                navigate('/session');
-            }
+            // 🧪 로컬 모드: 세션 정보 생성 및 저장
+            const sessionId = `session-${Date.now()}`;
+            const userId = hostId;
+
+            // localStorage 업데이트: 세션 열림 상태로 변경
+            const savedRooms = JSON.parse(localStorage.getItem('nc_rooms') || '[]') as Room[];
+            const updatedRooms = savedRooms.map(r =>
+                r.roomId === room.roomId ? { ...r, isOpen: true, activeSessionId: sessionId } : r
+            );
+            localStorage.setItem('nc_rooms', JSON.stringify(updatedRooms));
+
+            setSession({ sessionId, userId, nickname, role: 'host', code: room.code });
+            navigate('/session');
         } finally {
             setActionId(null);
         }
@@ -139,7 +154,12 @@ export default function HostHome() {
         e.stopPropagation();
         setActionId(room.roomId);
         try {
-            await fetch(`${API}/api/rooms/${room.roomId}/close`, { method: 'POST' });
+            // 🧪 로컬 모드: localStorage 업데이트
+            const savedRooms = JSON.parse(localStorage.getItem('nc_rooms') || '[]') as Room[];
+            const updatedRooms = savedRooms.map(r =>
+                r.roomId === room.roomId ? { ...r, isOpen: false, activeSessionId: null } : r
+            );
+            localStorage.setItem('nc_rooms', JSON.stringify(updatedRooms));
             await fetchRooms();
         } finally {
             setActionId(null);
@@ -149,7 +169,11 @@ export default function HostHome() {
     async function deleteRoom(room: Room, e: React.MouseEvent) {
         e.stopPropagation();
         if (!confirm(`"${room.name}" 세션을 삭제할까요?`)) return;
-        await fetch(`${API}/api/rooms/${room.roomId}`, { method: 'DELETE' });
+
+        // 🧪 로컬 모드: localStorage에서 삭제
+        const savedRooms = JSON.parse(localStorage.getItem('nc_rooms') || '[]') as Room[];
+        const filteredRooms = savedRooms.filter(r => r.roomId !== room.roomId);
+        localStorage.setItem('nc_rooms', JSON.stringify(filteredRooms));
         await fetchRooms();
     }
 

@@ -17,42 +17,43 @@ export default function GuestJoin() {
         if (!nickname.trim()) { setError('닉네임을 입력해주세요.'); return; }
         if (!/^\d{6}$/.test(code)) { setError('6자리 입장 코드를 입력해주세요.'); return; }
         setLoading(true); setError('');
+
         try {
-            // Room 코드 확인 먼저
-            const roomRes = await fetch(`${API}/api/rooms/by-code/${code}`);
-            if (roomRes.ok) {
-                const roomData = await roomRes.json();
-                if (!roomData.isOpen) {
-                    localStorage.setItem('nc_guest_nickname', nickname.trim());
-                    localStorage.setItem('nc_waiting_code', code);
-                    localStorage.setItem('nc_waiting_room_name', roomData.name);
-                    localStorage.setItem('nc_waiting_host', roomData.hostNickname);
-                    navigate('/waiting');
-                    return;
-                }
-                const joinRes = await fetch(`${API}/api/sessions/join`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ nickname: nickname.trim(), code }),
-                });
-                if (!joinRes.ok) { setError('세션 참가에 실패했습니다.'); return; }
-                const data = await joinRes.json();
-                setSession({ sessionId: data.sessionId, userId: data.userId, nickname: nickname.trim(), role: 'guest', code: data.code });
-                navigate('/session');
+            // 🧪 로컬 모드: localStorage에서 세션 찾기
+            const savedRooms = JSON.parse(localStorage.getItem('nc_rooms') || '[]');
+            const room = savedRooms.find((r: any) => r.code === code);
+
+            if (!room) {
+                setError('세션을 찾을 수 없습니다. 코드를 다시 확인해주세요.');
                 return;
             }
-            // 일반 세션 코드 시도
-            const joinRes = await fetch(`${API}/api/sessions/join`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nickname: nickname.trim(), code }),
+
+            // 세션이 닫혀있으면 대기 화면으로
+            if (!room.isOpen) {
+                localStorage.setItem('nc_guest_nickname', nickname.trim());
+                localStorage.setItem('nc_waiting_code', code);
+                localStorage.setItem('nc_waiting_room_name', room.name);
+                localStorage.setItem('nc_waiting_host', '호스트'); // TODO: 호스트 닉네임 저장
+                navigate('/waiting');
+                return;
+            }
+
+            // 세션이 열려있으면 바로 입장
+            const guestId = `guest-${Date.now()}`;
+            const sessionId = room.activeSessionId || `session-${Date.now()}`;
+
+            localStorage.setItem('nc_guest_nickname', nickname.trim());
+            setSession({
+                sessionId,
+                userId: guestId,
+                nickname: nickname.trim(),
+                role: 'guest',
+                code: room.code
             });
-            if (!joinRes.ok) { setError('세션을 찾을 수 없습니다. 코드를 다시 확인해주세요.'); return; }
-            const data = await joinRes.json();
-            setSession({ sessionId: data.sessionId, userId: data.userId, nickname: nickname.trim(), role: 'guest', code: data.code });
             navigate('/session');
-        } catch {
-            setError('서버에 연결할 수 없습니다.');
+        } catch (err) {
+            console.error('Join error:', err);
+            setError('입장 중 오류가 발생했습니다.');
         } finally {
             setLoading(false);
         }

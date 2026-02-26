@@ -25,8 +25,9 @@ interface StudentDetailViewProps {
     onAnnotationStroke: (guestId: string, pageId: string, points: { x: number; y: number }[]) => void;
 }
 
-const DETAIL_W = Math.min(window.innerWidth - 80, 900);
-const DETAIL_H = Math.round(DETAIL_W * 0.65);
+// 상세 보기 크기: A4 세로 비율 (1:√2 ≈ 1:1.414)
+const DETAIL_W = 700;
+const DETAIL_H = Math.round(DETAIL_W * Math.sqrt(2)); // A4 세로 비율 (700 × 990)
 const PAGE_ID = 'page-1';
 
 export default function StudentDetailView({

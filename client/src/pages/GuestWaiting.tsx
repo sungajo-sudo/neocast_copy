@@ -35,33 +35,45 @@ export default function GuestWaiting() {
         return () => clearInterval(t);
     }, []);
 
-    // 폴링
+    // 🧪 로컬 모드: localStorage 폴링
     useEffect(() => {
         if (!code) return;
-        const poll = async () => {
+
+        const poll = () => {
             try {
-                const res = await fetch(`${API}/api/rooms/by-code/${code}`);
-                if (!res.ok) { setError('수업방을 찾을 수 없습니다.'); return; }
-                const room = await res.json();
-                if (room.isOpen) {
-                    const joinRes = await fetch(`${API}/api/sessions/join`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ nickname, code }),
-                    });
-                    if (joinRes.ok) {
-                        const data = await joinRes.json();
-                        setSession({ sessionId: data.sessionId, userId: data.userId, nickname, role: 'guest', code: data.code });
-                        if (intervalRef.current) clearInterval(intervalRef.current);
-                        navigate('/session');
-                    }
+                const savedRooms = JSON.parse(localStorage.getItem('nc_rooms') || '[]');
+                const room = savedRooms.find((r: any) => r.code === code);
+
+                if (!room) {
+                    setError('세션을 찾을 수 없습니다.');
+                    return;
                 }
-            } catch { /* 네트워크 오류 무시 */ }
+
+                if (room.isOpen) {
+                    // 세션이 열렸으면 자동 입장
+                    const guestId = `guest-${Date.now()}`;
+                    const sessionId = room.activeSessionId || `session-${Date.now()}`;
+
+                    setSession({
+                        sessionId,
+                        userId: guestId,
+                        nickname,
+                        role: 'guest',
+                        code: room.code
+                    });
+
+                    if (intervalRef.current) clearInterval(intervalRef.current);
+                    navigate('/session');
+                }
+            } catch (err) {
+                console.error('Poll error:', err);
+            }
         };
+
         poll();
-        intervalRef.current = setInterval(poll, 3000);
+        intervalRef.current = setInterval(poll, 2000); // 2초마다 체크
         return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
-    }, [API, code, navigate, nickname, setSession]);
+    }, [code, navigate, nickname, setSession]);
 
     const formatElapsed = (s: number) => s < 60 ? `${s}초` : `${Math.floor(s / 60)}분 ${s % 60}초`;
 

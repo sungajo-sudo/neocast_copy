@@ -9,17 +9,20 @@ interface StudentMiniCanvasProps {
     strokes: Stroke[];
     activeStrokes: Stroke[];
     isAnnotating?: boolean;
+    isWriting?: boolean;
     onClick: () => void;
 }
 
-const CARD_W = 260;
-const CARD_H = 180;
+// 카드 크기: A4 세로 비율 축소판 (1:√2)
+const CARD_W = 350;
+const CARD_H = Math.round(CARD_W * Math.sqrt(2) * 0.7); // A4 비율의 70% 높이
 
 export default function StudentMiniCanvas({
     nickname,
     strokes,
     activeStrokes,
     isAnnotating = false,
+    isWriting = false,
     onClick,
 }: StudentMiniCanvasProps) {
     return (
@@ -89,6 +92,16 @@ export default function StudentMiniCanvas({
                         borderRadius: '6px',
                         fontWeight: 600,
                     }}>첨삭중</span>
+                )}
+                {!isAnnotating && isWriting && (
+                    <span style={{
+                        background: '#22c55e',
+                        color: '#fff',
+                        fontSize: '0.7rem',
+                        padding: '2px 6px',
+                        borderRadius: '6px',
+                        fontWeight: 600,
+                    }}>✏️ 필기중</span>
                 )}
             </div>
         </div>
