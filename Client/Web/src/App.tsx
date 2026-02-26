@@ -616,6 +616,9 @@ function SessionPage() {
 
   const canInput = isHost || selectedViewUserId === currentUserId;
 
+  // DEBUG: isHost 판별 확인
+  console.log("[SessionPage] DEBUG:", { isHost, currentUserId, hostId: session?.hostId, sessionCode: session?.code, participants: session?.participants?.map(p => ({ userId: p.userId, role: p.role })) });
+
   // 세션이 없으면 로비로 이동 (세션 코드와 함께)
   // 단, 방금 참가한 경우(justJoined)에는 세션 상태 반영을 기다림
   // 게스트인 경우 /join/:code로 이동하면 RequireAuth에서 로그아웃되므로 로비로 이동
@@ -668,7 +671,7 @@ function SessionPage() {
   return (
     <>
       <CanvasContainer className="flex-1" inputEnabled={canInput} />
-      {currentUserId && <GuestAnnotationOverlay userId={currentUserId} />}
+      { /* TODO: GuestAnnotationOverlay 무한루프 수정 후 복원 */ }
     </>
   );
 }
