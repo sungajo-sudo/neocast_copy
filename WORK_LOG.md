@@ -351,3 +351,266 @@ CANVAS_H = Math.round(CANVAS_W * Math.sqrt(2)) // 990
 **브랜치**: dev
 **작성자**: Claude Code Assistant
 **상태**: ✅ 전체 기능 정상 작동 확인 완료
+
+---
+
+## 2026-03-09: 호스트 대시보드 전면 개편 + PDF 기능 (master_instructions_v3 STEP 1~7 + 기능 A+B)
+
+### 개요
+
+기존 로그인 기반 대시보드를 제거하고, 워크시트 중심의 호스트 대시보드로 전면 재편.
+PDF 업로드→썸네일→세션 시작→캔버스 배경 렌더링 전체 흐름 구현.
+스마트펜 첫 stroke 감지 시 PDF 배경 fade-in 연출, 멀티페이지 기능 추가.
+
+---
+
+### STEP 1 — 진입 흐름 + LNB 재편
+
+#### 신규/수정 파일
+
+| 파일 | 구분 | 내용 |
+|---|---|---|
+| `client/src/App.tsx` | 수정 | 로그인 라우트 제거, `/` → `/host/worksheets` 리다이렉트, HostLayout 중첩 라우팅 |
+| `client/src/components/layout/LNB.tsx` | 수정 | 메뉴 3개로 재편 (워크시트/세션/아카이브), 하단 설정 버튼 고정 |
+| `client/src/pages/host/Sessions.tsx` | 신규 (rename) | 구 SessionList.tsx → Sessions.tsx |
+| `client/src/pages/host/Archive.tsx` | 신규 (rename) | 구 Results.tsx → Archive.tsx |
+| `client/src/pages/host/ArchiveDetail.tsx` | 신규 (rename) | 구 SessionDetail.tsx → ArchiveDetail.tsx |
+| `client/src/pages/host/StudentReport.tsx` | 신규 (rename) | 구 StudentReportDetail.tsx → StudentReport.tsx (호스트용) |
+
+#### 라우팅 구조
+
+```
+/                    → redirect → /host/worksheets
+/host/worksheets     → Worksheets (기본 랜딩)
+/host/sessions       → Sessions
+/host/archive        → Archive
+/host/archive/:sessionId          → ArchiveDetail
+/host/archive/:sessionId/student/:studentId → StudentReport
+/join                → GuestJoin (기존 유지)
+/waiting             → GuestWaiting (기존 유지)
+/session             → SessionPage (기존 유지)
+```
+
+---
+
+### STEP 2 — 워크시트 페이지 전면 개편
+
+#### 신규/수정 파일
+
+| 파일 | 구분 | 내용 |
+|---|---|---|
+| `client/src/pages/host/Worksheets.tsx` | 수정 (전면 재작성) | PDF 업로드 + pdfjs 썸네일 + 카드 그리드 + 세션 시작 |
+| `client/src/components/modals/CreateSessionModal.tsx` | 수정 | `initialWorksheetId` prop 추가, 파일 업로드 → 드롭다운 선택으로 교체 |
+
+#### 동작 방식
+
+- PDF 업로드 시 pdfjs-dist로 1페이지 썸네일 생성 → localStorage 저장
+- localStorage 키: `nc_ws_meta_*`, `nc_ws_thumb_*`, `nc_ws_pdf_*`
+- 카드 [세션 시작] 클릭 → CreateSessionModal이 해당 워크시트 미리 선택된 상태로 열림
+- [NCode PDF], [.np2] 다운로드 버튼 유지 (향후 구현)
+
+---
+
+### STEP 3 — 세션 캔버스 PDF 배경 렌더링
+
+#### 신규 파일
+
+| 파일 | 내용 |
+|---|---|
+| `client/src/stores/pdfPageStore.ts` | imageUrl / totalPages / currentPage / opacity Zustand 스토어 |
+| `client/src/hooks/usePdfBackground.ts` | PDF 로드 + 페이지 렌더링 + 게스트 500ms 폴링 |
+| `client/src/components/canvas/PdfBackground.tsx` | 훅 마운트 컴포넌트 + 페이지 인디케이터 UI |
+
+#### 수정 파일
+
+| 파일 | 내용 |
+|---|---|
+| `client/src/components/canvas/DemoStrokeCanvas.tsx` | pdfPageStore.imageUrl 읽어서 PDF를 canvas 2D에 배경으로 렌더링 |
+| `client/src/App.tsx` | `/session` 라우트에 `<PdfBackground />` 주입 (SessionPage 무수정) |
+| `client/src/pages/host/Sessions.tsx` | 세션 시작 시 `nc_session_worksheet_${sessionId}` 저장 |
+
+#### localStorage 신규 키
+
+```
+nc_session_worksheet_${sessionId}  — 세션에 연결된 worksheetId
+nc_session_page_${sessionId}       — 현재 페이지 번호 (호스트 기준, 게스트 폴링용)
+```
+
+#### 동작 방식
+
+1. 워크시트 있는 세션 시작 → `nc_session_worksheet_${sessionId}` 저장
+2. `usePdfBackground` 훅이 PDF 로드 → pdfjs로 각 페이지를 base64 이미지로 변환
+3. `DemoStrokeCanvas`가 RAF 루프에서 PDF 이미지를 canvas에 먼저 그린 뒤 stroke 덮어씀
+4. 게스트: 500ms 폴링으로 `nc_session_page_*` 읽어 호스트와 페이지 동기화
+
+---
+
+### STEP 4 — CreateSessionModal 워크시트 드롭다운
+
+#### 수정 파일
+
+| 파일 | 내용 |
+|---|---|
+| `client/src/components/modals/CreateSessionModal.tsx` | 파일 업로드 제거 → `nc_ws_meta_*` 목록 드롭다운으로 교체 |
+| `client/src/pages/host/Sessions.tsx` | 세션 카드에 워크시트 썸네일 표시 |
+
+---
+
+### STEP 5 — 아카이브 페이지
+
+#### 수정 파일
+
+| 파일 | 내용 |
+|---|---|
+| `client/src/data/dummyData.ts` | `SessionResult.worksheet` 필드 추가 |
+| `client/src/pages/host/Archive.tsx` | 테이블에 "워크시트" 컬럼 추가 |
+| `client/src/pages/host/ArchiveDetail.tsx` | 헤더에 워크시트명 표시, localStorage → 더미 데이터 순으로 세션 로드 |
+
+---
+
+### STEP 6 — GuestJoin UI 개선
+
+#### 수정 파일
+
+| 파일 | 내용 |
+|---|---|
+| `client/src/pages/GuestJoin.tsx` | 하단 "선생님이라면? → 선생님 대시보드로" 링크 추가 (`/host/worksheets`) |
+
+---
+
+### STEP 7 — 더미 데이터 정리
+
+#### 수정 파일
+
+| 파일 | 내용 |
+|---|---|
+| `client/src/data/dummyData.ts` | `DUMMY_WORKSHEETS` 3개 추가, Session/SessionResult에 `worksheetId` 연결 |
+
+---
+
+### 기능 A — 스마트펜 첫 stroke 시 PDF 배경 fade-in
+
+#### 신규 파일
+
+| 파일 | 내용 |
+|---|---|
+| `client/src/services/pen-event-bridge.ts` | `nc_writing_${sessionId}_${userId}` 200ms 폴링 → 첫 감지 시 콜백 1회 호출 후 중단 |
+| `client/src/hooks/usePdfFadeIn.ts` | 첫 stroke 감지 → RAF로 opacity 0→1 애니메이션(300ms) + page-store 연동 + 게스트 sync |
+
+#### 수정 파일
+
+| 파일 | 내용 |
+|---|---|
+| `client/src/stores/pdfPageStore.ts` | `opacity: number` 필드 추가 (기본값 0) |
+| `client/src/components/canvas/DemoStrokeCanvas.tsx` | PDF 그릴 때 `ctx.globalAlpha = pdfOpacity` 적용 |
+| `client/src/components/canvas/PdfBackground.tsx` | `usePdfFadeIn()` 마운트로 교체, ◀▶ 버튼 제거, 페이지 인디케이터만 유지 |
+
+#### 동작 방식
+
+```
+세션 진입
+  → pdfPageStore.opacity = 0 (PDF 로드되어 있지만 화면에 보이지 않음)
+  → pen-event-bridge: nc_writing_${sessionId}_${userId} 200ms 폴링 시작
+스마트펜 첫 획
+  → nc_writing_* 키 생성 감지
+  → RAF 루프: opacity 0 → 1 (300ms 선형 보간)
+  → DemoStrokeCanvas: ctx.globalAlpha = opacity 로 PDF 이미지 fade-in
+워크시트 없는 세션
+  → pdfPageStore.imageUrl = null → 아무것도 렌더링하지 않음 (흰 배경 유지)
+```
+
+---
+
+### 기능 B — 멀티페이지 기능
+
+#### 신규 파일
+
+| 파일 | 내용 |
+|---|---|
+| `client/src/components/control-bar/PagesButton.tsx` | 고정 위치 페이지 버튼 (`N / Total` 표시), 클릭 시 `toggleLeftPanel('pages')` |
+| `client/src/components/panels/PagesPanel.tsx` | 좌측 슬라이드인 패널 (너비 200px), 페이지 추가/이동/삭제, 게스트 동기화 상태 표시 |
+
+#### 수정 파일
+
+| 파일 | 내용 |
+|---|---|
+| `client/src/pages/SessionPage.tsx` | `<PagesPanel />` + `<PagesButton />` 2줄 추가 (기존 로직 무변경) |
+
+#### 활용 스토어 (기존 파일, 수정 없음)
+
+| 스토어 | 역할 |
+|---|---|
+| `client/src/stores/page-store.ts` | `pages`, `currentPageId`, `addPage`, `setCurrentPage`, `deletePage`, `initializeFirstPage` |
+| `client/src/stores/panel-store.ts` | `activeLeftPanel: 'pages' \| null`, `toggleLeftPanel` |
+| `client/src/stores/demoStrokeStore.ts` | `getStrokesByPage(userId, pageId)` — 페이지별 stroke 격리 |
+
+#### localStorage 신규 키
+
+```
+nc_session_pages_${sessionId}  — { pages: PageInfo[], currentPageId: string }
+  호스트: 페이지 추가/이동 시 저장
+  게스트: 500ms 폴링으로 읽어 동기화
+```
+
+#### 동작 방식
+
+```
+PagesButton 클릭 → PagesPanel 슬라이드인
+[+] 클릭 → addPage() → 새 페이지 생성 → nc_session_pages_* 저장
+페이지 클릭 → setCurrentPage(id) → usePdfFadeIn이 감지 → 해당 PDF 페이지 렌더링
+[✕] 클릭 → deletePage(id) (1개일 때 비활성)
+게스트: 500ms 폴링 → 호스트 페이지 추가/이동 감지 → 자동 동기화
+```
+
+---
+
+### 전체 파일 구조 (2026-03-09 기준 추가/변경분)
+
+```
+client/src/
+├── App.tsx                              수정 — 라우팅 전면 재편
+├── data/
+│   └── dummyData.ts                     수정 — worksheetId 연결, DUMMY_WORKSHEETS 추가
+├── stores/
+│   └── pdfPageStore.ts                  신규 — PDF 페이지 상태 (imageUrl/page/opacity)
+├── services/
+│   └── pen-event-bridge.ts              신규 — 첫 stroke 감지 폴링 유틸리티
+├── hooks/
+│   ├── usePdfBackground.ts              신규 — PDF 로드 + 페이지 렌더링 + 게스트 폴링
+│   └── usePdfFadeIn.ts                  신규 — fade-in 애니메이션 + page-store 연동
+├── components/
+│   ├── layout/
+│   │   └── LNB.tsx                      수정 — 메뉴 3개 재편
+│   ├── canvas/
+│   │   ├── DemoStrokeCanvas.tsx         수정 — PDF globalAlpha 적용
+│   │   └── PdfBackground.tsx            신규 — 훅 마운트 + 페이지 인디케이터
+│   ├── control-bar/
+│   │   └── PagesButton.tsx              신규 — 페이지 패널 토글 버튼
+│   ├── panels/
+│   │   └── PagesPanel.tsx               신규 — 페이지 목록 사이드 패널
+│   └── modals/
+│       └── CreateSessionModal.tsx       수정 — 워크시트 드롭다운
+└── pages/
+    ├── GuestJoin.tsx                    수정 — 선생님 링크 추가
+    ├── SessionPage.tsx                  수정 — PagesPanel/PagesButton 주입 (2줄)
+    └── host/
+        ├── Worksheets.tsx               수정 — PDF 업로드 + 썸네일 카드
+        ├── Sessions.tsx                 신규 (rename) — 세션 목록
+        ├── Archive.tsx                  신규 (rename) — 아카이브 목록
+        ├── ArchiveDetail.tsx            신규 (rename) — 아카이브 상세
+        └── StudentReport.tsx            신규 (rename) — 학생 개인 리포트
+```
+
+---
+
+### 커밋 이력
+
+| 커밋 | 내용 |
+|---|---|
+| `167ec35` | feat: PDF fade-in 연출 + 페이지 기능 (기능 A+B) |
+| 이전 커밋들 | STEP 1~7 (master_instructions_v3) |
+
+**작성일**: 2026-03-09
+**브랜치**: dev
+**커밋**: `167ec35`
+**TypeScript**: ✅ 에러 없음
