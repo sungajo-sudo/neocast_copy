@@ -147,7 +147,15 @@ export default function GuestJoin() {
                             </div>
                         </div>
                     </div>
-                    <p className="text-center text-xs text-gray-400 mt-6">© 2025 NeoLAB Convergence Inc.</p>
+                    <p className="text-center text-sm text-gray-500 mt-6">
+                        선생님이라면?{' '}
+                        <button
+                            onClick={() => navigate('/host/worksheets')}
+                            className="text-blue-600 hover:text-blue-700 font-medium underline underline-offset-2"
+                        >
+                            선생님 대시보드로 →
+                        </button>
+                    </p>
                 </div>
             </div>
         </div>

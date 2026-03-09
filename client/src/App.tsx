@@ -1,46 +1,40 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import Login from './pages/Login';
 import SessionPage from './pages/SessionPage';
-import HostHome from './pages/HostHome';
 import GuestJoin from './pages/GuestJoin';
 import GuestWaiting from './pages/GuestWaiting';
-import ReportDetail from './pages/ReportDetail';
-import StudentReport from './pages/StudentReport';
+import PdfBackground from './components/canvas/PdfBackground';
 
-// 새로운 호스트 레이아웃
+// 호스트 레이아웃
 import HostLayout from './components/layout/HostLayout';
-import Dashboard from './pages/host/Dashboard';
-import SessionList from './pages/host/SessionList';
 import Worksheets from './pages/host/Worksheets';
-import Results from './pages/host/Results';
-import SessionDetail from './pages/host/SessionDetail';
-import StudentReportDetail from './pages/host/StudentReportDetail';
+import Sessions from './pages/host/Sessions';
+import Archive from './pages/host/Archive';
+import ArchiveDetail from './pages/host/ArchiveDetail';
+import StudentReport from './pages/host/StudentReport';
 
 export default function App() {
     return (
         <BrowserRouter>
             <Routes>
-                <Route path="/" element={<Login />} />
+                {/* 루트: 워크시트로 바로 이동 */}
+                <Route path="/" element={<Navigate to="/host/worksheets" replace />} />
 
-                {/* 새로운 호스트 레이아웃 (LNB 포함) */}
+                {/* 호스트 레이아웃 (LNB 포함) */}
                 <Route path="/host" element={<HostLayout />}>
-                    <Route index element={<Navigate to="/host/dashboard" replace />} />
-                    <Route path="dashboard" element={<Dashboard />} />
-                    <Route path="sessions" element={<SessionList />} />
+                    <Route index element={<Navigate to="/host/worksheets" replace />} />
                     <Route path="worksheets" element={<Worksheets />} />
-                    <Route path="results" element={<Results />} />
-                    <Route path="results/:sessionId" element={<SessionDetail />} />
-                    <Route path="results/:sessionId/student/:studentId" element={<StudentReportDetail />} />
+                    <Route path="sessions" element={<Sessions />} />
+                    <Route path="archive" element={<Archive />} />
+                    <Route path="archive/:sessionId" element={<ArchiveDetail />} />
+                    <Route path="archive/:sessionId/student/:studentId" element={<StudentReport />} />
                 </Route>
 
-                {/* 기존 라우트 (절대 수정 금지) */}
+                {/* 게스트 / 세션 (기존 유지, 수정 금지) */}
                 <Route path="/join" element={<GuestJoin />} />
                 <Route path="/waiting" element={<GuestWaiting />} />
-                <Route path="/session" element={<SessionPage />} />
-                <Route path="/report/:archiveId" element={<ReportDetail />} />
-                <Route path="/report/:archiveId/student/:studentId" element={<StudentReport />} />
+                <Route path="/session" element={<><PdfBackground /><SessionPage /></>} />
 
-                <Route path="*" element={<Navigate to="/" replace />} />
+                <Route path="*" element={<Navigate to="/host/worksheets" replace />} />
             </Routes>
         </BrowserRouter>
     );

@@ -14,12 +14,13 @@ interface Room {
     createdAt: number;
     expectedStudents?: number;
     worksheet?: string;
+    worksheetId?: string;
     allowGuest?: boolean;
 }
 
 type SessionStatus = 'scheduled' | 'in-progress' | 'completed';
 
-export default function SessionList() {
+export default function Sessions() {
     const navigate = useNavigate();
     const { setSession } = useSessionStore();
 
@@ -83,6 +84,11 @@ export default function SessionList() {
                 r.roomId === room.roomId ? { ...r, isOpen: true, activeSessionId: sessionId } : r
             );
             localStorage.setItem('nc_rooms', JSON.stringify(updatedRooms));
+
+            // 워크시트가 연결된 세션이면 PDF 배경 로드용 key 저장
+            if (room.worksheetId) {
+                localStorage.setItem(`nc_session_worksheet_${sessionId}`, room.worksheetId);
+            }
 
             // sessionStore에 저장
             setSession({ sessionId, userId, nickname, role: 'host', code: room.code });
@@ -217,9 +223,18 @@ export default function SessionList() {
 
                                     {/* 워크시트 */}
                                     {room.worksheet && (
-                                        <p className="text-sm text-blue-600 mb-3">
-                                            📄 {room.worksheet}
-                                        </p>
+                                        <div className="flex items-center gap-2 mb-3">
+                                            {room.worksheetId && localStorage.getItem(`nc_ws_thumb_${room.worksheetId}`) ? (
+                                                <img
+                                                    src={localStorage.getItem(`nc_ws_thumb_${room.worksheetId}`)!}
+                                                    alt="썸네일"
+                                                    className="w-8 h-10 object-cover rounded border border-gray-200 flex-shrink-0"
+                                                />
+                                            ) : (
+                                                <span className="text-blue-600">📄</span>
+                                            )}
+                                            <span className="text-sm text-blue-600 truncate">{room.worksheet}</span>
+                                        </div>
                                     )}
 
                                     {/* 참가자 수 */}

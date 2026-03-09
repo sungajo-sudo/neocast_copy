@@ -2,6 +2,7 @@
 // 기존 StrokeCanvas.tsx의 복잡한 의존성 없이 순수 Canvas 2D API로 구현
 import React, { useRef, useEffect, useCallback } from 'react';
 import type { Stroke } from '../../stores/demoStrokeStore';
+import { usePdfPageStore } from '../../stores/pdfPageStore';
 
 interface DemoStrokeCanvasProps {
     strokes: Stroke[];
@@ -23,6 +24,18 @@ export default function DemoStrokeCanvas({
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const rafRef = useRef<number | null>(null);
 
+    // PDF 배경 — 메인 캔버스(width >= 500)에서만 표시
+    const pdfImageUrl = usePdfPageStore(s => s.imageUrl);
+    const pdfOpacity = usePdfPageStore(s => s.opacity);
+    const showPdf = width >= 500 && !!pdfImageUrl && pdfOpacity > 0;
+    const pdfImgRef = useRef<HTMLImageElement | null>(null);
+    useEffect(() => {
+        if (!pdfImageUrl) { pdfImgRef.current = null; return; }
+        const img = new Image();
+        img.src = pdfImageUrl;
+        pdfImgRef.current = img;
+    }, [pdfImageUrl]);
+
     const draw = useCallback(() => {
         const canvas = canvasRef.current;
         if (!canvas) return;
@@ -31,6 +44,14 @@ export default function DemoStrokeCanvas({
 
         const dpr = window.devicePixelRatio || 1;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // PDF 배경 렌더링 (opacity 애니메이션 적용)
+        if (showPdf && pdfImgRef.current?.complete) {
+            ctx.save();
+            ctx.globalAlpha = pdfOpacity;
+            ctx.drawImage(pdfImgRef.current, 0, 0, canvas.width, canvas.height);
+            ctx.restore();
+        }
 
         const drawStrokes = (arr: Stroke[]) => {
             arr.forEach(stroke => {
@@ -79,7 +100,7 @@ export default function DemoStrokeCanvas({
             ctx.stroke();
             ctx.restore();
         });
-    }, [strokes, activeStrokes, annotationStrokes]);
+    }, [strokes, activeStrokes, annotationStrokes, showPdf, pdfOpacity]);
 
     useEffect(() => {
         const canvas = canvasRef.current;

@@ -2,6 +2,9 @@ import React from 'react';
 import { useSessionStore } from '../stores/sessionStore';
 import MonitoringView from '../components/MonitoringView';
 import GuestCanvas from '../components/GuestCanvas';
+// Feature B — 페이지 패널 (기존 로직/컴포넌트 수정 없이 외부 주입)
+import PagesPanel from '../components/panels/PagesPanel';
+import PagesButton from '../components/control-bar/PagesButton';
 
 export default function SessionPage() {
     const { role, sessionId } = useSessionStore();
@@ -14,5 +17,12 @@ export default function SessionPage() {
         );
     }
 
-    return role === 'host' ? <MonitoringView /> : <GuestCanvas />;
+    return (
+        <>
+            {/* Feature B: 페이지 패널 + 버튼 (fixed position, 기존 레이아웃 무간섭) */}
+            <PagesPanel />
+            <PagesButton />
+            {role === 'host' ? <MonitoringView /> : <GuestCanvas />}
+        </>
+    );
 }

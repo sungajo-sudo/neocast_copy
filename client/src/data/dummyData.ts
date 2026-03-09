@@ -3,6 +3,21 @@
  * 모든 페이지에서 일관된 데이터 사용
  */
 
+// ===== 워크시트 더미 데이터 =====
+
+export interface WorksheetDummy {
+    id: string;
+    name: string;
+    pageCount: number;
+    uploadedAt: string; // 표시용
+}
+
+export const DUMMY_WORKSHEETS: WorksheetDummy[] = [
+    { id: 'ws-dummy-1', name: '이차방정식_문제지.pdf',   pageCount: 12, uploadedAt: '2026-02-20' },
+    { id: 'ws-dummy-2', name: '수능영어_독해.pdf',       pageCount: 8,  uploadedAt: '2026-02-22' },
+    { id: 'ws-dummy-3', name: '화학반응식_정리.pdf',     pageCount: 10, uploadedAt: '2026-02-24' },
+];
+
 // ===== 세션 데이터 =====
 
 export interface Session {
@@ -14,6 +29,7 @@ export interface Session {
     expectedStudents: number;
     actualStudents: number;
     worksheet: string | null;
+    worksheetId?: string;
     status: 'scheduled' | 'in-progress' | 'completed';
     code: string;
 }
@@ -29,6 +45,7 @@ export const DUMMY_SESSIONS: Session[] = [
         expectedStudents: 20,
         actualStudents: 18,
         worksheet: '이차방정식_문제지.pdf',
+        worksheetId: 'ws-dummy-1',
         status: 'scheduled',
         code: 'ABC123',
     },
@@ -41,6 +58,7 @@ export const DUMMY_SESSIONS: Session[] = [
         expectedStudents: 15,
         actualStudents: 15,
         worksheet: '수능영어_독해.pdf',
+        worksheetId: 'ws-dummy-2',
         status: 'in-progress',
         code: 'DEF456',
     },
@@ -53,6 +71,7 @@ export const DUMMY_SESSIONS: Session[] = [
         expectedStudents: 25,
         actualStudents: 0,
         worksheet: '화학반응식_정리.pdf',
+        worksheetId: 'ws-dummy-3',
         status: 'scheduled',
         code: 'GHI789',
     },
@@ -64,7 +83,7 @@ export const DUMMY_SESSIONS: Session[] = [
         instructor: '최지원',
         expectedStudents: 12,
         actualStudents: 0,
-        worksheet: '근현대사_연표.pdf',
+        worksheet: null,
         status: 'scheduled',
         code: 'JKL012',
     },
@@ -76,7 +95,8 @@ export const DUMMY_SESSIONS: Session[] = [
         instructor: '정수연',
         expectedStudents: 18,
         actualStudents: 0,
-        worksheet: '현대시_작품집.pdf',
+        worksheet: '이차방정식_문제지.pdf',
+        worksheetId: 'ws-dummy-1',
         status: 'scheduled',
         code: 'MNO345',
     },
@@ -91,9 +111,11 @@ export interface SessionResult {
     time: string;
     duration: number; // 분
     participants: number;
+    worksheet?: string;
+    worksheetId?: string;
 }
 
-// Results용 종료된 세션
+// Archive용 종료된 세션
 export const DUMMY_COMPLETED_SESSIONS: SessionResult[] = [
     {
         roomId: 'session-1',
@@ -102,6 +124,8 @@ export const DUMMY_COMPLETED_SESSIONS: SessionResult[] = [
         time: '14:00',
         duration: 60,
         participants: 18,
+        worksheet: '이차방정식_문제지.pdf',
+        worksheetId: 'ws-dummy-1',
     },
     {
         roomId: 'session-2',
@@ -110,6 +134,8 @@ export const DUMMY_COMPLETED_SESSIONS: SessionResult[] = [
         time: '16:00',
         duration: 50,
         participants: 22,
+        worksheet: '수능영어_독해.pdf',
+        worksheetId: 'ws-dummy-2',
     },
     {
         roomId: 'session-3',
@@ -118,6 +144,8 @@ export const DUMMY_COMPLETED_SESSIONS: SessionResult[] = [
         time: '10:00',
         duration: 45,
         participants: 16,
+        worksheet: '화학반응식_정리.pdf',
+        worksheetId: 'ws-dummy-3',
     },
     {
         roomId: 'session-4',
@@ -126,6 +154,8 @@ export const DUMMY_COMPLETED_SESSIONS: SessionResult[] = [
         time: '15:00',
         duration: 55,
         participants: 20,
+        worksheet: undefined,
+        worksheetId: undefined,
     },
     {
         roomId: 'session-5',
@@ -134,6 +164,8 @@ export const DUMMY_COMPLETED_SESSIONS: SessionResult[] = [
         time: '13:00',
         duration: 50,
         participants: 19,
+        worksheet: '이차방정식_문제지.pdf',
+        worksheetId: 'ws-dummy-1',
     },
 ];
 
@@ -148,14 +180,14 @@ export interface StudentData {
     hasNoActivity: boolean;
 }
 
-// SessionDetail용 학생 목록
+// ArchiveDetail용 학생 목록
 export const DUMMY_STUDENTS: StudentData[] = [
     { id: 's1', name: '김민지', activityTime: 45, participatedPages: 8, feedbackCount: 3, hasNoActivity: false },
     { id: 's2', name: '이서준', activityTime: 38, participatedPages: 7, feedbackCount: 2, hasNoActivity: false },
     { id: 's3', name: '박지우', activityTime: 52, participatedPages: 10, feedbackCount: 4, hasNoActivity: false },
-    { id: 's4', name: '최수아', activityTime: 0, participatedPages: 0, feedbackCount: 0, hasNoActivity: true },
+    { id: 's4', name: '최수아', activityTime: 0,  participatedPages: 0, feedbackCount: 0, hasNoActivity: true },
     { id: 's5', name: '정현우', activityTime: 41, participatedPages: 9, feedbackCount: 3, hasNoActivity: false },
-    { id: 's6', name: '강예린', activityTime: 0, participatedPages: 0, feedbackCount: 0, hasNoActivity: true },
+    { id: 's6', name: '강예린', activityTime: 0,  participatedPages: 0, feedbackCount: 0, hasNoActivity: true },
     { id: 's7', name: '윤도현', activityTime: 47, participatedPages: 8, feedbackCount: 2, hasNoActivity: false },
     { id: 's8', name: '한소민', activityTime: 44, participatedPages: 9, feedbackCount: 3, hasNoActivity: false },
 ];

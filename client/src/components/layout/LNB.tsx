@@ -1,13 +1,12 @@
 import { NavLink } from 'react-router-dom';
 
-export default function LNB() {
-    const menuItems = [
-        { path: '/host/dashboard', icon: '🏠', label: '홈' },
-        { path: '/host/sessions', icon: '📋', label: '세션 목록' },
-        { path: '/host/worksheets', icon: '📄', label: '내 워크시트' },
-        { path: '/host/results', icon: '📊', label: '수업 결과' },
-    ];
+const menuItems = [
+    { path: '/host/worksheets', icon: '📄', label: '워크시트' },
+    { path: '/host/sessions',   icon: '📋', label: '세션' },
+    { path: '/host/archive',    icon: '📁', label: '아카이브' },
+];
 
+export default function LNB() {
     return (
         <aside className="w-64 h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col shadow-2xl">
             {/* 로고 영역 */}
@@ -16,7 +15,7 @@ export default function LNB() {
                     <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Neo</span>
                     <span className="text-white">CAST</span>
                 </div>
-                <p className="text-xs text-gray-400 text-center">Teacher Dashboard</p>
+                <p className="text-xs text-gray-400 text-center">Teacher</p>
             </div>
 
             {/* 메뉴 영역 */}
@@ -39,8 +38,18 @@ export default function LNB() {
                 ))}
             </nav>
 
-            {/* 하단 정보 */}
-            <div className="p-4 border-t border-gray-700">
+            {/* 하단 고정 영역 */}
+            <div className="p-4 border-t border-gray-700 space-y-2">
+                {/* 설정 버튼 */}
+                <button
+                    onClick={() => alert('준비 중')}
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-gray-700/50 transition-all text-left"
+                >
+                    <span className="text-2xl">⚙️</span>
+                    <span className="font-medium">설정</span>
+                </button>
+
+                {/* 프로필 */}
                 <div className="flex items-center gap-3 px-4 py-3 bg-gray-700/30 rounded-xl">
                     <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center text-xl">
                         👩‍🏫

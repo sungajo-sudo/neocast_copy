@@ -3,7 +3,8 @@ import { useState, useEffect } from 'react';
 interface CreateSessionModalProps {
     isOpen: boolean;
     onClose: () => void;
-    onSuccess: (code: string) => void;
+    onSuccess: (code?: string) => void;
+    initialWorksheetId?: string;
 }
 
 interface Room {
@@ -17,29 +18,56 @@ interface Room {
     createdAt: number;
     expectedStudents?: number;
     worksheet?: string;
+    worksheetId?: string;
     allowGuest?: boolean;
 }
 
-export default function CreateSessionModal({ isOpen, onClose, onSuccess }: CreateSessionModalProps) {
+interface WorksheetOption {
+    id: string;
+    name: string;
+    pageCount: number;
+}
+
+export default function CreateSessionModal({ isOpen, onClose, onSuccess, initialWorksheetId }: CreateSessionModalProps) {
     const [title, setTitle] = useState('');
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
     const [expectedStudents, setExpectedStudents] = useState('');
-    const [worksheet, setWorksheet] = useState<File | null>(null);
+    const [selectedWorksheetId, setSelectedWorksheetId] = useState<string>('');
+    const [worksheetOptions, setWorksheetOptions] = useState<WorksheetOption[]>([]);
     const [allowGuest, setAllowGuest] = useState(true);
     const [code, setCode] = useState('');
     const [copied, setCopied] = useState(false);
     const [creating, setCreating] = useState(false);
     const [created, setCreated] = useState(false);
 
-    // 모달 열릴 때 6자리 코드 생성
+    // 업로드된 워크시트 목록 로드
+    const loadWorksheets = () => {
+        try {
+            const keys = Object.keys(localStorage).filter(k => k.startsWith('nc_ws_meta_'));
+            const options: WorksheetOption[] = keys.map(key => {
+                const id = key.replace('nc_ws_meta_', '');
+                const meta = JSON.parse(localStorage.getItem(key) || '{}');
+                return { id, name: meta.name || id, pageCount: meta.pageCount || 0 };
+            });
+            options.sort((a, b) => a.name.localeCompare(b.name));
+            setWorksheetOptions(options);
+        } catch {
+            setWorksheetOptions([]);
+        }
+    };
+
+    // 모달 열릴 때 초기화
     useEffect(() => {
         if (isOpen) {
             const newCode = String(Math.floor(100000 + Math.random() * 900000));
             setCode(newCode);
             setCreated(false);
+            loadWorksheets();
+            // initialWorksheetId가 있으면 미리 선택
+            setSelectedWorksheetId(initialWorksheetId || '');
         }
-    }, [isOpen]);
+    }, [isOpen, initialWorksheetId]);
 
     const handleCopyCode = async () => {
         try {
@@ -51,17 +79,7 @@ export default function CreateSessionModal({ isOpen, onClose, onSuccess }: Creat
         }
     };
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0];
-        if (file && file.type === 'application/pdf') {
-            setWorksheet(file);
-        } else {
-            alert('PDF 파일만 업로드 가능합니다.');
-        }
-    };
-
     const handleCreate = async () => {
-        // 필수 필드 검증
         if (!title.trim()) {
             alert('수업 제목을 입력해주세요.');
             return;
@@ -73,7 +91,6 @@ export default function CreateSessionModal({ isOpen, onClose, onSuccess }: Creat
 
         setCreating(true);
         try {
-            // 날짜/시간 처리 (미입력 시 현재 시간)
             let schedule = '';
             if (date && time) {
                 schedule = `${date} ${time}`;
@@ -82,7 +99,9 @@ export default function CreateSessionModal({ isOpen, onClose, onSuccess }: Creat
                 schedule = now.toLocaleString('ko-KR');
             }
 
-            // Room 객체 생성
+            // 선택된 워크시트 이름 조회
+            const selectedWs = worksheetOptions.find(w => w.id === selectedWorksheetId);
+
             const roomId = `room-${Date.now()}`;
             const newRoom: Room = {
                 roomId,
@@ -94,25 +113,14 @@ export default function CreateSessionModal({ isOpen, onClose, onSuccess }: Creat
                 activeSessionId: null,
                 createdAt: Date.now(),
                 expectedStudents: parseInt(expectedStudents),
-                worksheet: worksheet?.name || undefined,
+                worksheet: selectedWs?.name || undefined,
+                worksheetId: selectedWorksheetId || undefined,
                 allowGuest,
             };
 
-            // localStorage에 저장
             const savedRooms = JSON.parse(localStorage.getItem('nc_rooms') || '[]') as Room[];
             savedRooms.push(newRoom);
             localStorage.setItem('nc_rooms', JSON.stringify(savedRooms));
-
-            // 워크시트가 있으면 "내 워크시트"에도 저장
-            if (worksheet) {
-                const worksheets = JSON.parse(localStorage.getItem('nc_worksheets') || '[]');
-                worksheets.push({
-                    id: `ws-${Date.now()}`,
-                    name: worksheet.name,
-                    uploadedAt: Date.now(),
-                });
-                localStorage.setItem('nc_worksheets', JSON.stringify(worksheets));
-            }
 
             setCreated(true);
             onSuccess(code);
@@ -126,7 +134,7 @@ export default function CreateSessionModal({ isOpen, onClose, onSuccess }: Creat
         setDate('');
         setTime('');
         setExpectedStudents('');
-        setWorksheet(null);
+        setSelectedWorksheetId('');
         setAllowGuest(true);
         setCopied(false);
         setCreating(false);
@@ -205,21 +213,37 @@ export default function CreateSessionModal({ isOpen, onClose, onSuccess }: Creat
                                 <p className="mt-1 text-xs text-gray-500">참여율(%) 산출 기준이 됩니다</p>
                             </div>
 
-                            {/* 워크시트 업로드 (선택) */}
+                            {/* 워크시트 선택 (드롭다운) */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                                    워크시트 업로드 (PDF)
+                                    워크시트 (PDF)
                                 </label>
-                                <input
-                                    type="file"
-                                    accept=".pdf"
-                                    onChange={handleFileChange}
-                                    className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                />
-                                {worksheet && (
-                                    <p className="mt-1 text-xs text-blue-600">✓ {worksheet.name}</p>
+                                {worksheetOptions.length === 0 ? (
+                                    <div className="w-full px-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg text-sm text-gray-400">
+                                        업로드된 워크시트가 없습니다.{' '}
+                                        <a href="/host/worksheets" className="text-blue-500 underline" onClick={handleClose}>
+                                            워크시트 업로드하기 →
+                                        </a>
+                                    </div>
+                                ) : (
+                                    <select
+                                        value={selectedWorksheetId}
+                                        onChange={(e) => setSelectedWorksheetId(e.target.value)}
+                                        className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                                    >
+                                        <option value="">선택 안 함</option>
+                                        {worksheetOptions.map(ws => (
+                                            <option key={ws.id} value={ws.id}>
+                                                {ws.name} ({ws.pageCount}p)
+                                            </option>
+                                        ))}
+                                    </select>
                                 )}
-                                <p className="mt-1 text-xs text-gray-500">업로드 시 "내 워크시트"에 자동 저장됩니다</p>
+                                {selectedWorksheetId && (
+                                    <p className="mt-1 text-xs text-blue-600">
+                                        ✓ 세션 시작 시 PDF가 캔버스 배경으로 표시됩니다
+                                    </p>
+                                )}
                             </div>
 
                             {/* 세션 비밀번호 (자동생성) */}

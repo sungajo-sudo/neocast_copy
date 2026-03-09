@@ -13,10 +13,11 @@ interface Room {
     createdAt: number;
     expectedStudents?: number;
     worksheet?: string;
+    worksheetId?: string;
     allowGuest?: boolean;
 }
 
-export default function Results() {
+export default function Archive() {
     const navigate = useNavigate();
     const [results, setResults] = useState<SessionResult[]>([]);
     const [loading, setLoading] = useState(true);
@@ -50,6 +51,7 @@ export default function Results() {
                     time,
                     duration: Math.floor(Math.random() * 60) + 30,
                     participants: Math.floor(Math.random() * 15) + 5,
+                    worksheet: room.worksheet,
                 };
             });
 
@@ -75,7 +77,7 @@ export default function Results() {
 
     const handleViewDetail = (result: SessionResult) => {
         // 7단계에서 구현될 세션 상세 대시보드로 이동
-        navigate(`/host/results/${result.roomId}`);
+        navigate(`/host/archive/${result.roomId}`);
     };
 
     if (loading) {
@@ -92,7 +94,7 @@ export default function Results() {
         <div className="p-8">
             {/* 헤더 */}
             <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-800 mb-2">수업 결과</h1>
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">아카이브</h1>
                 <p className="text-gray-600">종료된 세션의 활동 기록을 확인합니다</p>
             </div>
 
@@ -113,10 +115,11 @@ export default function Results() {
                 <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
                     {/* 테이블 헤더 */}
                     <div className="grid grid-cols-12 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-200">
-                        <div className="col-span-4 text-sm font-medium text-gray-700">세션명</div>
-                        <div className="col-span-3 text-sm font-medium text-gray-700">날짜·시간</div>
+                        <div className="col-span-3 text-sm font-medium text-gray-700">세션명</div>
+                        <div className="col-span-3 text-sm font-medium text-gray-700">워크시트</div>
+                        <div className="col-span-2 text-sm font-medium text-gray-700">날짜·시간</div>
                         <div className="col-span-2 text-sm font-medium text-gray-700">진행 시간</div>
-                        <div className="col-span-2 text-sm font-medium text-gray-700">참여 인원</div>
+                        <div className="col-span-1 text-sm font-medium text-gray-700">참여 인원</div>
                         <div className="col-span-1"></div>
                     </div>
 
@@ -129,14 +132,21 @@ export default function Results() {
                                 className="grid grid-cols-12 gap-4 px-6 py-4 hover:bg-blue-50 cursor-pointer transition-colors"
                             >
                                 {/* 세션명 */}
-                                <div className="col-span-4 flex items-center">
-                                    <div className="flex-1 min-w-0">
-                                        <p className="font-medium text-gray-800 truncate">{result.name}</p>
-                                    </div>
+                                <div className="col-span-3 flex items-center">
+                                    <p className="font-medium text-gray-800 truncate">{result.name}</p>
+                                </div>
+
+                                {/* 워크시트 */}
+                                <div className="col-span-3 flex items-center">
+                                    {result.worksheet ? (
+                                        <span className="text-sm text-blue-600 truncate">📄 {result.worksheet}</span>
+                                    ) : (
+                                        <span className="text-sm text-gray-400">—</span>
+                                    )}
                                 </div>
 
                                 {/* 날짜·시간 */}
-                                <div className="col-span-3 flex items-center">
+                                <div className="col-span-2 flex items-center">
                                     <p className="text-sm text-gray-600">
                                         {result.date} {result.time}
                                     </p>
@@ -148,7 +158,7 @@ export default function Results() {
                                 </div>
 
                                 {/* 참여 인원 */}
-                                <div className="col-span-2 flex items-center">
+                                <div className="col-span-1 flex items-center">
                                     <p className="text-sm text-gray-800 font-medium">{result.participants}명</p>
                                 </div>
 

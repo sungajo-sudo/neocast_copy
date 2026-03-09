@@ -2,7 +2,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { getStudentDetailData, type StudentInfo, type Feedback, type PageParticipation } from '../../data/dummyStudentData';
 
-export default function StudentReportDetail() {
+export default function StudentReport() {
     const { sessionId, studentId } = useParams();
     const navigate = useNavigate();
 
@@ -46,7 +46,7 @@ export default function StudentReportDetail() {
         <div className="p-8">
             {/* 헤더 - 뒤로가기 */}
             <button
-                onClick={() => navigate(`/host/results/${sessionId}`)}
+                onClick={() => navigate(`/host/archive/${sessionId}`)}
                 className="text-blue-600 hover:text-blue-700 mb-4 flex items-center gap-2"
             >
                 ← 세션 대시보드로

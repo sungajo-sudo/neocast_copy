@@ -2,13 +2,14 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { generateStudentReportPDF } from '../../utils/pdfGenerator';
 import { getStudentDetailData } from '../../data/dummyStudentData';
-import { DUMMY_STUDENTS } from '../../data/dummyData';
+import { DUMMY_STUDENTS, DUMMY_COMPLETED_SESSIONS } from '../../data/dummyData';
 
-export default function SessionDetail() {
+export default function ArchiveDetail() {
     const { sessionId } = useParams();
     const navigate = useNavigate();
     const [sessionName, setSessionName] = useState('수학 중간고사 대비반');
     const [sessionDate, setSessionDate] = useState('2026-02-25');
+    const [worksheetName, setWorksheetName] = useState<string | null>(null);
 
     // 요약 데이터 계산
     const totalDuration = 60; // 진행 시간 (분)
@@ -26,7 +27,7 @@ export default function SessionDetail() {
     const maxActivityTime = Math.max(...DUMMY_STUDENTS.map(s => s.activityTime));
 
     const handleViewStudentDetail = (studentId: string) => {
-        navigate(`/host/results/${sessionId}/student/${studentId}`);
+        navigate(`/host/archive/${sessionId}/student/${studentId}`);
     };
 
     const handleDownloadPDF = async (studentId: string, studentName: string) => {
@@ -58,8 +59,28 @@ export default function SessionDetail() {
     };
 
     useEffect(() => {
-        // sessionId로 실제 세션 정보 로드
-        // 임시로 더미 데이터 사용
+        if (!sessionId) return;
+        // localStorage nc_rooms에서 세션 정보 로드 시도
+        try {
+            const rooms = JSON.parse(localStorage.getItem('nc_rooms') || '[]');
+            const room = rooms.find((r: { roomId: string; name: string; schedule: string; worksheet?: string }) => r.roomId === sessionId);
+            if (room) {
+                setSessionName(room.name);
+                if (room.schedule) setSessionDate(room.schedule.split(' ')[0] || '');
+                if (room.worksheet) setWorksheetName(room.worksheet);
+            } else {
+                // 더미 데이터에서 찾기 (roomId 또는 인덱스 기반)
+                const dummy = DUMMY_COMPLETED_SESSIONS.find(s => s.roomId === sessionId)
+                    ?? DUMMY_COMPLETED_SESSIONS[0];
+                if (dummy) {
+                    setSessionName(dummy.name);
+                    setSessionDate(dummy.date);
+                    if (dummy.worksheet) setWorksheetName(dummy.worksheet);
+                }
+            }
+        } catch {
+            // 더미 데이터 유지
+        }
     }, [sessionId]);
 
     return (
@@ -67,13 +88,20 @@ export default function SessionDetail() {
             {/* 헤더 */}
             <div className="mb-8">
                 <button
-                    onClick={() => navigate('/host/results')}
+                    onClick={() => navigate('/host/archive')}
                     className="text-blue-600 hover:text-blue-700 mb-4 flex items-center gap-2"
                 >
                     ← 목록으로
                 </button>
                 <h1 className="text-3xl font-bold text-gray-800 mb-2">{sessionName}</h1>
-                <p className="text-gray-600">{sessionDate}</p>
+                <div className="flex items-center gap-4 text-gray-600">
+                    <span>{sessionDate}</span>
+                    {worksheetName && (
+                        <span className="flex items-center gap-1 text-blue-600 text-sm">
+                            📄 {worksheetName}
+                        </span>
+                    )}
+                </div>
             </div>
 
             {/* 상단 요약 카드 */}
