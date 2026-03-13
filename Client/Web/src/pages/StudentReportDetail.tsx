@@ -30,6 +30,15 @@ const DUMMY_PAGE_STATS = [
 
 const TOTAL_DURATION_MS = 75 * 1000; // 1분 15초 (더미)
 
+// 호스트 버전 B용 페이지별 더미 데이터
+const HOST_PAGE_STATS = [
+  { page: 1, minutes: 8,  hasFeedback: false },
+  { page: 2, minutes: 12, hasFeedback: true  },
+  { page: 3, minutes: 15, hasFeedback: false },
+  { page: 4, minutes: 7,  hasFeedback: true  },
+  { page: 5, minutes: 3,  hasFeedback: false },
+];
+
 // ─── 유틸 ─────────────────────────────────────────────────────
 
 function formatTime(ms: number) {
@@ -38,54 +47,9 @@ function formatTime(ms: number) {
   return `${String(m).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
 }
 
-// 페이지+idx 기반 결정론적 seed rng
-function seededRand(seed: number) {
-  let s = seed;
-  return () => {
-    s = (s * 1664525 + 1013904223) & 0x7fffffff;
-    return s / 0x7fffffff;
-  };
-}
-
-function drawPageStrokes(
-  ctx: CanvasRenderingContext2D,
-  page: number,
-  participantIdx: number
-) {
-  const W = 700, H = 990;
-  ctx.clearRect(0, 0, W, H);
+function fillBlankCanvas(ctx: CanvasRenderingContext2D, w: number, h: number) {
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(0, 0, W, H);
-
-  // 격자 선 (노트 배경)
-  ctx.strokeStyle = '#f0f0f0';
-  ctx.lineWidth = 1;
-  for (let y = 60; y < H; y += 60) {
-    ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
-  }
-
-  const rand = seededRand(page * 1000 + participantIdx * 137);
-  const strokeCount = 4 + Math.floor(rand() * 4);
-
-  ctx.lineWidth = 2.5;
-  ctx.lineCap = 'round';
-  ctx.lineJoin = 'round';
-  ctx.strokeStyle = '#1a1a2e';
-
-  for (let s = 0; s < strokeCount; s++) {
-    const startX = 80 + rand() * 540;
-    const startY = 80 + rand() * 800;
-    const len = 8 + Math.floor(rand() * 14);
-    ctx.beginPath();
-    ctx.moveTo(startX, startY);
-    for (let p = 1; p < len; p++) {
-      ctx.lineTo(
-        startX + rand() * 200 - 50 + p * (rand() * 30 - 5),
-        startY + rand() * 100 - 20 + p * (rand() * 20 + 5)
-      );
-    }
-    ctx.stroke();
-  }
+  ctx.fillRect(0, 0, w, h);
 }
 
 // ─── 컴포넌트 ─────────────────────────────────────────────────
@@ -97,7 +61,6 @@ export function StudentReportDetail() {
   const isHost = searchParams.get('role') === 'host';
 
   const participant = DUMMY_PARTICIPANTS.find(p => p.userId === userId) ?? DUMMY_PARTICIPANTS[1];
-  const participantIdx = DUMMY_PARTICIPANTS.findIndex(p => p.userId === userId);
 
   // 재생 상태 (UI only)
   const [isPlaying, setIsPlaying] = useState(false);
@@ -106,25 +69,15 @@ export function StudentReportDetail() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const canvasRef2 = useRef<HTMLCanvasElement>(null);
 
-  // 캔버스 렌더링 (재생용)
+  // 캔버스 — 흰 배경만 (실제 데이터 삽입 예정)
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
-    drawPageStrokes(ctx, currentPage, participantIdx);
-  }, [currentPage, participantIdx]);
-
-  // 필기 재본 캔버스 렌더링 (호스트 버전B용 — 완성본 정적 표시)
-  useEffect(() => {
-    const canvas = canvasRef2.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
-    drawPageStrokes(ctx, currentPage, participantIdx + 10);
-  }, [currentPage, participantIdx]);
+    fillBlankCanvas(ctx, canvas.width, canvas.height);
+  }, [currentPage]);
 
   // 페이지 이동 시 타임라인 리셋
   const goToPage = (p: number) => {
@@ -172,103 +125,88 @@ export function StudentReportDetail() {
         </span>
       </header>
 
-      {/* ══ 버전 B: 호스트 진입 — 캔버스 2개만 ══ */}
+      {/* ══ 버전 B: 호스트 진입 — 페이지 그리드 + 사이드 패널 ══ */}
       {isHost ? (
         <div className="relative z-10 max-w-6xl mx-auto px-4 py-8">
-          <div className="grid grid-cols-2 gap-6">
+          <div className="flex gap-5 items-start">
 
-            {/* 좌: 필기 재생 */}
-            <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl overflow-hidden flex flex-col">
-              <div className="px-5 py-3 border-b border-gray-100 flex items-center justify-between">
-                <span className="text-sm font-semibold text-gray-700">필기 재생</span>
-                <div className="flex items-center gap-2">
+            {/* ── 좌측 70%: 페이지 그리드 ── */}
+            <div className="flex-[7] bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl p-5">
+              <p className="text-sm font-semibold text-gray-600 mb-4">전체 페이지</p>
+              <div className="grid grid-cols-3 gap-3">
+                {HOST_PAGE_STATS.map(pg => (
                   <button
-                    onClick={() => setIsPlaying(v => !v)}
-                    className="px-3 py-1 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 transition-colors"
+                    key={pg.page}
+                    onClick={() => goToPage(pg.page)}
+                    className={`relative rounded-xl overflow-hidden border-2 transition-all hover:shadow-md ${
+                      currentPage === pg.page
+                        ? 'border-blue-500 shadow-md'
+                        : 'border-gray-100 hover:border-gray-300'
+                    }`}
                   >
-                    {isPlaying ? '⏸ 일시정지' : '▶ 재생'}
+                    {/* 빈 캔버스 (A4 비율) */}
+                    <div className="bg-white w-full" style={{ aspectRatio: '210/297' }} />
+                    {/* 첨삭 뱃지 */}
+                    {pg.hasFeedback && (
+                      <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center">
+                        <span className="text-white text-[8px] font-bold">✓</span>
+                      </span>
+                    )}
+                    {/* 페이지 번호 */}
+                    <div className={`px-2 py-1.5 flex items-center justify-center gap-1.5 ${
+                      currentPage === pg.page ? 'bg-blue-50' : 'bg-gray-50'
+                    }`}>
+                      <span className={`text-xs font-semibold ${
+                        currentPage === pg.page ? 'text-blue-600' : 'text-gray-600'
+                      }`}>
+                        {pg.page}P
+                      </span>
+                      {currentPage === pg.page && (
+                        <span className="text-[9px] text-blue-400">● 선택</span>
+                      )}
+                    </div>
                   </button>
-                  <button
-                    onClick={handleReset}
-                    className="px-3 py-1 bg-white border border-gray-200 text-gray-600 text-xs rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    처음으로
-                  </button>
-                  <div className="flex gap-1">
-                    {([0.5, 1, 2] as const).map(s => (
-                      <button
-                        key={s}
-                        onClick={() => setSpeed(s)}
-                        className={`px-2 py-1 rounded text-xs font-medium transition-all ${
-                          speed === s ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                        }`}
-                      >
-                        {s}x
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <div className="p-4 flex flex-col items-center gap-3 flex-1">
-                <div className="w-full bg-white rounded-xl border border-gray-100 overflow-hidden">
-                  <canvas
-                    ref={canvasRef}
-                    width={700}
-                    height={990}
-                    className="block w-full"
-                    style={{ aspectRatio: '700 / 990' }}
-                  />
-                </div>
-                {/* 타임라인 */}
-                <div className="w-full flex flex-col gap-1">
-                  <div
-                    className="relative h-2 bg-gray-200 rounded-full cursor-pointer"
-                    onClick={handleSeek}
-                  >
-                    <div
-                      className="absolute inset-y-0 left-0 bg-blue-500 rounded-full"
-                      style={{ width: `${progress * 100}%` }}
-                    />
-                    <div
-                      className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white border-2 border-blue-500 rounded-full"
-                      style={{ left: `calc(${progress * 100}% - 6px)` }}
-                    />
-                  </div>
-                  <div className="flex justify-between text-xs text-gray-400 tabular-nums">
-                    <span>{formatTime(currentTime)}</span>
-                    <span>{formatTime(TOTAL_DURATION_MS)}</span>
-                  </div>
-                </div>
-                {/* 페이지 네비 */}
-                <div className="flex items-center gap-3">
-                  <button onClick={() => goToPage(Math.max(1, currentPage - 1))} disabled={currentPage === 1} className="px-3 py-1 bg-white border border-gray-200 text-gray-600 text-sm rounded-lg hover:bg-gray-50 disabled:opacity-30">← 이전</button>
-                  <span className="text-sm text-gray-600 font-medium tabular-nums">{currentPage} / {TOTAL_PAGES}</span>
-                  <button onClick={() => goToPage(Math.min(TOTAL_PAGES, currentPage + 1))} disabled={currentPage === TOTAL_PAGES} className="px-3 py-1 bg-white border border-gray-200 text-gray-600 text-sm rounded-lg hover:bg-gray-50 disabled:opacity-30">다음 →</button>
-                </div>
+                ))}
               </div>
             </div>
 
-            {/* 우: 필기 재본 */}
-            <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl overflow-hidden flex flex-col">
-              <div className="px-5 py-3 border-b border-gray-100">
-                <span className="text-sm font-semibold text-gray-700">필기 재본</span>
+            {/* ── 우측 30%: 선택된 페이지 상세 패널 ── */}
+            <div className="flex-[3] bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl p-5 flex flex-col gap-4 sticky top-20">
+              <div className="flex items-center justify-between">
+                <p className="text-sm font-semibold text-gray-700">{currentPage}P 상세</p>
+                {HOST_PAGE_STATS.find(p => p.page === currentPage)?.hasFeedback && (
+                  <span className="text-xs bg-blue-100 text-blue-700 rounded-full px-2 py-0.5 font-medium">첨삭 있음</span>
+                )}
               </div>
-              <div className="p-4 flex flex-col items-center gap-3 flex-1">
-                <div className="w-full bg-white rounded-xl border border-gray-100 overflow-hidden">
-                  <canvas
-                    ref={canvasRef2}
-                    width={700}
-                    height={990}
-                    className="block w-full"
-                    style={{ aspectRatio: '700 / 990' }}
-                  />
+
+              {/* 선택 페이지 캔버스 */}
+              <div className="bg-white rounded-xl border border-gray-100 overflow-hidden w-full" style={{ aspectRatio: '210/297' }} />
+
+              {/* 메타 정보 */}
+              <div className="flex flex-col gap-1.5 text-sm">
+                <div className="flex items-center justify-between text-gray-600">
+                  <span className="text-xs text-gray-400">필기 시간</span>
+                  <span className="font-medium">{HOST_PAGE_STATS.find(p => p.page === currentPage)?.minutes ?? 0}분</span>
                 </div>
-                {/* 페이지 표시 (재생과 동기) */}
-                <div className="flex items-center gap-2 text-sm text-gray-500">
-                  <span className="tabular-nums font-medium">{currentPage}P</span>
-                  <span className="text-gray-300">·</span>
-                  <span>완성본</span>
+                <div className="flex items-center justify-between text-gray-600">
+                  <span className="text-xs text-gray-400">첨삭</span>
+                  <span className={`font-medium ${HOST_PAGE_STATS.find(p => p.page === currentPage)?.hasFeedback ? 'text-blue-600' : 'text-gray-300'}`}>
+                    {HOST_PAGE_STATS.find(p => p.page === currentPage)?.hasFeedback ? '✓ 있음' : '—'}
+                  </span>
                 </div>
+              </div>
+
+              {/* 버튼 */}
+              <div className="flex flex-col gap-2 mt-1">
+                <button
+                  onClick={() => setIsPlaying(v => !v)}
+                  className="w-full py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 active:scale-95 transition-all"
+                >
+                  ▶ 필기 재생
+                </button>
+                <button className="w-full py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 transition-colors">
+                  다운로드
+                </button>
               </div>
             </div>
 
@@ -280,13 +218,12 @@ export function StudentReportDetail() {
       /* ══ 버전 A: 게스트(학생) 진입 — 기존 전체 레이아웃 ══ */
       <div className="relative z-10 max-w-5xl mx-auto px-4 py-8 flex flex-col gap-8">
 
-        {/* ─── 요약 카드 4개 ─── */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        {/* ─── 요약 카드 3개 ─── */}
+        <div className="grid grid-cols-3 gap-4">
           {[
-            { label: '활동 시간', value: '45분', color: 'text-blue-600' },
+            { label: '활동 시간', value: '15분', color: 'text-blue-600' },
             { label: '참여 페이지', value: '3 / 5', color: 'text-purple-600' },
-            { label: '피드백 수', value: '2회', color: 'text-green-600' },
-            { label: '집중도', value: '85%', color: 'text-orange-600' },
+            { label: '받은 첨삭 수', value: '2회', color: 'text-green-600' },
           ].map(card => (
             <div
               key={card.label}
@@ -370,21 +307,20 @@ export function StudentReportDetail() {
         {/* ─── 피드백 다시보기 ─── */}
         <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl p-6 flex flex-col gap-4">
           <h2 className="font-bold text-gray-800 text-base">피드백 다시보기</h2>
-          {DUMMY_FEEDBACKS.length === 0 ? (
-            <p className="text-sm text-gray-400">피드백이 없습니다.</p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {DUMMY_FEEDBACKS.map((fb, i) => (
-                <div key={i} className="flex items-start gap-3 p-4 bg-blue-50/60 rounded-2xl border border-blue-100">
-                  <span className="flex-shrink-0 w-7 h-7 rounded-full bg-blue-100 text-blue-700 text-xs font-bold flex items-center justify-center">{fb.page}P</span>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm text-gray-800">{fb.text}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{fb.time}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+          <p className="text-sm text-gray-500">
+            {DUMMY_FEEDBACKS.length}페이지에 첨삭이 있어요
+          </p>
+          <div className="flex items-center gap-2 flex-wrap">
+            {DUMMY_FEEDBACKS.map((fb, i) => (
+              <button
+                key={i}
+                onClick={() => goToPage(fb.page)}
+                className="px-4 py-2 bg-blue-50 border border-blue-200 text-blue-700 text-sm font-semibold rounded-xl hover:bg-blue-100 transition-colors"
+              >
+                {fb.page}P
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* ─── 페이지 참여 요약 표 ─── */}
@@ -398,22 +334,26 @@ export function StudentReportDetail() {
                 <tr className="bg-gray-50 border-b border-gray-100">
                   <th className="px-6 py-3 text-left font-semibold text-gray-600">페이지</th>
                   <th className="px-6 py-3 text-left font-semibold text-gray-600">필기 시간</th>
-                  <th className="px-6 py-3 text-left font-semibold text-gray-600">스트로크 수</th>
-                  <th className="px-6 py-3 text-left font-semibold text-gray-600">피드백</th>
+                  <th className="px-6 py-3 text-left font-semibold text-gray-600">첨삭</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-50">
                 {DUMMY_PAGE_STATS.map(row => (
-                  <tr key={row.page} onClick={() => goToPage(row.page)} className={`cursor-pointer transition-colors ${row.page === currentPage ? 'bg-blue-50/60' : 'hover:bg-gray-50/60'}`}>
+                  <tr
+                    key={row.page}
+                    onClick={() => goToPage(row.page)}
+                    className={`cursor-pointer transition-colors ${row.page === currentPage ? 'bg-blue-50/60' : 'hover:bg-gray-50/60'}`}
+                  >
                     <td className="px-6 py-3 font-medium text-gray-800">
                       {row.page}P
-                      {row.page === currentPage && <span className="ml-2 text-xs text-blue-500">● 현재</span>}
+                      {row.page === currentPage && (
+                        <span className="ml-2 text-xs text-blue-500">● 현재</span>
+                      )}
                     </td>
                     <td className="px-6 py-3 text-gray-600">{row.minutes}분</td>
-                    <td className="px-6 py-3 text-gray-600">{row.strokes}개</td>
                     <td className="px-6 py-3">
                       {row.feedback > 0
-                        ? <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full">{row.feedback}회</span>
+                        ? <span className="font-bold text-blue-600">✓</span>
                         : <span className="text-gray-300">—</span>
                       }
                     </td>
