@@ -133,6 +133,39 @@
 
 ---
 
+---
+
+### Phase UI-Restructure — UI 전면 개편 (2026-03-13)
+**브랜치: `feature/restructure-v2`**
+
+#### 신규 파일
+- `Client/Web/src/pages/ArchiveDetailPage.tsx` — 아카이브 상세 전면 개편
+  - GNB 로고만 표시 (세션 정보 제거)
+  - 세션 헤더 + 요약 카드 3개 (참가자수/진행시간/첨삭횟수)
+  - PDF 드롭다운 선택 바 (더미 3개)
+  - 참가자 필기 그리드 — 내 카드 첫번째 고정 + `border-blue-500` + "나" 뱃지
+- `Client/Web/src/pages/HomePage.tsx` — 홈 대시보드
+- `Client/Web/src/pages/CreateSessionPage.tsx` — 세션 생성/참가 화면 3단계 분리
+  - `idle` → 버튼 2개만 (초기 진입)
+  - `create` → 좌측 스텝 인디케이터 + 생성 폼
+  - `join` → 좌측 스텝 인디케이터 + 참가 폼
+- `Client/Web/src/pages/StudentReportDetail.tsx` — 역할별 2버전 분기
+  - 게스트(`?role=guest`): 요약 카드 4개 + 재생 플레이어 + 피드백 + 통계 표
+  - 호스트(`?role=host`): 필기 재생 / 필기 재본 캔버스 2개만
+- `Client/Web/src/pages/ReplayPage.tsx` — 리플레이 페이지
+
+#### 수정 파일
+- `Client/Web/src/App.tsx`
+  - 라우팅 재구성 (신규 페이지 연결)
+  - `<main>` `overflow-hidden` → `overflow-y-auto` (전체 스크롤 대응)
+- `Client/Web/src/pages/LoginPage.tsx` — 단순화
+
+#### 삭제 파일
+- `Client/Web/src/pages/host/` 하위 4개 파일 (HostHomePage, LessonResultPage, SessionListPage, WorksheetPage)
+- `Client/Web/src/components/host/HostLayout.tsx`
+
+---
+
 ## 로컬 테스트 방법
 
 ```bash

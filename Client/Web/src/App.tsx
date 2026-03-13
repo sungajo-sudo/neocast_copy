@@ -6,9 +6,13 @@ import { SessionLobby, HostSessionView, GuestAnnotationOverlay } from './compone
 import { useDevBridgeHost } from './hooks/useDevBridgeHost';
 import { useDevBridgeGuest } from './hooks/useDevBridgeGuest';
 import { devBridge } from './services/dev-bridge';
-import { LandingPage } from './pages/LandingPage';
 import { LoginPage } from './pages/LoginPage';
 import { LobbyPage } from './pages/LobbyPage';
+import { HomePage } from './pages/HomePage';
+import { CreateSessionPage } from './pages/CreateSessionPage';
+import { ArchiveDetailPage } from './pages/ArchiveDetailPage';
+import { ReplayPage } from './pages/ReplayPage';
+import { StudentReportDetail } from './pages/StudentReportDetail';
 import { ToolbarActions, PaperSizeBadge, PenSettingsPopover } from './components/toolbar';
 import { AuthPanel } from './components/auth';
 // PenConnectionBadge removed - Smartpen is now in the control bar
@@ -35,11 +39,6 @@ import { penInputService } from './services/pen-input.service';
 import { messengerService } from './services/messenger-service';
 import { createInviteLink, parseInviteFromPath } from './utils/invite';
 import { FEATURE_FLAGS } from './utils/feature-flags';
-import { HostLayout } from './components/host/HostLayout';
-import { HostHomePage } from './pages/host/HostHomePage';
-import { SessionListPage } from './pages/host/SessionListPage';
-import { WorksheetPage } from './pages/host/WorksheetPage';
-import { LessonResultPage } from './pages/host/LessonResultPage';
 import { copyToClipboard } from './utils/clipboard';
 import type { InviteData } from './utils/invite';
 import watercolorBg from './assets/images/watercolor-bg.png';
@@ -1205,27 +1204,14 @@ function App() {
         {isSessionPage && session && <LeftPanelContainer />}
 
         {/* 메인 영역 - 라우트에 따라 다른 컴포넌트 표시 */}
-        <main className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 flex flex-col overflow-y-auto">
           <Routes>
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/signup" element={<SignupPage />} />
-            <Route path="/guest-join" element={<GuestJoinPage />} />
-            <Route path="/" element={<LandingPage />} />
-
-            {/* 호스트 대시보드 (LNB 레이아웃) */}
-            <Route
-              path="/host"
-              element={
-                <RequireHost>
-                  <HostLayout />
-                </RequireHost>
-              }
-            >
-              <Route index element={<HostHomePage />} />
-              <Route path="sessions" element={<SessionListPage />} />
-              <Route path="worksheets" element={<WorksheetPage />} />
-              <Route path="results" element={<LessonResultPage />} />
-            </Route>
+            <Route path="/" element={<LoginPage />} />
+            <Route path="/home" element={<HomePage />} />
+            <Route path="/session/create" element={<CreateSessionPage />} />
+            <Route path="/archive/:archiveId" element={<ArchiveDetailPage />} />
+            <Route path="/archive/:archiveId/student/:userId" element={<StudentReportDetail />} />
+            <Route path="/archive/:archiveId/replay" element={<ReplayPage />} />
 
             <Route
               path="/lobby"

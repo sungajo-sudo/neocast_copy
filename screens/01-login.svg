@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" font-family="'Pretendard', 'Apple SD Gothic Neo', sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#dbeafe"/>
+      <stop offset="50%" stop-color="#ede9fe"/>
+      <stop offset="100%" stop-color="#fce7f3"/>
+    </linearGradient>
+    <filter id="blur1"><feGaussianBlur stdDeviation="60"/></filter>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="24" flood-color="#00000018"/></filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1440" height="900" fill="url(#bg)"/>
+  <circle cx="200" cy="180" r="320" fill="#93c5fd" opacity="0.18" filter="url(#blur1)"/>
+  <circle cx="1280" cy="120" r="280" fill="#c4b5fd" opacity="0.16" filter="url(#blur1)"/>
+  <circle cx="720" cy="750" r="350" fill="#fbcfe8" opacity="0.14" filter="url(#blur1)"/>
+  <circle cx="1100" cy="650" r="260" fill="#a5f3fc" opacity="0.12" filter="url(#blur1)"/>
+  <!-- White overlay -->
+  <rect width="1440" height="900" fill="white" opacity="0.40"/>
+
+  <!-- Login Card -->
+  <rect x="520" y="250" width="400" height="380" rx="28" fill="white" fill-opacity="0.85" stroke="white" stroke-opacity="0.7" stroke-width="1.5" filter="url(#shadow)"/>
+
+  <!-- Logo -->
+  <text x="720" y="330" text-anchor="middle" font-size="34" font-weight="800" letter-spacing="-0.5">
+    <tspan fill="#2563eb">Neo</tspan><tspan fill="#1f2937">CAST</tspan>
+  </text>
+
+  <!-- Subtitle -->
+  <text x="720" y="368" text-anchor="middle" font-size="14" fill="#6b7280">스마트 필기 협업 플랫폼</text>
+
+  <!-- Divider -->
+  <line x1="580" y1="395" x2="860" y2="395" stroke="#e5e7eb" stroke-width="1"/>
+
+  <!-- Button -->
+  <rect x="572" y="415" width="296" height="52" rx="14" fill="url(#btnGrad)"/>
+  <defs>
+    <linearGradient id="btnGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+  </defs>
+  <text x="720" y="446" text-anchor="middle" font-size="15" font-weight="600" fill="white">테스트 버전으로 시작</text>
+
+  <!-- Footer note -->
+  <text x="720" y="490" text-anchor="middle" font-size="12" fill="#9ca3af">NeoCAST Demo v0.1 — feature/restructure-v2</text>
+
+  <!-- Copyright -->
+  <text x="720" y="875" text-anchor="middle" font-size="12" fill="#9ca3af">© 2026 NeoCAST. All rights reserved.</text>
+</svg>

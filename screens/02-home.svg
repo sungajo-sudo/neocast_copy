@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" font-family="'Pretendard', 'Apple SD Gothic Neo', sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#dbeafe"/>
+      <stop offset="50%" stop-color="#ede9fe"/>
+      <stop offset="100%" stop-color="#fce7f3"/>
+    </linearGradient>
+    <filter id="blur1"><feGaussianBlur stdDeviation="60"/></filter>
+    <filter id="shadow"><feDropShadow dx="0" dy="4" stdDeviation="16" flood-color="#00000012"/></filter>
+    <filter id="shadow2"><feDropShadow dx="0" dy="8" stdDeviation="24" flood-color="#00000016"/></filter>
+    <linearGradient id="btnGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="iconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1440" height="900" fill="url(#bg)"/>
+  <circle cx="150" cy="200" r="350" fill="#93c5fd" opacity="0.16" filter="url(#blur1)"/>
+  <circle cx="1350" cy="150" r="280" fill="#c4b5fd" opacity="0.14" filter="url(#blur1)"/>
+  <circle cx="800" cy="800" r="300" fill="#fbcfe8" opacity="0.12" filter="url(#blur1)"/>
+  <rect width="1440" height="900" fill="white" opacity="0.40"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1440" height="56" fill="white" fill-opacity="0.72" stroke="white" stroke-opacity="0.5" stroke-width="1"/>
+  <text x="32" y="35" font-size="20" font-weight="800">
+    <tspan fill="#2563eb">Neo</tspan><tspan fill="#1f2937">CAST</tspan>
+  </text>
+  <text x="1408" y="35" text-anchor="end" font-size="14" fill="#4b5563">선생님 (Mock)</text>
+
+  <!-- Body (centered max-w-2xl = 672px) -->
+  <!-- Greeting -->
+  <text x="384" y="114" font-size="22" font-weight="700" fill="#1f2937">안녕하세요, 선생님 (Mock)님!</text>
+
+  <!-- New Session Card -->
+  <rect x="384" y="134" width="672" height="88" rx="24" fill="white" fill-opacity="0.82" stroke="white" stroke-opacity="0.65" stroke-width="1.5" filter="url(#shadow2)"/>
+  <!-- Icon circle -->
+  <rect x="408" y="154" width="48" height="48" rx="16" fill="url(#iconGrad)"/>
+  <text x="432" y="184" text-anchor="middle" font-size="26" fill="white" font-weight="300">+</text>
+  <!-- Text -->
+  <text x="472" y="183" font-size="15" font-weight="700" fill="#1f2937">새 세션 시작</text>
+  <text x="472" y="203" font-size="13" fill="#6b7280">지금 바로 수업을 시작하세요</text>
+  <!-- Arrow -->
+  <text x="1032" y="185" text-anchor="end" font-size="18" fill="#9ca3af">›</text>
+
+  <!-- Section title -->
+  <text x="384" y="260" font-size="15" font-weight="600" fill="#374151">지난 수업 기록</text>
+
+  <!-- Archive list card -->
+  <rect x="384" y="276" width="672" height="232" rx="24" fill="white" fill-opacity="0.82" stroke="white" stroke-opacity="0.65" stroke-width="1.5" filter="url(#shadow)"/>
+
+  <!-- Row 1 -->
+  <text x="416" y="310" font-size="14" font-weight="500" fill="#1f2937">중학교 수학 - 이차방정식</text>
+  <text x="416" y="330" font-size="12" fill="#9ca3af">2026.03.10</text>
+  <text x="1016" y="318" text-anchor="end" font-size="13" fill="#6b7280">12명</text>
+  <text x="1040" y="319" text-anchor="end" font-size="16" fill="#d1d5db">›</text>
+  <line x1="416" y1="345" x2="1040" y2="345" stroke="#f3f4f6" stroke-width="1"/>
+
+  <!-- Row 2 -->
+  <text x="416" y="378" font-size="14" font-weight="500" fill="#1f2937">고등 국어 - 현대시 분석</text>
+  <text x="416" y="398" font-size="12" fill="#9ca3af">2026.03.07</text>
+  <text x="1016" y="386" text-anchor="end" font-size="13" fill="#6b7280">8명</text>
+  <text x="1040" y="387" text-anchor="end" font-size="16" fill="#d1d5db">›</text>
+  <line x1="416" y1="413" x2="1040" y2="413" stroke="#f3f4f6" stroke-width="1"/>
+
+  <!-- Row 3 -->
+  <text x="416" y="446" font-size="14" font-weight="500" fill="#1f2937">영어 회화 중급반</text>
+  <text x="416" y="466" font-size="12" fill="#9ca3af">2026.03.05</text>
+  <text x="1016" y="454" text-anchor="end" font-size="13" fill="#6b7280">15명</text>
+  <text x="1040" y="455" text-anchor="end" font-size="16" fill="#d1d5db">›</text>
+</svg>

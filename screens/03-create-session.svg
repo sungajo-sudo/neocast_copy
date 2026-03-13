@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" font-family="'Pretendard', 'Apple SD Gothic Neo', sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#dbeafe"/>
+      <stop offset="50%" stop-color="#ede9fe"/>
+      <stop offset="100%" stop-color="#fce7f3"/>
+    </linearGradient>
+    <filter id="blur1"><feGaussianBlur stdDeviation="60"/></filter>
+    <filter id="shadow"><feDropShadow dx="0" dy="12" stdDeviation="32" flood-color="#0000001a"/></filter>
+    <linearGradient id="btnBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="btnGreen" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#22c55e"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <linearGradient id="leftBg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#eff6ff" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="#eef2ff" stop-opacity="0.6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1440" height="900" fill="url(#bg)"/>
+  <circle cx="200" cy="200" r="320" fill="#93c5fd" opacity="0.18" filter="url(#blur1)"/>
+  <circle cx="1280" cy="700" r="280" fill="#c4b5fd" opacity="0.15" filter="url(#blur1)"/>
+  <rect width="1440" height="900" fill="white" opacity="0.40"/>
+
+  <!-- Main Card (900x560 centered) -->
+  <rect x="270" y="170" width="900" height="560" rx="28" fill="white" fill-opacity="0.72" stroke="white" stroke-opacity="0.65" stroke-width="1.5" filter="url(#shadow)"/>
+
+  <!-- Left panel (360px) -->
+  <rect x="270" y="170" width="360" height="560" rx="28" fill="url(#leftBg)"/>
+  <rect x="270" y="170" width="360" height="560" fill="none" stroke="white" stroke-opacity="0.45" stroke-width="1"/>
+  <!-- Left panel right border (clip effect) -->
+  <rect x="598" y="170" width="2" height="560" fill="white" fill-opacity="0.45"/>
+
+  <!-- Left content -->
+  <text x="310" y="240" font-size="12" fill="#9ca3af">환영합니다!</text>
+  <text x="310" y="268" font-size="18" font-weight="700" fill="#1f2937">새로운 세션을 시작하거나,</text>
+  <text x="310" y="292" font-size="14" fill="#6b7280">진행 중인 세션에 참여해보세요.</text>
+
+  <!-- Left item 1: 새 세션 (active) -->
+  <rect x="302" y="320" width="316" height="76" rx="14" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1.5"/>
+  <rect x="318" y="338" width="32" height="32" rx="10" fill="#dbeafe"/>
+  <text x="334" y="358" text-anchor="middle" font-size="18" fill="#2563eb" font-weight="400">+</text>
+  <text x="362" y="350" font-size="13" font-weight="600" fill="#1f2937">새 세션 만들기</text>
+  <text x="362" y="368" font-size="11" fill="#6b7280">호스트가 되어 수업이나 회의를 시작하세요.</text>
+
+  <!-- Left item 2: 참여하기 -->
+  <rect x="302" y="410" width="316" height="76" rx="14" fill="white" fill-opacity="0.5"/>
+  <rect x="318" y="428" width="32" height="32" rx="10" fill="#dcfce7"/>
+  <text x="334" y="449" text-anchor="middle" font-size="12" font-weight="700" fill="#16a34a">G</text>
+  <text x="362" y="440" font-size="13" font-weight="600" fill="#1f2937">참여하기</text>
+  <text x="362" y="458" font-size="11" fill="#6b7280">공유받은 세션 코드를 입력하여 참여하세요.</text>
+
+  <!-- Right panel content -->
+  <!-- Title -->
+  <text x="950" y="240" text-anchor="middle" font-size="20" font-weight="700" fill="#1f2937">NeoCAST Session</text>
+
+  <!-- 세션명 label -->
+  <text x="640" y="282" font-size="13" font-weight="600" fill="#374151">세션명 <tspan fill="#ef4444">*</tspan></text>
+  <rect x="640" y="292" width="620" height="46" rx="12" fill="white" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="660" y="320" font-size="14" fill="#d1d5db">예: 수학 3-1반 2교시</text>
+
+  <!-- Divider -->
+  <line x1="640" y1="354" x2="1260" y2="354" stroke="#f3f4f6" stroke-width="1"/>
+
+  <!-- 비밀번호 + 코드 row -->
+  <text x="640" y="382" font-size="13" font-weight="600" fill="#374151">세션 비밀번호</text>
+  <text x="950" y="382" font-size="13" font-weight="600" fill="#374151">세션 코드</text>
+
+  <!-- 비밀번호 input -->
+  <rect x="640" y="392" width="290" height="46" rx="12" fill="white" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="785" y="420" text-anchor="middle" font-size="15" font-family="monospace" fill="#1f2937" letter-spacing="2">cz2syC</text>
+
+  <!-- 세션 코드 input (readonly) -->
+  <rect x="950" y="392" width="310" height="46" rx="12" fill="#f9fafb" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="1105" y="420" text-anchor="middle" font-size="15" font-family="monospace" fill="#6b7280" letter-spacing="2">HYSONG</text>
+
+  <text x="640" y="452" font-size="11" fill="#9ca3af">자동 생성된 비밀번호입니다.</text>
+
+  <!-- 게스트 모드 체크박스 -->
+  <rect x="640" y="466" width="18" height="18" rx="4" fill="#2563eb"/>
+  <text x="649" y="479" text-anchor="middle" font-size="11" fill="white">✓</text>
+  <text x="668" y="480" font-size="13" fill="#374151">게스트 모드 허용</text>
+
+  <!-- Buttons -->
+  <rect x="640" y="504" width="295" height="48" rx="14" fill="url(#btnBlue)"/>
+  <text x="788" y="533" text-anchor="middle" font-size="14" font-weight="600" fill="white">세션 생성하기</text>
+
+  <rect x="945" y="504" width="315" height="48" rx="14" fill="url(#btnGreen)"/>
+  <text x="1103" y="533" text-anchor="middle" font-size="14" font-weight="600" fill="white">참가하기</text>
+</svg>

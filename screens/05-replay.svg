@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" font-family="'Pretendard', 'Apple SD Gothic Neo', sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#dbeafe"/>
+      <stop offset="50%" stop-color="#ede9fe"/>
+      <stop offset="100%" stop-color="#fce7f3"/>
+    </linearGradient>
+    <filter id="blur1"><feGaussianBlur stdDeviation="60"/></filter>
+    <filter id="shadow"><feDropShadow dx="0" dy="4" stdDeviation="16" flood-color="#00000014"/></filter>
+    <filter id="shadowCard"><feDropShadow dx="0" dy="6" stdDeviation="20" flood-color="#00000016"/></filter>
+    <linearGradient id="btnBlue" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1440" height="900" fill="url(#bg)"/>
+  <circle cx="300" cy="200" r="300" fill="#93c5fd" opacity="0.16" filter="url(#blur1)"/>
+  <circle cx="1200" cy="650" r="280" fill="#c4b5fd" opacity="0.14" filter="url(#blur1)"/>
+  <rect width="1440" height="900" fill="white" opacity="0.40"/>
+
+  <!-- Header -->
+  <rect x="0" y="0" width="1440" height="56" fill="white" fill-opacity="0.72" stroke="white" stroke-opacity="0.5" stroke-width="1"/>
+  <text x="28" y="34" font-size="13" fill="#6b7280">← 뒤로</text>
+  <text x="80" y="35" font-size="15" font-weight="700" fill="#1f2937">박민준의 필기 리플레이</text>
+  <!-- Page nav (right side of header) -->
+  <rect x="1300" y="13" width="28" height="28" rx="14" fill="white" fill-opacity="0.85" stroke="white" stroke-opacity="0.65" stroke-width="1" filter="url(#shadow)"/>
+  <text x="1314" y="32" text-anchor="middle" font-size="13" fill="#6b7280">←</text>
+  <text x="1346" y="32" text-anchor="middle" font-size="12" fill="#6b7280">1 / 3</text>
+  <rect x="1380" y="13" width="28" height="28" rx="14" fill="white" fill-opacity="0.85" stroke="white" stroke-opacity="0.65" stroke-width="1" filter="url(#shadow)"/>
+  <text x="1394" y="32" text-anchor="middle" font-size="13" fill="#6b7280">→</text>
+
+  <!-- A4 Canvas (700:990 ratio, displayed ~350x495) -->
+  <!-- Centered horizontally, left of center -->
+  <rect x="420" y="76" width="380" height="538" rx="18" fill="white" fill-opacity="0.85" stroke="white" stroke-opacity="0.65" stroke-width="1.5" filter="url(#shadowCard)"/>
+  <rect x="420" y="76" width="380" height="538" rx="18" fill="#f8f9fa"/>
+  <!-- Dummy strokes on canvas -->
+  <line x1="460" y1="140" x2="760" y2="220" stroke="#FF6B6B" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="480" y1="250" x2="720" y2="310" stroke="#FF6B6B" stroke-width="2" stroke-linecap="round"/>
+  <line x1="500" y1="350" x2="660" y2="480" stroke="#FF6B6B" stroke-width="2" stroke-linecap="round"/>
+  <line x1="540" y1="170" x2="700" y2="390" stroke="#FF6B6B" stroke-width="1.5" stroke-linecap="round" stroke-dasharray="4 4" opacity="0.5"/>
+  <!-- "재생 중" indicator -->
+  <circle cx="784" cy="90" r="6" fill="#22c55e" opacity="0.8"/>
+  <text x="796" y="95" font-size="11" fill="#16a34a">재생 중</text>
+
+  <!-- Control Panel (right side) -->
+  <rect x="830" y="76" width="340" height="250" rx="22" fill="white" fill-opacity="0.85" stroke="white" stroke-opacity="0.65" stroke-width="1.5" filter="url(#shadowCard)"/>
+
+  <!-- Play / Pause / Reset buttons -->
+  <rect x="855" y="104" width="130" height="44" rx="13" fill="url(#btnBlue)"/>
+  <text x="920" y="131" text-anchor="middle" font-size="13" font-weight="600" fill="white">⏸ 일시정지</text>
+
+  <rect x="1000" y="104" width="145" height="44" rx="13" fill="white" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="1073" y="131" text-anchor="middle" font-size="13" font-weight="500" fill="#374151">↺ 처음으로</text>
+
+  <!-- Speed buttons -->
+  <text x="855" y="178" font-size="12" fill="#9ca3af">속도:</text>
+  <rect x="892" y="162" width="52" height="32" rx="8" fill="white" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="918" y="182" text-anchor="middle" font-size="12" fill="#6b7280">0.5x</text>
+  <rect x="954" y="162" width="52" height="32" rx="8" fill="#2563eb"/>
+  <text x="980" y="182" text-anchor="middle" font-size="12" font-weight="600" fill="white">1x</text>
+  <rect x="1016" y="162" width="52" height="32" rx="8" fill="white" stroke="#e5e7eb" stroke-width="1.5"/>
+  <text x="1042" y="182" text-anchor="middle" font-size="12" fill="#6b7280">2x</text>
+
+  <!-- Progress bar -->
+  <rect x="855" y="218" width="290" height="6" rx="3" fill="#e5e7eb"/>
+  <rect x="855" y="218" width="175" height="6" rx="3" fill="url(#progressGrad)"/>
+  <circle cx="1030" cy="221" r="7" fill="white" stroke="#3b82f6" stroke-width="2"/>
+
+  <!-- Time display -->
+  <text x="855" y="244" font-size="11" fill="#9ca3af">00:24</text>
+  <text x="1145" y="244" text-anchor="end" font-size="11" fill="#9ca3af">01:14</text>
+
+  <!-- Info card below canvas -->
+  <rect x="420" y="630" width="380" height="80" rx="18" fill="white" fill-opacity="0.82" stroke="white" stroke-opacity="0.65" stroke-width="1.5" filter="url(#shadow)"/>
+  <text x="440" y="660" font-size="12" fill="#9ca3af">참가자</text>
+  <text x="440" y="682" font-size="14" font-weight="600" fill="#1f2937">박민준</text>
+  <rect x="520" y="666" width="44" height="20" rx="10" fill="#f3f4f6"/>
+  <text x="542" y="680" text-anchor="middle" font-size="10" fill="#6b7280">게스트</text>
+
+  <text x="640" y="660" font-size="12" fill="#9ca3af">현재 페이지</text>
+  <text x="640" y="682" font-size="14" font-weight="600" fill="#1f2937">1 / 3</text>
+
+  <text x="720" y="660" font-size="12" fill="#9ca3af">재생 시간</text>
+  <text x="720" y="682" font-size="14" font-weight="600" fill="#1f2937">00:24 / 01:14</text>
+</svg>
