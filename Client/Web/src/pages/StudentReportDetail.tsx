@@ -102,12 +102,18 @@ export function StudentReportDetail() {
 
   return (
     <div className="min-h-screen relative">
-      {/* 수채화 배경 */}
-      <div
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60"
-        style={{ backgroundImage: `url(${watercolorBg})` }}
-      />
-      <div className="fixed inset-0 z-0 bg-white/40 pointer-events-none" />
+      {/* 배경 — 호스트: 단색 연파랑 / 게스트: 수채화 */}
+      {isHost ? (
+        <div className="fixed inset-0 z-0 bg-[#dce9f8]" />
+      ) : (
+        <>
+          <div
+            className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60"
+            style={{ backgroundImage: `url(${watercolorBg})` }}
+          />
+          <div className="fixed inset-0 z-0 bg-white/40 pointer-events-none" />
+        </>
+      )}
 
       {/* ─── 2-A. 상단 네비게이션 바 ─── */}
       <header className="sticky top-0 z-10 bg-white/70 backdrop-blur-md border-b border-white/50 h-14 flex items-center px-6">
@@ -117,12 +123,10 @@ export function StudentReportDetail() {
         >
           ← 뒤로가기
         </button>
-        <h1 className="flex-1 text-center font-bold text-gray-800 text-base">
-          {participant.nickname}의 필기 리플레이
+        <h1 className="flex-1 text-center font-bold text-gray-800 text-base truncate">
+          {participant.nickname}의 필기 상세
         </h1>
-        <span className="text-sm text-gray-500 flex-shrink-0 tabular-nums">
-          {currentPage} / {TOTAL_PAGES}
-        </span>
+        <span className="w-20 flex-shrink-0" />
       </header>
 
       {/* ══ 버전 B: 호스트 진입 — 페이지 그리드 + 사이드 패널 ══ */}
@@ -182,30 +186,56 @@ export function StudentReportDetail() {
               {/* 선택 페이지 캔버스 */}
               <div className="bg-white rounded-xl border border-gray-100 overflow-hidden w-full" style={{ aspectRatio: '210/297' }} />
 
-              {/* 메타 정보 */}
-              <div className="flex flex-col gap-1.5 text-sm">
-                <div className="flex items-center justify-between text-gray-600">
-                  <span className="text-xs text-gray-400">필기 시간</span>
-                  <span className="font-medium">{HOST_PAGE_STATS.find(p => p.page === currentPage)?.minutes ?? 0}분</span>
+              {/* Seek bar */}
+              <div className="flex flex-col gap-1.5">
+                <div
+                  className="relative h-1.5 bg-gray-200 rounded-full cursor-pointer"
+                  onClick={handleSeek}
+                >
+                  <div
+                    className="absolute inset-y-0 left-0 bg-blue-300 rounded-full transition-all"
+                    style={{ width: `${progress * 100}%` }}
+                  />
+                  <div
+                    className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-green-500 rounded-full shadow transition-all"
+                    style={{ left: `calc(${progress * 100}% - 6px)` }}
+                  />
                 </div>
-                <div className="flex items-center justify-between text-gray-600">
-                  <span className="text-xs text-gray-400">첨삭</span>
-                  <span className={`font-medium ${HOST_PAGE_STATS.find(p => p.page === currentPage)?.hasFeedback ? 'text-blue-600' : 'text-gray-300'}`}>
-                    {HOST_PAGE_STATS.find(p => p.page === currentPage)?.hasFeedback ? '✓ 있음' : '—'}
-                  </span>
+                <div className="flex justify-between text-xs text-gray-400 tabular-nums">
+                  <span>{formatTime(currentTime)}</span>
+                  <span>{formatTime(TOTAL_DURATION_MS)}</span>
                 </div>
               </div>
 
-              {/* 버튼 */}
-              <div className="flex flex-col gap-2 mt-1">
+              {/* 재생 컨트롤 */}
+              <div className="flex items-center justify-center gap-2">
+                {/* 배속 */}
+                <button
+                  onClick={() => setSpeed(speed === 1 ? 2 : speed === 2 ? 0.5 : 1)}
+                  className="px-2 py-1.5 border border-gray-300 rounded-lg text-xs text-gray-600 hover:bg-gray-50 transition-colors min-w-[38px] text-center"
+                >
+                  {speed}x
+                </button>
+                {/* -10초 */}
+                <button
+                  onClick={() => setCurrentTime(t => Math.max(0, t - 10000))}
+                  className="w-9 h-9 rounded-full border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 transition-colors flex items-center justify-center text-xs font-medium"
+                >
+                  −10
+                </button>
+                {/* 재생/일시정지 */}
                 <button
                   onClick={() => setIsPlaying(v => !v)}
-                  className="w-full py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-700 active:scale-95 transition-all"
+                  className="w-10 h-10 rounded-full border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 active:scale-95 transition-all flex items-center justify-center text-base"
                 >
-                  ▶ 필기 재생
+                  {isPlaying ? '⏸' : '▷'}
                 </button>
-                <button className="w-full py-2.5 bg-white border border-gray-200 text-gray-700 text-sm font-medium rounded-xl hover:bg-gray-50 transition-colors">
-                  다운로드
+                {/* +10초 */}
+                <button
+                  onClick={() => setCurrentTime(t => Math.min(TOTAL_DURATION_MS, t + 10000))}
+                  className="w-9 h-9 rounded-full border border-gray-200 bg-white text-gray-500 hover:bg-gray-50 transition-colors flex items-center justify-center text-xs font-medium"
+                >
+                  +10
                 </button>
               </div>
             </div>

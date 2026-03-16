@@ -203,7 +203,11 @@ export function ArchiveDetailPage() {
             {DUMMY_PARTICIPANTS.map(participant => (
               <button
                 key={participant.userId}
-                onClick={() => navigate(`/archive/${archiveId!}/student/${participant.userId}?role=${participant.role}`)}
+                onClick={() =>
+                  participant.role === 'guest'
+                    ? navigate(`/replay/guest/${archiveId!}/${participant.userId}`)
+                    : navigate(`/archive/${archiveId!}/student/${participant.userId}?role=host`)
+                }
                 className={`relative bg-white/80 backdrop-blur-md rounded-2xl shadow-sm overflow-hidden hover:shadow-md hover:scale-[1.02] transition-all text-left ${
                   participant.isMe ? 'border-2 border-blue-500' : 'border border-white/60'
                 }`}

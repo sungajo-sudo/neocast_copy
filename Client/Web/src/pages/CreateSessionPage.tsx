@@ -34,12 +34,15 @@ export function CreateSessionPage() {
   const [sessionPassword, setSessionPassword] = useState(generatePassword);
   const [allowGuestMode, setAllowGuestMode] = useState(true);
   const [titleError, setTitleError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [createError, setCreateError] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
   // 세션 참가 필드
   const [joinCode, setJoinCode] = useState('');
   const [joinPassword, setJoinPassword] = useState('');
+  const [joinCodeError, setJoinCodeError] = useState<string | null>(null);
+  const [joinPasswordError, setJoinPasswordError] = useState<string | null>(null);
   const [joinError, setJoinError] = useState<string | null>(null);
   const [isJoining, setIsJoining] = useState(false);
 
@@ -66,10 +69,30 @@ export function CreateSessionPage() {
     return connect(serverUrl, tokens.accessToken, sessionId);
   };
 
+  const validateTitle = (value: string): string | null => {
+    const trimmed = value.trim();
+    if (!trimmed) return '세션명을 입력해주세요';
+    if (trimmed.length < 2) return '세션명은 최소 2자 이상 입력해주세요';
+    if (trimmed.length > 30) return '세션명은 30자 이하로 입력해주세요';
+    return null;
+  };
+
+  const validatePassword = (value: string): string | null => {
+    if (!value) return null; // 빈값 허용 (비밀번호 없는 세션)
+    if (value.length !== 6) return '비밀번호는 6자리로 입력해주세요';
+    return null;
+  };
+
   const handleCreate = useCallback(async () => {
-    if (!sessionTitle.trim()) {
-      setTitleError('세션명을 입력해주세요');
+    const titleErr = validateTitle(sessionTitle);
+    if (titleErr) {
+      setTitleError(titleErr);
       titleInputRef.current?.focus();
+      return;
+    }
+    const pwErr = validatePassword(sessionPassword);
+    if (pwErr) {
+      setPasswordError(pwErr);
       return;
     }
     if (!tokens?.accessToken || !user) return;
@@ -77,6 +100,7 @@ export function CreateSessionPage() {
     setIsCreating(true);
     setCreateError(null);
     setTitleError(null);
+    setPasswordError(null);
 
     try {
       const response = await sessionService.createSession(tokens.accessToken, {
@@ -106,25 +130,51 @@ export function CreateSessionPage() {
         inviteToken: response.session.inviteToken,
       });
     } catch (error) {
-      if (error instanceof ApiRequestError && error.status === 401) {
-        devMockLogin('host');
-        return;
+      if (error instanceof ApiRequestError) {
+        if (error.status === 401) {
+          setCreateError('로그인이 만료되었습니다. 다시 로그인해주세요.');
+          setTimeout(() => navigate('/login', { replace: true }), 1500);
+          return;
+        }
+        if (error.status >= 500) {
+          setCreateError('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+          return;
+        }
       }
-      setCreateError(error instanceof Error ? error.message : '세션 생성에 실패했습니다');
+      const msg = error instanceof Error ? error.message : '';
+      if (msg === '서버 연결에 실패했습니다') {
+        setCreateError('세션이 생성되었지만 서버 연결에 실패했습니다. 다시 시도해주세요.');
+      } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) {
+        setCreateError('서버에 연결할 수 없습니다. 네트워크를 확인해주세요.');
+      } else {
+        setCreateError(msg || '세션 생성에 실패했습니다. 다시 시도해주세요.');
+      }
     } finally {
       setIsCreating(false);
     }
   }, [sessionTitle, sessionPassword, allowGuestMode, tokens, user, serverUrl]);
 
   const handleJoin = useCallback(async () => {
+    if (!joinCode) {
+      setJoinCodeError('세션 코드를 입력해주세요');
+      codeInputRef.current?.focus();
+      return;
+    }
     if (joinCode.length !== 6) {
-      setJoinError('6자리 세션 코드를 입력해주세요');
+      setJoinCodeError('6자리 코드를 입력해주세요');
+      codeInputRef.current?.focus();
+      return;
+    }
+    if (joinPassword && joinPassword.length !== 6) {
+      setJoinPasswordError('비밀번호는 6자리로 입력해주세요');
       return;
     }
     if (!tokens?.accessToken || !user) return;
 
     setIsJoining(true);
     setJoinError(null);
+    setJoinCodeError(null);
+    setJoinPasswordError(null);
 
     try {
       if (import.meta.env.DEV) {
@@ -180,7 +230,49 @@ export function CreateSessionPage() {
         hasPassword: response.session.hasPassword,
       });
     } catch (error) {
-      setJoinError(error instanceof Error ? error.message : '참가에 실패했습니다');
+      if (error instanceof ApiRequestError) {
+        switch (error.status) {
+          case 404:
+            setJoinCodeError('존재하지 않는 세션입니다. 코드를 다시 확인해주세요.');
+            return;
+          case 410:
+            setJoinCodeError('이미 종료된 세션입니다.');
+            return;
+          case 401:
+            if (error.code === 'INVALID_PASSWORD') {
+              setJoinPasswordError('비밀번호가 올바르지 않습니다.');
+            } else {
+              setJoinError('로그인이 만료되었습니다. 다시 로그인해주세요.');
+              setTimeout(() => navigate('/login', { replace: true }), 1500);
+            }
+            return;
+          case 403:
+            if (error.code === 'GUEST_NOT_ALLOWED') {
+              setJoinError('이 세션은 게스트 참여가 허용되지 않습니다.');
+            } else if (error.code === 'SESSION_FULL') {
+              setJoinError('세션 정원이 가득 찼습니다.');
+            } else {
+              setJoinError('세션에 참여할 수 없습니다.');
+            }
+            return;
+          case 409:
+            setJoinError('이미 참여 중인 세션입니다.');
+            return;
+          default:
+            if (error.status >= 500) {
+              setJoinError('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+              return;
+            }
+        }
+      }
+      const msg = error instanceof Error ? error.message : '';
+      if (msg === '서버 연결에 실패했습니다') {
+        setJoinError('세션에 참여했지만 서버 연결에 실패했습니다. 다시 시도해주세요.');
+      } else if (msg.includes('fetch') || msg.includes('network') || msg.includes('Failed')) {
+        setJoinError('서버에 연결할 수 없습니다. 네트워크를 확인해주세요.');
+      } else {
+        setJoinError(msg || '참가에 실패했습니다. 다시 시도해주세요.');
+      }
     } finally {
       setIsJoining(false);
     }
@@ -189,7 +281,10 @@ export function CreateSessionPage() {
   const switchMode = (m: Mode) => {
     setMode(m);
     setTitleError(null);
+    setPasswordError(null);
     setCreateError(null);
+    setJoinCodeError(null);
+    setJoinPasswordError(null);
     setJoinError(null);
     setTimeout(() => {
       if (m === 'create') titleInputRef.current?.focus();
@@ -208,53 +303,59 @@ export function CreateSessionPage() {
 
       <div className="relative z-10 w-full max-w-4xl grid grid-cols-1 lg:grid-cols-5 gap-0 bg-white/70 backdrop-blur-xl rounded-3xl border border-white/60 shadow-2xl overflow-hidden">
 
-        {/* ── 좌측 스텝 인디케이터 ── */}
-        <div className="hidden lg:flex lg:col-span-2 flex-col justify-center p-10 bg-gradient-to-br from-blue-500/10 to-indigo-500/10 border-r border-white/40 gap-4">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-2">세션</p>
+        {/* ── 좌측 패널 ── */}
+        <div className="hidden lg:flex lg:col-span-2 flex-col justify-center px-10 py-12 bg-gradient-to-br from-blue-50/80 to-indigo-50/60 border-r border-gray-100 gap-6">
+          <div className="flex flex-col gap-1">
+            <p className="text-xs text-gray-400">환영합니다!</p>
+            <p className="text-xl font-bold text-gray-800 leading-snug">새로운 세션을 시작하거나,</p>
+            <p className="text-sm text-gray-500">초대받은 세션에 참여해보세요.</p>
+          </div>
 
-          {/* 스텝 1: 새 세션 만들기 */}
-          <button
-            onClick={() => switchMode('create')}
-            className={`flex items-start gap-3 p-4 rounded-2xl text-left transition-all ${
-              mode === 'create'
-                ? 'bg-blue-50 border-2 border-blue-200 shadow-sm'
-                : 'hover:bg-white/60 border-2 border-transparent'
-            }`}
-          >
-            <span className={`w-7 h-7 rounded-full text-sm font-bold flex items-center justify-center flex-shrink-0 transition-colors ${
-              mode === 'create' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'
-            }`}>
-              1
-            </span>
-            <div>
-              <p className={`font-semibold text-sm ${mode === 'create' ? 'text-blue-700' : 'text-gray-600'}`}>
-                새 세션 만들기
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">호스트로 수업을 시작하세요</p>
-            </div>
-          </button>
+          <div className="flex flex-col gap-2">
+            {/* 새 세션 생성 */}
+            <button
+              onClick={() => switchMode('create')}
+              className={`flex items-start gap-3 p-4 rounded-2xl text-left transition-all ${
+                mode === 'create'
+                  ? 'bg-white border border-blue-200 shadow-sm'
+                  : 'hover:bg-white/70 border border-transparent'
+              }`}
+            >
+              <span className={`w-8 h-8 rounded-full text-base font-bold flex items-center justify-center flex-shrink-0 transition-colors ${
+                mode === 'create' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'
+              }`}>
+                +
+              </span>
+              <div>
+                <p className={`font-semibold text-sm ${mode === 'create' ? 'text-gray-800' : 'text-gray-600'}`}>
+                  새 세션 생성
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">호스트가 되어 수업이나 회의를 시작하세요.</p>
+              </div>
+            </button>
 
-          {/* 스텝 2: 참여하기 */}
-          <button
-            onClick={() => switchMode('join')}
-            className={`flex items-start gap-3 p-4 rounded-2xl text-left transition-all ${
-              mode === 'join'
-                ? 'bg-green-50 border-2 border-green-200 shadow-sm'
-                : 'hover:bg-white/60 border-2 border-transparent'
-            }`}
-          >
-            <span className={`w-7 h-7 rounded-full text-sm font-bold flex items-center justify-center flex-shrink-0 transition-colors ${
-              mode === 'join' ? 'bg-green-500 text-white' : 'bg-gray-200 text-gray-500'
-            }`}>
-              2
-            </span>
-            <div>
-              <p className={`font-semibold text-sm ${mode === 'join' ? 'text-green-700' : 'text-gray-600'}`}>
-                참여하기
-              </p>
-              <p className="text-xs text-gray-400 mt-0.5">코드를 입력해 참여하세요</p>
-            </div>
-          </button>
+            {/* 참여하기 */}
+            <button
+              onClick={() => switchMode('join')}
+              className={`flex items-start gap-3 p-4 rounded-2xl text-left transition-all ${
+                mode === 'join'
+                  ? 'bg-white border border-blue-200 shadow-sm'
+                  : 'hover:bg-white/70 border border-transparent'
+              }`}
+            >
+              <span className={`w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center flex-shrink-0 transition-colors ${
+                mode === 'join' ? 'bg-blue-500 text-white' : 'bg-gray-200 text-gray-500'
+              }`}>
+                G
+              </span>
+              <div>
+                <p className={`font-semibold text-sm ${mode === 'join' ? 'text-gray-800' : 'text-gray-600'}`}>
+                  참여하기
+                </p>
+                <p className="text-xs text-gray-400 mt-0.5 leading-relaxed">공유받은 세션 코드를 입력하여 참여하세요.</p>
+              </div>
+            </button>
+          </div>
         </div>
 
         {/* ── 우측 폼 영역 ── */}
@@ -263,7 +364,7 @@ export function CreateSessionPage() {
           {mode === 'create' ? (
             /* ══ 생성 폼 ══ */
             <div className="flex flex-col gap-5">
-              <h2 className="text-xl font-bold text-gray-800">새 세션 만들기</h2>
+              <h2 className="text-xl font-bold text-gray-800 text-center">NeoCAST Session</h2>
 
               {/* 세션명 */}
               <div>
@@ -274,25 +375,49 @@ export function CreateSessionPage() {
                   ref={titleInputRef}
                   type="text"
                   value={sessionTitle}
-                  onChange={e => { setSessionTitle(e.target.value); setTitleError(null); }}
-                  placeholder="예: 수학 3-1반 2교시"
+                  onChange={e => {
+                    const val = e.target.value.slice(0, 30);
+                    setSessionTitle(val);
+                    setTitleError(null);
+                  }}
+                  placeholder="세션명을 입력해주세요"
+                  maxLength={30}
                   className={`w-full px-4 py-3 bg-white border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all ${
                     titleError ? 'border-red-400' : 'border-gray-200'
                   }`}
                   disabled={isCreating}
                 />
-                {titleError && <p className="mt-1 text-xs text-red-500">{titleError}</p>}
+                <div className="mt-1 flex items-center justify-between">
+                  {titleError
+                    ? <p className="text-xs text-red-500">{titleError}</p>
+                    : <span />
+                  }
+                  <p className={`text-xs ml-auto ${sessionTitle.length >= 30 ? 'text-red-400' : 'text-gray-400'}`}>
+                    {sessionTitle.length}/30
+                  </p>
+                </div>
               </div>
 
               {/* 세션 비밀번호 */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">세션 비밀번호</label>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl font-mono tracking-widest text-center text-gray-800 select-all">
-                    {sessionPassword}
-                  </div>
+                  <input
+                    type="text"
+                    value={sessionPassword}
+                    onChange={e => {
+                      const val = e.target.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 6);
+                      setSessionPassword(val);
+                      setPasswordError(null);
+                    }}
+                    className={`flex-1 px-4 py-3 bg-white border rounded-xl font-mono tracking-widest text-center text-gray-800 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all ${
+                      passwordError ? 'border-red-400' : 'border-gray-200'
+                    }`}
+                    maxLength={6}
+                    disabled={isCreating}
+                  />
                   <button
-                    onClick={() => setSessionPassword(generatePassword())}
+                    onClick={() => { setSessionPassword(generatePassword()); setPasswordError(null); }}
                     disabled={isCreating}
                     className="px-3 py-3 bg-white border border-gray-200 text-gray-500 rounded-xl hover:bg-gray-50 hover:text-gray-700 transition-colors text-sm flex-shrink-0"
                     title="비밀번호 재생성"
@@ -300,7 +425,10 @@ export function CreateSessionPage() {
                     ↺
                   </button>
                 </div>
-                <p className="mt-1 text-xs text-gray-400">자동 생성된 비밀번호입니다. ↺로 재생성할 수 있습니다.</p>
+                {passwordError
+                  ? <p className="mt-1 text-xs text-red-500">{passwordError}</p>
+                  : <p className="mt-1 text-xs text-gray-400">자동 생성된 비밀번호입니다. 직접 수정하거나 ↺로 재생성할 수 있습니다.</p>
+                }
               </div>
 
               {/* 게스트 모드 */}
@@ -333,7 +461,7 @@ export function CreateSessionPage() {
           ) : (
             /* ══ 참가 폼 ══ */
             <div className="flex flex-col gap-5">
-              <h2 className="text-xl font-bold text-gray-800">세션 참가하기</h2>
+              <h2 className="text-xl font-bold text-gray-800 text-center">NeoCAST Session</h2>
 
               {/* 세션 코드 */}
               <div>
@@ -346,28 +474,42 @@ export function CreateSessionPage() {
                   value={joinCode}
                   onChange={e => {
                     setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6));
-                    setJoinError(null);
+                    setJoinCodeError(null);
                   }}
                   placeholder="6자리 코드 입력"
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/50 font-mono text-center text-2xl tracking-widest uppercase transition-all"
+                  className={`w-full px-4 py-3 bg-white border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 font-mono text-center text-2xl tracking-widest uppercase transition-all ${
+                    joinCodeError ? 'border-red-400' : 'border-gray-200'
+                  }`}
                   maxLength={6}
                   disabled={isJoining}
                 />
+                {joinCodeError && <p className="mt-1 text-xs text-red-500">{joinCodeError}</p>}
               </div>
 
               {/* 비밀번호 */}
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                  비밀번호 <span className="text-xs text-gray-400 font-normal">(선택)</span>
+                  세션 비밀번호 <span className="text-xs text-gray-400 font-normal">(선택)</span>
                 </label>
                 <input
-                  type="password"
+                  type="text"
                   value={joinPassword}
-                  onChange={e => setJoinPassword(e.target.value)}
-                  placeholder="세션 비밀번호"
-                  className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-all"
+                  onChange={e => {
+                    const val = e.target.value.replace(/[^A-Za-z0-9]/g, '').slice(0, 6);
+                    setJoinPassword(val);
+                    setJoinPasswordError(null);
+                  }}
+                  placeholder="6자리 비밀번호"
+                  className={`w-full px-4 py-3 bg-white border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500/50 font-mono tracking-widest text-center transition-all ${
+                    joinPasswordError ? 'border-red-400' : 'border-gray-200'
+                  }`}
+                  maxLength={6}
                   disabled={isJoining}
                 />
+                {joinPasswordError
+                  ? <p className="mt-1 text-xs text-red-500">{joinPasswordError}</p>
+                  : <p className="mt-1 text-xs text-gray-400">호스트가 비밀번호를 설정한 경우 입력하세요.</p>
+                }
               </div>
 
               {joinError && (
@@ -378,8 +520,8 @@ export function CreateSessionPage() {
 
               <button
                 onClick={handleJoin}
-                disabled={isJoining || joinCode.length !== 6}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-xl py-3 font-semibold hover:opacity-90 active:scale-95 disabled:opacity-50 transition-all shadow-md mt-1"
+                disabled={isJoining}
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl py-3 font-semibold hover:opacity-90 active:scale-95 disabled:opacity-50 transition-all shadow-md mt-1"
               >
                 {isJoining ? '참가 중...' : '참가하기'}
               </button>

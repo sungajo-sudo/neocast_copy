@@ -13,6 +13,7 @@ import { CreateSessionPage } from './pages/CreateSessionPage';
 import { ArchiveDetailPage } from './pages/ArchiveDetailPage';
 import { ReplayPage } from './pages/ReplayPage';
 import { StudentReportDetail } from './pages/StudentReportDetail';
+import { ReplayGuestPage } from './pages/ReplayGuestPage';
 import { ToolbarActions, PaperSizeBadge, PenSettingsPopover } from './components/toolbar';
 import { AuthPanel } from './components/auth';
 // PenConnectionBadge removed - Smartpen is now in the control bar
@@ -1212,6 +1213,7 @@ function App() {
             <Route path="/archive/:archiveId" element={<ArchiveDetailPage />} />
             <Route path="/archive/:archiveId/student/:userId" element={<StudentReportDetail />} />
             <Route path="/archive/:archiveId/replay" element={<ReplayPage />} />
+            <Route path="/replay/guest/:sessionId/:participantId" element={<ReplayGuestPage />} />
 
             <Route
               path="/lobby"
