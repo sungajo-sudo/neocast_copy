@@ -1,393 +1,152 @@
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import watercolorBg from '../assets/images/watercolor-bg.png';
-import featureEducation from '../assets/images/feature-education.png';
-import featureCollaboration from '../assets/images/feature-collaboration.png';
-import featureProcessAnalysis from '../assets/images/feature-process-analysis.png';
-import featureInviteSystem from '../assets/images/feature-invite-system.png';
-import featureSecurity from '../assets/images/feature-security.png';
-import ncodeConcept from '../assets/images/ncode-concept.png';
-import { useAuthStore } from '../stores/auth-store';
-// Note: reusing existing assets or CSS for audience icons to keep it cleaner,
-// using the generated set as a fallback or background if needed, but for now
-// I will implement Audience using specific icons/content.
-// Actually, I will crop/use the generated audience set if possible or just use emojis/SVG for the cards
-// to be safer and cleaner as requested in plan.
-// Let's import the specific images I generated.
-// Note: target-audience.png is available but not currently used as individual icons are preferred
-import techNcode from '../assets/images/tech-ncode.png';
-import techSmartpen from '../assets/images/tech-smartpen.png';
-import techPaperhub from '../assets/images/tech-paperhub.png';
-import techPod from '../assets/images/tech-pod.png';
+import { HandwritingPreview } from '../components/HandwritingPreview';
 
 export function LandingPage() {
-  const { t } = useTranslation();
   const navigate = useNavigate();
-  const { isAuthenticated, isGuest } = useAuthStore();
 
   return (
-    <div className="min-h-screen relative overflow-x-hidden font-sans">
-      {/* Background with texture overlay */}
-      <div
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60"
-        style={{ backgroundImage: `url(${watercolorBg})` }}
-      />
-      <div className="fixed inset-0 z-0 bg-white/40 pointer-events-none" />
+    <div className="bg-app-bg text-slate-900 min-h-screen font-noto overflow-x-hidden selection:bg-brand-primary/20">
+      
+      {/* ─────────────────── BACKGROUND GLOW (Visual Only) ─────────────────── */}
+      <div className="fixed -top-[300px] -right-[200px] w-[800px] h-[800px] bg-brand-primary opacity-5 rounded-full blur-[160px] pointer-events-none" />
+      <div className="fixed -bottom-[300px] -left-[200px] w-[700px] h-[700px] bg-brand-secondary opacity-5 rounded-full blur-[140px] pointer-events-none" />
 
-      {/* Main Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* Header */}
-        <header className="py-6 flex justify-between items-center">
-          <div className="flex items-center">
-            {/* Logo removed as requested - using global header */}
+      {/* ─────────────────── HERO SECTION ─────────────────── */}
+      <main className="relative z-10 pt-[120px] pb-[100px] px-[6%] max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-[80px] items-center">
+        {/* Text Section */}
+        <div className="flex flex-col gap-8 animate-in fade-in slide-in-from-left duration-1000">
+          <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-brand-tint rounded-full border border-brand-primary/10 shadow-sm animate-pulse-slow">
+            <span className="w-2 h-2 rounded-full bg-brand-primary" />
+            <span className="text-xs font-black text-brand-tint-text uppercase tracking-widest leading-none">Global Learning Standard</span>
           </div>
-          {!isAuthenticated && (
-            <button
-              onClick={() => navigate('/login')}
-              className="px-6 py-2 rounded-full bg-white/80 hover:bg-white text-gray-800 font-medium shadow-sm backdrop-blur-sm transition-all border border-purple-100 hover:shadow-md"
-            >
-              {t('common.login')}
-            </button>
-          )}
-        </header>
 
-        {/* Hero Section */}
-        <main className="mt-16 sm:mt-24 text-center pb-24">
-          <h1 className="text-4xl sm:text-6xl font-extrabold text-gray-900 tracking-tight mb-8 drop-shadow-sm">
-            {t('landing.heroTitle')}<br className="hidden sm:block" />
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent opacity-90">{t('landing.heroSubtitle')}</span>
-          </h1>
+          <div className="flex flex-col gap-2">
+            <h1 className="text-slate-900 text-[64px] md:text-[80px] font-black leading-[1.1] tracking-[-2px] py-1">Paper Writing.</h1>
+            <h1 className="text-[64px] md:text-[80px] font-black leading-[1.1] tracking-[-2px] py-1 bg-gradient-to-br from-brand-primary to-brand-secondary bg-clip-text text-transparent">Digital Insight.</h1>
+          </div>
 
-          <p className="max-w-2xl mx-auto text-xl text-gray-700 mb-12 leading-relaxed">
-            {t('landing.heroDescription')}
+          <p className="text-lg text-slate-500 leading-relaxed font-semibold max-w-[500px]">
+            학생은 익숙한 <strong>종이</strong> 위에 문제를 풀고, <br />
+            선생님은 실시간 <strong>디지털 대시보드</strong>로 한눈에 분석합니다. <br />
+            아날로그 필기의 가치를 데이터로 확장하는 <strong>NeoCAST</strong>입니다.
           </p>
 
-          <button
-            onClick={() => navigate(isAuthenticated && !isGuest ? '/host' : isAuthenticated ? '/lobby' : '/login')}
-            className="group relative inline-flex items-center justify-center px-10 py-5 text-xl font-bold text-white transition-all duration-200 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full shadow-lg hover:shadow-xl hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 overflow-hidden"
-          >
-            <span className="relative z-10">{t('landing.getStarted')}</span>
-            <div className="absolute inset-0 -translate-x-full group-hover:translate-x-0 transition-transform duration-500 bg-gradient-to-r from-purple-600 to-blue-500" />
-          </button>
-        </main>
-
-        {/* Features Grid */}
-        <section className="py-20 mb-20 space-y-20">
-
-          {/* New Section 0: Ncode Concept & AI */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16 items-center">
-            <div className="order-1 transform hover:scale-105 transition-transform duration-500">
-              <img
-                src={ncodeConcept}
-                alt="Ncode Concept"
-                className="w-4/5 mx-auto h-auto rounded-3xl shadow-2xl hover:rotate-1 transition-transform duration-500 border-4 border-white"
-              />
-            </div>
-            <div className="order-2 space-y-6 bg-white/60 backdrop-blur-md p-8 rounded-3xl shadow-lg border border-white/50 hover:shadow-xl transition-shadow">
-              <span className="inline-block px-3 py-1 rounded-full bg-blue-100 text-blue-600 text-sm font-semibold mb-2">
-                New Feature
-              </span>
-              <h3 className="text-3xl font-bold text-gray-900">
-                {t('landing.newConcept.title')}<br />
-                <span className="text-blue-600">{t('landing.newConcept.subtitle')}</span>
-              </h3>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                {t('landing.newConcept.description')}
-              </p>
-              <ul className="space-y-3 text-gray-600">
-                <li className="flex items-center gap-2">
-                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 text-blue-600">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                  </span>
-                  <span className="font-medium">{t('landing.newConcept.feature1')}</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <span className="flex items-center justify-center w-6 h-6 rounded-full bg-purple-100 text-purple-600">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                  </span>
-                  <span className="font-medium">{t('landing.newConcept.feature2')}</span>
-                </li>
-              </ul>
-            </div>
+          <div className="flex items-center gap-5 pt-4">
+             <button 
+               onClick={() => navigate('/login')}
+               className="neo-btn-primary hover:scale-105 active:scale-95 transition-transform"
+             >
+               지금 시작하기
+             </button>
+             <button 
+               onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
+               className="flex items-center gap-3 group text-brand-primary font-black hover:translate-x-1 transition-all"
+             >
+                <span className="border-b-2 border-brand-primary/10">View Features →</span>
+             </button>
           </div>
+        </div>
 
-          {/* Feature 1: Education & Connection */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16 items-center">
-            <div className="order-2 md:order-1 space-y-6 bg-white/60 backdrop-blur-md p-8 rounded-3xl shadow-lg border border-white/50 hover:shadow-xl transition-shadow">
-              <h3 className="text-2xl font-bold text-gray-900">
-                {t('landing.section1Title')}<br />{t('landing.section1Subtitle')}
-              </h3>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                {t('landing.section1Description')}
-              </p>
-              <ul className="space-y-3 text-gray-600">
-                <li className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                  {t('landing.feature1')}
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                  {t('landing.feature2')}
-                </li>
-              </ul>
-            </div>
-            <div className="order-1 md:order-2 transform hover:scale-105 transition-transform duration-500">
-              <img
-                src={featureEducation}
-                alt="Remote Education"
-                className="w-4/5 mx-auto h-auto rounded-3xl shadow-2xl rotate-2 hover:rotate-0 transition-transform duration-500 border-4 border-white"
-              />
-            </div>
-          </div>
+        {/* Preview Section (Interactive Real-Life Sync: Paper to Dashboard) */}
+        <div className="relative group transition-all duration-1000 animate-in fade-in slide-in-from-right">
+          <div className="relative z-20 shadow-modern rounded-[40px] overflow-hidden border-[12px] border-slate-900 bg-slate-900 aspect-[5/4]">
+             <img 
+               src="/images/student-hero.png" 
+               alt="Student-to-Teacher Live Sync" 
+               className="w-full h-full object-cover grayscale-[20%] group-hover:grayscale-0 transition-all duration-1000"
+             />
+             
+             {/* ── Interactive Handwriting Overlay (Real-time GIF Feel) ── */}
+             {/* This absolute container is positioned and tilted to match the laptop screen in the image */}
+             <div 
+               className="absolute z-30 pointer-events-none"
+               style={{
+                 top: '34.5%',
+                 left: '52.5%',
+                 width: '28%',
+                 height: '19.5%',
+                 perspective: '1000px',
+                 transform: 'rotateY(-24deg) rotateX(8deg) skewY(-2deg)'
+               }}
+             >
+               <div className="w-full h-full opacity-0 group-hover:opacity-100 transition-opacity duration-1000">
+                  <HandwritingPreview isOverlay />
+               </div>
+             </div>
 
-          {/* Feature 2: Multi-Input & Creativity */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16 items-center">
-            <div className="order-1 transform hover:scale-105 transition-transform duration-500">
-              <img
-                src={featureCollaboration}
-                alt="Creative Collaboration"
-                className="w-4/5 mx-auto h-auto rounded-3xl shadow-2xl -rotate-2 hover:rotate-0 transition-transform duration-500 border-4 border-white"
-              />
-            </div>
-            <div className="order-2 space-y-6 bg-white/60 backdrop-blur-md p-8 rounded-3xl shadow-lg border border-white/50 hover:shadow-xl transition-shadow">
-              <h3 className="text-2xl font-bold text-gray-900">
-                {t('landing.section2Title')}<br />{t('landing.section2Subtitle')}
-              </h3>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                {t('landing.section2Description')}
-              </p>
-              <ul className="space-y-3 text-gray-600">
-                <li className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                  {t('landing.feature3')}
-                </li>
-                <li className="flex items-center gap-2">
-                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 11.5V14m0-2.5v-6a1.5 1.5 0 113 0m-3 6a1.5 1.5 0 00-3 0v2a7.5 7.5 0 0015 0v-5a1.5 1.5 0 00-3 0m-6-3V11m0-5.5v-1a1.5 1.5 0 013 0v1m0 0V11m0-5.5a1.5 1.5 0 013 0v3m0 0V11" /></svg>
-                  {t('landing.feature4')}
-                </li>
-              </ul>
-            </div>
-          </div>
-
-          {/* Feature 3: Process Analysis */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16 items-center">
-            <div className="order-2 md:order-1 space-y-6 bg-white/60 backdrop-blur-md p-8 rounded-3xl shadow-lg border border-white/50 hover:shadow-xl transition-shadow">
-              <h3 className="text-2xl font-bold text-gray-900">
-                {t('landing.section3Title')}<br />{t('landing.section3Subtitle')}
-              </h3>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                {t('landing.section3Description')}
-              </p>
-            </div>
-            <div className="order-1 md:order-2 transform hover:scale-105 transition-transform duration-500">
-              <img
-                src={featureProcessAnalysis}
-                alt="Process Sharing and Analysis"
-                className="w-4/5 mx-auto h-auto rounded-3xl shadow-2xl rotate-1 hover:rotate-0 transition-transform duration-500 border-4 border-white"
-              />
-            </div>
-          </div>
-
-          {/* Feature 4: Invitation System */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16 items-center">
-            <div className="order-1 transform hover:scale-105 transition-transform duration-500">
-              <img
-                src={featureInviteSystem}
-                alt="Easy Invitation System"
-                className="w-4/5 mx-auto h-auto rounded-3xl shadow-2xl -rotate-1 hover:rotate-0 transition-transform duration-500 border-4 border-white"
-              />
-            </div>
-            <div className="order-2 space-y-6 bg-white/60 backdrop-blur-md p-8 rounded-3xl shadow-lg border border-white/50 hover:shadow-xl transition-shadow">
-              <h3 className="text-2xl font-bold text-gray-900">
-                {t('landing.section4Title')}<br />{t('landing.section4Subtitle')}
-              </h3>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                {t('landing.section4Description')}
-              </p>
-            </div>
-          </div>
-
-          {/* Feature 5: Security */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-16 items-center">
-            <div className="order-2 md:order-1 space-y-6 bg-white/60 backdrop-blur-md p-8 rounded-3xl shadow-lg border border-white/50 hover:shadow-xl transition-shadow">
-              <h3 className="text-2xl font-bold text-gray-900">
-                {t('landing.section5Title')}<br />{t('landing.section5Subtitle')}
-              </h3>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                {t('landing.section5Description')}
-              </p>
-            </div>
-            <div className="order-1 md:order-2 transform hover:scale-105 transition-transform duration-500">
-              <img
-                src={featureSecurity}
-                alt="Security and Privacy"
-                className="w-4/5 mx-auto h-auto rounded-3xl shadow-2xl rotate-1 hover:rotate-0 transition-transform duration-500 border-4 border-white"
-              />
-            </div>
-          </div>
-
-          {/* New Section: Target Audience */}
-          <div className="space-y-12">
-            <div className="text-center max-w-3xl mx-auto space-y-4">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
-                {t('landing.targetAudience.title')} <span className="text-purple-600">{t('landing.targetAudience.subtitle')}</span>
-              </h2>
-              <p className="text-gray-600 text-lg">
-                {t('landing.targetAudience.description')}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {/* Card 1: Educator */}
-              <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white/50 hover:-translate-y-2 transition-transform duration-300">
-                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center mb-4 text-green-600">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
-                </div>
-                <h4 className="text-xl font-bold text-gray-900 mb-2">{t('landing.targetAudience.educator.title')}</h4>
-                <p className="text-gray-600 text-sm leading-relaxed">{t('landing.targetAudience.educator.description')}</p>
-              </div>
-
-              {/* Card 2: Tutor */}
-              <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white/50 hover:-translate-y-2 transition-transform duration-300">
-                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center mb-4 text-blue-600">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
-                </div>
-                <h4 className="text-xl font-bold text-gray-900 mb-2">{t('landing.targetAudience.tutor.title')}</h4>
-                <p className="text-gray-600 text-sm leading-relaxed">{t('landing.targetAudience.tutor.description')}</p>
-              </div>
-
-              {/* Card 3: Consultant */}
-              <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white/50 hover:-translate-y-2 transition-transform duration-300">
-                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center mb-4 text-purple-600">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z" /></svg>
-                </div>
-                <h4 className="text-xl font-bold text-gray-900 mb-2">{t('landing.targetAudience.consultant.title')}</h4>
-                <p className="text-gray-600 text-sm leading-relaxed">{t('landing.targetAudience.consultant.description')}</p>
-              </div>
-
-              {/* Card 4: Counselor */}
-              <div className="bg-white/70 backdrop-blur-sm p-6 rounded-2xl shadow-lg border border-white/50 hover:-translate-y-2 transition-transform duration-300">
-                <div className="w-12 h-12 bg-pink-100 rounded-xl flex items-center justify-center mb-4 text-pink-600">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" /></svg>
-                </div>
-                <h4 className="text-xl font-bold text-gray-900 mb-2">{t('landing.targetAudience.counselor.title')}</h4>
-                <p className="text-gray-600 text-sm leading-relaxed">{t('landing.targetAudience.counselor.description')}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* New Section: Technology Stack */}
-          <div className="space-y-16">
-            <div className="text-center max-w-3xl mx-auto mb-12">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                {t('landing.technology.title')} <span className="text-blue-600">{t('landing.technology.subtitle')}</span>
-              </h2>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-              {/* Tech 1: Ncode */}
-              <div className="group bg-white/70 backdrop-blur-md rounded-3xl overflow-hidden shadow-lg border border-white/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="h-64 overflow-hidden relative">
-                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent z-10" />
-                  <img src={techNcode} alt="Ncode Technology" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                  <div className="absolute bottom-4 left-6 z-20">
-                    <span className="text-blue-300 font-semibold tracking-wider text-sm uppercase mb-1 block">{t('landing.technology.ncode.concept')}</span>
-                    <h3 className="text-2xl font-bold text-white">{t('landing.technology.ncode.title')}</h3>
+             {/* Glass Overlay UI */}
+             <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-black/80 to-transparent flex items-end p-8">
+               <div className="flex items-center gap-4 text-white">
+                  <div className="w-10 h-10 bg-brand-primary rounded-xl flex items-center justify-center shadow-lg animate-bounce-slow">
+                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" strokeWidth={2.5}/></svg>
                   </div>
-                </div>
-                <div className="p-8">
-                  <p className="text-gray-600 leading-relaxed text-lg">
-                    {t('landing.technology.ncode.description')}
-                  </p>
-                </div>
-              </div>
-
-              {/* Tech 2: Smartpen */}
-              <div className="group bg-white/70 backdrop-blur-md rounded-3xl overflow-hidden shadow-lg border border-white/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="h-64 overflow-hidden relative">
-                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent z-10" />
-                  <img src={techSmartpen} alt="Smartpen Technology" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                  <div className="absolute bottom-4 left-6 z-20">
-                    <span className="text-blue-300 font-semibold tracking-wider text-sm uppercase mb-1 block">{t('landing.technology.smartpen.concept')}</span>
-                    <h3 className="text-2xl font-bold text-white">{t('landing.technology.smartpen.title')}</h3>
+                  <div>
+                    <div className="text-xs font-black tracking-tight">Active Learning Session: Math 101</div>
+                    <div className="text-[9px] text-white/50 font-bold uppercase tracking-widest leading-none">Live Paper-to-Cloud Stream</div>
                   </div>
-                </div>
-                <div className="p-8">
-                  <p className="text-gray-600 leading-relaxed text-lg">
-                    {t('landing.technology.smartpen.description')}
-                  </p>
-                </div>
-              </div>
+               </div>
+             </div>
+          </div>
+          {/* Background Decoration */}
+          <div className="absolute top-[40px] -right-[40px] w-full h-full bg-brand-primary opacity-20 rounded-[40px] -z-10 blur-[100px] animate-pulse-slow" />
+          <div className="absolute bottom-[40px] -left-[40px] w-full h-full bg-brand-secondary opacity-20 rounded-[40px] -z-10 blur-[100px]" style={{ animationDelay: '3s' }} />
+        </div>
+      </main>
 
-              {/* Tech 3: PaperHub */}
-              <div className="group bg-white/70 backdrop-blur-md rounded-3xl overflow-hidden shadow-lg border border-white/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="h-64 overflow-hidden relative">
-                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent z-10" />
-                  <img src={techPaperhub} alt="PaperHub Technology" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                  <div className="absolute bottom-4 left-6 z-20">
-                    <span className="text-blue-300 font-semibold tracking-wider text-sm uppercase mb-1 block">{t('landing.technology.paperhub.concept')}</span>
-                    <h3 className="text-2xl font-bold text-white">{t('landing.technology.paperhub.title')}</h3>
-                  </div>
-                </div>
-                <div className="p-8">
-                  <p className="text-gray-600 leading-relaxed text-lg">
-                    {t('landing.technology.paperhub.description')}
-                  </p>
-                </div>
-              </div>
-
-              {/* Tech 4: POD */}
-              <div className="group bg-white/70 backdrop-blur-md rounded-3xl overflow-hidden shadow-lg border border-white/50 hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1">
-                <div className="h-64 overflow-hidden relative">
-                  <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 to-transparent z-10" />
-                  <img src={techPod} alt="POD Technology" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
-                  <div className="absolute bottom-4 left-6 z-20">
-                    <span className="text-blue-300 font-semibold tracking-wider text-sm uppercase mb-1 block">{t('landing.technology.pod.concept')}</span>
-                    <h3 className="text-2xl font-bold text-white">{t('landing.technology.pod.title')}</h3>
-                  </div>
-                </div>
-                <div className="p-8">
-                  <p className="text-gray-600 leading-relaxed text-lg">
-                    {t('landing.technology.pod.description')}
-                  </p>
-                </div>
-              </div>
-            </div>
+      {/* ─────────────────── FEATURES SECTION (기존 ID 유지) ─────────────────── */}
+      <section id="features" className="relative z-10 py-[120px] px-[6%] bg-white/40 backdrop-blur-sm border-y border-app-border">
+        <div className="max-w-[1200px] mx-auto text-center">
+          <div className="mb-20 space-y-4">
+            <p className="text-sm font-black text-brand-primary uppercase tracking-[0.2em] opacity-80 decoration-brand-secondary underline underline-offset-8">Core Capabilities</p>
+            <h2 className="text-[48px] font-black tracking-tighter text-slate-900 leading-[1.1]">Designed for Global Scalability.</h2>
           </div>
 
-          {/* Company Footer Info (Before Global Footer) */}
-          <div className="relative py-16 px-8 bg-gradient-to-br from-gray-900 to-blue-900 rounded-3xl shadow-2xl overflow-hidden text-center">
-            <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-repeat" />
-            <div className="relative z-10 max-w-4xl mx-auto space-y-6">
-              <div className="inline-block px-4 py-1.5 rounded-full border border-yellow-400/30 bg-yellow-400/10 backdrop-blur-sm text-yellow-300 font-bold tracking-wide text-sm mb-2">
-                GLOBAL LEADER
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
+            {[
+              { 
+                title: 'Monitoring Grid', 
+                desc: '최대 100명의 학생을 동시에 모니터링하세요. 고해상도 필기 재생 기능으로 단 한 명의 학습 흐름도 놓치지 않습니다.',
+                icon: 'view-grid',
+                color: 'brand-primary'
+              },
+              { 
+                title: 'Smart Sync', 
+                desc: 'Neo Smartpen과 완벽하게 연동됩니다. 기존의 학습 습관을 유지하면서 종이 학습지를 즉시 디지털화하세요.',
+                icon: 'lightning-bolt',
+                color: 'brand-secondary'
+              },
+              { 
+                title: 'AI Analytics', 
+                desc: '필기 시간과 진척도를 자동으로 분석합니다. 필기 데이터를 기반으로 실질적인 교육 인사이트를 도출해 보세요.',
+                icon: 'presentation-chart-line',
+                color: 'brand-primary'
+              }
+            ].map((f, i) => (
+              <div 
+                key={f.title} 
+                className="neo-card p-12 flex flex-col gap-8 group hover:-translate-y-4 hover:shadow-2xl transition-all duration-500 border-b-8 border-b-transparent hover:border-b-brand-secondary bg-white"
+              >
+                <div className={`w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 group-hover:bg-${f.color}/10 group-hover:text-brand-primary transform group-hover:rotate-12 transition-all`}>
+                   <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      {i === 0 && <path d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />}
+                      {i === 1 && <path d="M13 10V3L4 14h7v7l9-11h-7z" />}
+                      {i === 2 && <><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /><polyline points="3.27 6.96 12 12.01 20.73 6.96" /><line x1="12" y1="22.08" x2="12" y2="12" /></>}
+                   </svg>
+                </div>
+                <h4 className="text-2xl font-black text-slate-800 leading-none">{f.title}</h4>
+                <p className="text-slate-500 leading-relaxed font-semibold">{f.desc}</p>
               </div>
-              <h3 className="text-3xl md:text-5xl font-bold text-white tracking-tight">
-                {t('landing.technology.footer.company')}
-              </h3>
-              <p className="text-lg md:text-xl text-blue-100/80 leading-relaxed max-w-2xl mx-auto">
-                {t('landing.technology.footer.description')}
-              </p>
-            </div>
+            ))}
           </div>
+        </div>
+      </section>
 
-        </section>
+      {/* ─────────────────── FOOTER ─────────────────── */}
+      <footer className="py-12 flex flex-col items-center justify-center gap-4 bg-app-bg border-t border-app-border">
+         <p className="text-[11px] text-slate-300 font-black uppercase tracking-[0.3em] opacity-60">© 2025 NeoLAB Convergence. NeoCAST.</p>
+      </footer>
 
-        {/* Footer info */}
-        <footer className="py-12 text-center border-t border-gray-200/50 backdrop-blur-sm bg-white/30 rounded-t-3xl">
-          <p className="text-gray-600 font-medium mb-2">{t('common.copyright')}</p>
-          <a
-            href="https://www.neolab.net"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-600 hover:text-purple-600 transition-colors font-medium hover:underline"
-          >
-            www.neolab.net
-          </a>
-        </footer>
-
-      </div>
     </div>
   );
 }

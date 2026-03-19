@@ -1,0 +1,35 @@
+@theme {
+  /* ── Brand Colors ── */
+  --color-brand-primary: #6366f1;
+  --color-brand-secondary: #a855f7;
+
+  /* ── App Background ── */
+  --color-app-bg: #fffcf9;
+  --color-app-border: #fff1e6;
+  --color-grid-surface: #ffffff;
+
+  /* ── Brand Tints (for hover, badge, icon bg) ── */
+  --color-brand-tint: #ede9fe;
+  --color-brand-tint-text: #4338ca;
+  --color-brand-tint2: #f3e8ff;
+  --color-brand-tint2-text: #7e22ce;
+
+  /* ── Status ── */
+  --color-success-bg: #d1fae5;
+  --color-success-text: #065f46;
+
+  /* ── Radius ── */
+  --radius-modern: 30px;
+  --radius-pill: 50px;
+  --radius-icon: 50%;
+
+  /* ── Shadows ── */
+  --shadow-modern: 0 30px 60px rgba(0, 0, 0, 0.05);
+  --shadow-brand: 0 8px 24px rgba(99, 102, 241, 0.3);
+  --shadow-card: 0 4px 16px rgba(99, 102, 241, 0.08);
+
+  /* ── Typography ── */
+  --font-inter: "Inter", sans-serif;
+  --font-noto: "Noto Sans KR", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+}

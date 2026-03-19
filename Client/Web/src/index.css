@@ -1,4 +1,8 @@
 @import "tailwindcss";
+@import "./styles/theme.css";
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap");
+
+/* UI/UX Source: /docs/DESIGN_SYSTEM.md */
 
 :root {
   /* Default font - will be overridden by JavaScript based on language */
@@ -17,6 +21,106 @@ body {
 
 #root {
   min-height: 100vh;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-app-bg);
+    font-family: var(--font-inter), var(--font-noto), sans-serif;
+    color: #0f172a;
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@layer components {
+  /* 카드 */
+  .neo-card {
+    background: #ffffff;
+    border: 2px solid var(--color-app-border);
+    border-radius: var(--radius-modern);
+    box-shadow: var(--shadow-modern);
+  }
+
+  /* 프라이머리 버튼 (pill + gradient) */
+  .neo-btn-primary {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: white;
+    font-weight: 700;
+    border: none;
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-brand);
+    cursor: pointer;
+    padding: 12px 28px;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+  .neo-btn-primary:hover {
+    transform: scale(1.03);
+    box-shadow: 0 12px 32px rgba(99, 102, 241, 0.4);
+  }
+  .neo-btn-primary:active {
+    transform: scale(0.97);
+  }
+
+  /* 세컨더리 버튼 (ghost pill) */
+  .neo-btn-ghost {
+    background: none;
+    border: 2px solid var(--color-app-border);
+    border-radius: var(--radius-pill);
+    color: #6366f1;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 12px 28px;
+    transition: background 0.15s ease, border-color 0.15s ease;
+  }
+  .neo-btn-ghost:hover {
+    background: var(--color-brand-tint);
+    border-color: #c4b5fd;
+  }
+
+  /* 섹션 태그 (small label) */
+  .neo-tag {
+    display: inline-block;
+    background: var(--color-brand-tint);
+    color: var(--color-brand-tint-text);
+    font-size: 11px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 4px 12px;
+    border-radius: var(--radius-pill);
+  }
+
+  /* 아이콘 배경 원형 */
+  .neo-icon-wrap {
+    width: 44px;
+    height: 44px;
+    background: var(--color-brand-tint);
+    border-radius: var(--radius-icon);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* 라이브 상태 pill */
+  .neo-live-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--color-success-bg);
+    color: var(--color-success-text);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: var(--radius-pill);
+  }
+
+  /* 그라디언트 텍스트 */
+  .neo-gradient-text {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }
 
 /* 초대 배너 애니메이션 */
