@@ -7,6 +7,7 @@ import { useDevBridgeHost } from './hooks/useDevBridgeHost';
 import { useDevBridgeGuest } from './hooks/useDevBridgeGuest';
 import { devBridge } from './services/dev-bridge';
 import { LoginPage } from './pages/LoginPage';
+import { LandingPage } from './pages/LandingPage';
 import { LobbyPage } from './pages/LobbyPage';
 import { HomePage } from './pages/HomePage';
 import { CreateSessionPage } from './pages/CreateSessionPage';
@@ -42,7 +43,6 @@ import { createInviteLink, parseInviteFromPath } from './utils/invite';
 import { FEATURE_FLAGS } from './utils/feature-flags';
 import { copyToClipboard } from './utils/clipboard';
 import type { InviteData } from './utils/invite';
-import watercolorBg from './assets/images/watercolor-bg.png';
 
 // Shared Description Panel Component
 const DescriptionPanel = () => {
@@ -880,6 +880,21 @@ function App() {
         if (tokens?.accessToken) {
           if (isHost) {
             await sessionService.closeSession(tokens.accessToken, session.id);
+
+            // 종료된 세션 정보를 localStorage에 저장 (아카이브 저장 여부 선택용)
+            try {
+              const endedSessions = JSON.parse(localStorage.getItem('nc_ended_sessions') || '[]');
+              endedSessions.unshift({
+                sessionId: session.id,
+                sessionName: session.title ?? session.code,
+                sessionCode: session.code,
+                participantCount: session.participants?.length ?? 0,
+                endedAt: new Date().toISOString(),
+              });
+              localStorage.setItem('nc_ended_sessions', JSON.stringify(endedSessions));
+            } catch {
+              // localStorage 저장 실패 시 무시
+            }
           } else {
             await sessionService.leaveSession(tokens.accessToken, session.id);
           }
@@ -982,215 +997,107 @@ function App() {
   }, [isAuthenticated, isGuest]);
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden font-sans relative">
-      {/* Background Image for Session Page (others overlay it) */}
-      <div
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60 pointer-events-none"
-        style={{ backgroundImage: `url(${watercolorBg})` }}
-      />
-      <div className="absolute inset-0 z-0 bg-white/40 pointer-events-none" />
-
-      {/* 헤더 - Glassmorphism */}
-      <header ref={headerRef} className="relative z-20 bg-white/70 backdrop-blur-md border-b border-white/50 pl-4 pr-4 min-[860px]:px-4 py-1 shadow-sm">
-        <div className="flex items-center justify-between">
-          {/* 왼쪽: 로고 + 툴바 */}
-          <div className="flex items-center space-x-2 min-[860px]:space-x-4">
-            {/* 로고 - headerVeryCompact가 아닐 때만 표시 */}
+    <div className="h-screen flex flex-col overflow-hidden font-noto relative bg-app-bg">
+      {/* ── Modern Soft Global Header ── */}
+      <header ref={headerRef} className="sticky top-0 z-100 h-16 bg-white/80 backdrop-blur-2xl border-b border-app-border flex items-center px-6 justify-between transition-all duration-300">
+        <div className="flex items-center gap-6">
+          {/* Logo Section */}
+          <div 
+            onClick={() => navigate(isAuthenticated && !isGuest ? '/home' : isAuthenticated ? '/lobby' : '/')}
+            className="flex items-center gap-2.5 cursor-pointer group"
+          >
+            <div className="w-9 h-9 bg-gradient-to-br from-brand-primary to-brand-secondary rounded-xl shadow-brand flex items-center justify-center transform group-hover:rotate-12 transition-transform duration-500">
+              <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+            </div>
             {!headerVeryCompact && (
-              <div
-                onClick={() => navigate(isAuthenticated && !isGuest ? '/host' : isAuthenticated ? '/lobby' : '/')}
-                className="flex items-center gap-1.5 cursor-pointer group"
-              >
-                {/* headerCompact일 때는 항상 아이콘만 표시 */}
-                {headerCompact ? (
-                  <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
-                    <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
-                    </svg>
-                  </div>
-                ) : (
-                  <>
-                    {/* 로고 텍스트 - 860px 이상 */}
-                    {isConnected ? (
-                      <div className="hidden min-[860px]:flex items-center text-xl font-bold neo-gradient-animated">
-                        NeoCAST
-                      </div>
-                    ) : (
-                      <div className="hidden min-[860px]:flex items-center text-xl font-bold">
-                        <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Neo</span>
-                        <span className="text-gray-800">CAST</span>
-                      </div>
-                    )}
-                    {/* 아이콘 - 860px 미만 */}
-                    <div className="flex min-[860px]:hidden items-center justify-center w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-600">
-                      <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.14 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0" />
-                      </svg>
-                    </div>
-                  </>
-                )}
-              </div>
-            )}
-
-            {/* 세션 활성화 시 툴바 표시 */}
-            {session && (
-              <>
-                <ToolbarActions />
-                {/* PaperSizeBadge - 항상 표시 (compact 모드에서는 아이콘만) */}
-                <PaperSizeBadge compact={headerCompact} />
-                <PenSettingsPopover />
-              </>
+              <span className="text-2xl font-black tracking-[-1.5px] bg-gradient-to-br from-brand-primary to-brand-secondary bg-clip-text text-transparent hidden sm:block">NeoCAST</span>
             )}
           </div>
 
-          {/* 오른쪽: 줌/언어/유저 정보 */}
-          <div className="flex items-center space-x-2 min-[860px]:space-x-4">
-            {/* 줌 표시 및 100% Lock 버튼 - 세션 페이지에서만 표시 (compact 모드에서는 아이콘만) */}
-            {isSessionPage && session && <ZoomLockIndicator compact={headerCompact} />}
+          {/* Session Toolbar (Active Only) */}
+          {session && (
+            <div className="flex items-center gap-3 animate-in fade-in slide-in-from-left duration-300">
+              <div className="h-6 w-[1px] bg-slate-200 mx-2 hidden md:block" />
+              <ToolbarActions />
+              <PaperSizeBadge compact={headerCompact} />
+              <PenSettingsPopover />
+            </div>
+          )}
+        </div>
 
-            {/* 언어 선택 - headerUltraCompact (< 350px)일 때 숨김 */}
+        {/* Right Actions */}
+        <div className="flex items-center gap-3">
+          {isSessionPage && session && <ZoomLockIndicator compact={headerCompact} />}
+          
+          <div className="flex items-center gap-1.5 ml-2">
             {!headerUltraCompact && <LanguageSelector />}
 
-            {/* 메신저 버튼 - 로그인한 일반 사용자만 표시 (게스트 제외) */}
             {FEATURE_FLAGS.MESSENGER_ENABLED && isAuthenticated && !isGuest && (
               <button
                 type="button"
                 onClick={toggleMessenger}
-                className={`relative flex items-center gap-1.5 hover:bg-gray-200 bg-gray-100 rounded-full transition-colors border border-gray-200 ${headerCompact ? 'p-1' : 'pl-1 pr-2.5 py-1'
-                  }`}
+                className="relative w-10 h-10 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 hover:bg-slate-100 transition-colors group"
                 title={t('messenger.title', 'Messenger')}
               >
-                <div className={`${headerCompact ? 'w-6 h-6' : 'w-5 h-5'} bg-gradient-to-br from-green-500 to-teal-600 rounded-full flex items-center justify-center`}>
-                  <svg className={`${headerCompact ? 'w-3.5 h-3.5' : 'w-3 h-3'} text-white`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
-                </div>
-                {!headerCompact && (
-                  <>
-                    <span className="text-xs text-gray-600 hidden min-[860px]:block font-medium">{t('messenger.title', 'Messenger')}</span>
-                    <svg className="w-3 h-3 text-gray-400 hidden min-[860px]:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </>
-                )}
-                {/* 읽지 않은 메시지 배지 */}
-                {unreadMessengerCount > 0 && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1">
-                    {unreadMessengerCount > 99 ? '99+' : unreadMessengerCount}
-                  </span>
-                )}
+                 <svg className="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                 </svg>
+                 {unreadMessengerCount > 0 && (
+                   <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-brand-secondary text-white text-[8px] font-black rounded-full flex items-center justify-center shadow-sm">
+                     {unreadMessengerCount > 99 ? '99' : unreadMessengerCount}
+                   </span>
+                 )}
               </button>
             )}
 
-            {/* 로그인 안된 경우 아바타 아이콘 */}
-            {!isAuthenticated && (
-              <button
-                type="button"
-                onClick={() => navigate('/login')}
-                className="w-8 h-8 bg-gray-400 hover:bg-gray-500 rounded-full flex items-center justify-center transition-colors"
-                title={t('common.login')}
-              >
-                <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                </svg>
-              </button>
-            )}
-
-            {/* 사용자 정보 표시 (클릭 메뉴) */}
-            {isAuthenticated && user && (
+            {/* Auth/User Menu */}
+            {!isAuthenticated ? (
+               <button
+                 onClick={() => navigate('/login')}
+                 className="neo-btn-primary !px-5 !py-2 !text-xs !rounded-full shadow-brand"
+               >
+                 {t('common.login')}
+               </button>
+            ) : user && (
               <div className="relative" ref={userMenuRef}>
                 <button
                   type="button"
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                  className={`flex items-center gap-1.5 hover:bg-gray-200 bg-gray-100 rounded-full transition-colors border border-gray-200 ${headerCompact ? 'p-1' : 'pl-1 pr-2.5 py-1'
-                    }`}
-                  title={user.name}
+                  className="flex items-center gap-2 pl-1 pr-3 py-1 bg-slate-50 rounded-full border border-slate-100 hover:bg-slate-100 transition-all group"
                 >
-                  <div className={`${headerCompact ? 'w-6 h-6' : 'w-5 h-5'} bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-semibold`}>
+                  <div className="w-7 h-7 bg-brand-tint rounded-full flex items-center justify-center text-primary font-bold text-xs">
                     {user.name.charAt(0).toUpperCase()}
                   </div>
-                  {!headerCompact && (
-                    <>
-                      <span className="text-xs text-gray-600 hidden min-[860px]:block font-medium">{user.name}</span>
-                      <svg className="w-3 h-3 text-gray-400 hidden min-[860px]:block" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </>
-                  )}
+                  <span className="text-xs font-bold text-slate-600 hidden md:block">{user.name}</span>
+                  <svg className={`w-3.5 h-3.5 text-slate-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path d="M19 9l-7 7-7-7" strokeWidth={2.5} /></svg>
                 </button>
 
-                {/* 사용자 드롭다운 메뉴 - Glassmorphism */}
                 {isUserMenuOpen && (
-                  <div className="absolute right-0 top-full mt-1 w-52 bg-white/90 backdrop-blur-xl rounded-lg shadow-lg border border-white/50 py-1 z-50">
-                    {/* 역할 표시 */}
-                    <div className="px-4 py-2 border-b border-gray-200/50">
-                      <div className="text-sm font-medium text-gray-800">{user.name}</div>
-                      <div className="text-xs text-gray-500">{user.email}</div>
-                      {session && (
-                        <div className={`inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium ${isHost ? 'bg-yellow-100 text-yellow-800' : 'bg-gray-100 text-gray-600'
-                          }`}>
-                          {isHost ? t('participant.host') : t('participant.guest')}
-                        </div>
-                      )}
+                  <div className="absolute right-0 top-full mt-2 w-56 bg-white/90 backdrop-blur-xl border border-app-border rounded-2xl shadow-modern py-2 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="px-5 py-3 border-b border-slate-50 mb-1">
+                      <div className="text-sm font-black text-slate-800">{user.name}</div>
+                      <div className="text-[10px] text-slate-400 font-bold truncate">{user.email}</div>
                     </div>
-
-                    {/* 세션 메뉴 항목 (User Menu에 통합) */}
+                    
                     {session && (
-                      <>
-                        <button
-                          type="button"
-                          onClick={handleCopySessionId}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50/50 flex items-center space-x-2"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                          </svg>
-                          <span>{t('sessionMenu.copyCode')}</span>
+                      <div className="px-2 pb-1 border-b border-slate-50 mb-1">
+                        <button onClick={handleCopySessionId} className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 rounded-xl transition-colors flex items-center gap-2">
+                           <span className="opacity-40">🆔</span> {t('sessionMenu.copyCode')}
                         </button>
-                        <button
-                          type="button"
-                          onClick={handleCopyInviteLink}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50/50 flex items-center space-x-2"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
-                          </svg>
-                          <span>{t('sessionMenu.copyLink')}</span>
+                        <button onClick={handleCopyInviteLink} className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 rounded-xl transition-colors flex items-center gap-2">
+                           <span className="opacity-40">🔗</span> {t('sessionMenu.copyLink')}
                         </button>
-                        <button
-                          type="button"
-                          onClick={handleLeaveSession}
-                          className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-red-50/50 flex items-center space-x-2"
-                        >
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                          </svg>
-                          <span>{isHost ? t('sessionMenu.endSession') : t('sessionMenu.leaveSession')}</span>
-                        </button>
-                        <div className="border-t border-gray-200/50 my-1" />
-                      </>
+                      </div>
                     )}
 
-                    <button
-                      type="button"
-                      onClick={() => setIsUserMenuOpen(false)}
-                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-blue-50/50 flex items-center space-x-2"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      <span>{t('common.profile')}</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleLogout}
-                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50/50 flex items-center space-x-2"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                      </svg>
-                      <span>{t('common.logout')}</span>
-                    </button>
+                    <div className="px-2">
+                       <button onClick={() => { setIsUserMenuOpen(false); navigate('/home'); }} className="w-full text-left px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 rounded-xl transition-colors flex items-center gap-2">
+                          <span className="opacity-40">👤</span> Profile
+                       </button>
+                       <button onClick={handleLogout} className="w-full text-left px-3 py-2 text-xs font-bold text-red-500 hover:bg-red-50 rounded-xl transition-colors flex items-center gap-2">
+                          <span className="opacity-40">🚪</span> {t('common.logout')}
+                       </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1207,7 +1114,8 @@ function App() {
         {/* 메인 영역 - 라우트에 따라 다른 컴포넌트 표시 */}
         <main className="flex-1 flex flex-col overflow-y-auto">
           <Routes>
-            <Route path="/" element={<LoginPage />} />
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/session/create" element={<CreateSessionPage />} />
             <Route path="/archive/:archiveId" element={<ArchiveDetailPage />} />
@@ -1317,7 +1225,7 @@ function App() {
 
       {/* 푸터 - 세션 페이지가 아닐 때만 표시 */}
       {!isSessionPage && (
-        <footer className="bg-white/40 backdrop-blur-md border-t border-white/50 px-4 py-2 relative z-20">
+        <footer className="bg-white border-t border-[#fff1e6] px-4 py-2 relative z-20">
           <div className="flex items-center justify-between text-sm text-gray-600">
             <span>
               NeoCAST v{__APP_VERSION__}

@@ -1,6 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import watercolorBg from '../assets/images/watercolor-bg.png';
+
+interface EndedSession {
+  sessionId: string;
+  title: string;
+  sessionCode?: string;
+  participantCount: number;
+  endedAt: string;
+}
 
 interface ArchiveItem {
   archiveId: string;
@@ -39,9 +46,15 @@ function formatDate(iso: string) {
   return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
+function formatDateTime(iso: string) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+}
+
 export function HomePage() {
   const navigate = useNavigate();
   const [nickname, setNickname] = useState('선생님');
+  const [endedSessions, setEndedSessions] = useState<EndedSession[]>([]);
   const [archives, setArchives] = useState<ArchiveItem[]>([]);
 
   useEffect(() => {
@@ -49,6 +62,14 @@ export function HomePage() {
     try {
       const auth = JSON.parse(localStorage.getItem('nc_auth') || '{}');
       if (auth.nickname) setNickname(auth.nickname);
+    } catch {}
+
+    // 종료된 세션 로드
+    try {
+      const saved = localStorage.getItem('nc_ended_sessions');
+      if (saved) {
+        setEndedSessions(JSON.parse(saved));
+      }
     } catch {}
 
     // 아카이브 초기화
@@ -65,28 +86,37 @@ export function HomePage() {
     }
   }, []);
 
+  // 종료된 세션 → 아카이브로 저장
+  const handleSaveToArchive = (session: EndedSession) => {
+    const newArchive: ArchiveItem = {
+      archiveId: `archive_${session.sessionId}`,
+      sessionName: session.title,
+      participantCount: session.participantCount,
+      endedAt: session.endedAt,
+      pages: 0,
+    };
+
+    const updatedArchives = [newArchive, ...archives];
+    setArchives(updatedArchives);
+    localStorage.setItem('nc_archives', JSON.stringify(updatedArchives));
+
+    // 종료된 세션 목록에서 제거
+    const updatedEnded = endedSessions.filter(s => s.sessionId !== session.sessionId);
+    setEndedSessions(updatedEnded);
+    localStorage.setItem('nc_ended_sessions', JSON.stringify(updatedEnded));
+  };
+
+  // 종료된 세션 삭제 (아카이브 저장 안 함)
+  const handleDismissEnded = (sessionId: string) => {
+    const updatedEnded = endedSessions.filter(s => s.sessionId !== sessionId);
+    setEndedSessions(updatedEnded);
+    localStorage.setItem('nc_ended_sessions', JSON.stringify(updatedEnded));
+  };
+
   return (
-    <div className="min-h-screen relative">
-      {/* 수채화 배경 */}
-      <div
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60"
-        style={{ backgroundImage: `url(${watercolorBg})` }}
-      />
-      <div className="fixed inset-0 z-0 bg-white/40 pointer-events-none" />
-
-      {/* 헤더 */}
-      <header className="sticky top-0 z-10 bg-white/70 backdrop-blur-md border-b border-white/50 h-14 flex items-center px-6 justify-between">
-        <div className="flex items-center gap-1">
-          <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Neo
-          </span>
-          <span className="text-xl font-bold text-gray-800">CAST</span>
-        </div>
-        <span className="text-sm text-gray-600 font-medium">{nickname}</span>
-      </header>
-
+    <div className="min-h-screen relative bg-app-bg">
       {/* 본문 */}
-      <div className="relative z-10 max-w-2xl mx-auto px-4 py-10 flex flex-col gap-8">
+      <div className="relative z-10 max-w-4xl mx-auto px-6 py-12 flex flex-col gap-10">
         {/* 인사말 */}
         <h1 className="text-2xl font-bold text-gray-800">
           안녕하세요, {nickname}님!
@@ -95,9 +125,9 @@ export function HomePage() {
         {/* 새 세션 시작 카드 */}
         <button
           onClick={() => navigate('/session/create')}
-          className="w-full bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl p-6 flex items-center gap-4 hover:shadow-2xl hover:bg-white/90 transition-all text-left group"
+          className="w-full neo-card p-6 flex items-center gap-4 hover:shadow-lg transition-all text-left group"
         >
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-2xl flex-shrink-0 group-hover:scale-105 transition-transform">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#6366f1] to-[#a855f7] flex items-center justify-center text-white text-2xl flex-shrink-0 group-hover:scale-105 transition-transform">
             +
           </div>
           <div>
@@ -106,16 +136,55 @@ export function HomePage() {
           </div>
         </button>
 
-        {/* 지난 수업 기록 */}
+        {/* 종료된 세션 (아카이브 저장 대기) */}
+        {endedSessions.length > 0 && (
+          <div className="flex flex-col gap-3">
+            <h2 className="text-base font-semibold text-gray-700">종료된 세션</h2>
+            <div className="flex flex-col gap-2">
+              {endedSessions.map((session) => (
+                <div
+                  key={session.sessionId}
+                  className="neo-card px-6 py-4 flex items-center justify-between"
+                >
+                  <div className="flex flex-col gap-0.5 min-w-0 flex-1">
+                    <span className="font-medium text-gray-800 text-sm truncate">
+                      {session.title}
+                    </span>
+                    <div className="flex items-center gap-3 text-xs text-gray-400">
+                      <span>{session.participantCount}명 참여</span>
+                      <span>{formatDateTime(session.endedAt)}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2 flex-shrink-0 ml-4">
+                    <button
+                      onClick={() => handleSaveToArchive(session)}
+                      className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 text-xs font-medium hover:bg-blue-100 transition-colors"
+                    >
+                      아카이브 저장
+                    </button>
+                    <button
+                      onClick={() => handleDismissEnded(session.sessionId)}
+                      className="px-3 py-1.5 rounded-lg bg-gray-50 text-gray-400 text-xs font-medium hover:bg-gray-100 hover:text-gray-600 transition-colors"
+                    >
+                      삭제
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* 아카이브 목록 */}
         <div className="flex flex-col gap-3">
-          <h2 className="text-base font-semibold text-gray-700">지난 수업 기록</h2>
+          <h2 className="text-base font-semibold text-gray-700">아카이브</h2>
 
           {archives.length === 0 ? (
-            <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl p-8 text-center text-gray-400 text-sm">
-              아직 종료된 수업이 없습니다
+            <div className="neo-card p-8 text-center text-gray-400 text-sm">
+              저장된 아카이브가 없습니다
             </div>
           ) : (
-            <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl overflow-hidden">
+            <div className="neo-card overflow-hidden">
               {archives.map((item, idx) => (
                 <button
                   key={item.archiveId}

@@ -308,6 +308,7 @@ export type SessionStatus = (typeof SessionStatus)[keyof typeof SessionStatus];
 export interface Session {
   id: string;
   code: string;
+  title?: string; // 세션 이름 (호스트가 생성 시 입력)
   status: SessionStatus;
   hostId: string;
   participants: Participant[];

@@ -6,8 +6,6 @@ import { useSessionStore } from '../stores/session-store';
 import { sessionService, ApiRequestError } from '../services/session-service';
 import { devBridge } from '../services/dev-bridge';
 import { SessionStatus, ParticipantRole } from '../types';
-import watercolorBg from '../assets/images/watercolor-bg.png';
-
 function generatePassword(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
   return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join('');
@@ -115,6 +113,7 @@ export function CreateSessionPage() {
       setSession({
         id: response.session.id,
         code: response.session.code,
+        title: sessionTitle,
         status: SessionStatus.Active,
         hostId: user.id,
         participants: [{
@@ -294,17 +293,10 @@ export function CreateSessionPage() {
 
   return (
     <div className="min-h-screen relative flex items-center justify-center p-4">
-      {/* 수채화 배경 */}
-      <div
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60"
-        style={{ backgroundImage: `url(${watercolorBg})` }}
-      />
-      <div className="fixed inset-0 z-0 bg-white/40 pointer-events-none" />
-
-      <div className="relative z-10 w-full max-w-4xl grid grid-cols-1 lg:grid-cols-5 gap-0 bg-white/70 backdrop-blur-xl rounded-3xl border border-white/60 shadow-2xl overflow-hidden">
+      <div className="relative z-10 w-full max-w-4xl grid grid-cols-1 lg:grid-cols-5 gap-0 neo-card overflow-hidden">
 
         {/* ── 좌측 패널 ── */}
-        <div className="hidden lg:flex lg:col-span-2 flex-col justify-center px-10 py-12 bg-gradient-to-br from-blue-50/80 to-indigo-50/60 border-r border-gray-100 gap-6">
+        <div className="hidden lg:flex lg:col-span-2 flex-col justify-center px-10 py-12 bg-[#f5f3ff] border-r border-[#fff1e6] gap-6">
           <div className="flex flex-col gap-1">
             <p className="text-xs text-gray-400">환영합니다!</p>
             <p className="text-xl font-bold text-gray-800 leading-snug">새로운 세션을 시작하거나,</p>
@@ -318,7 +310,7 @@ export function CreateSessionPage() {
               className={`flex items-start gap-3 p-4 rounded-2xl text-left transition-all ${
                 mode === 'create'
                   ? 'bg-white border border-blue-200 shadow-sm'
-                  : 'hover:bg-white/70 border border-transparent'
+                  : 'hover:bg-white border border-transparent'
               }`}
             >
               <span className={`w-8 h-8 rounded-full text-base font-bold flex items-center justify-center flex-shrink-0 transition-colors ${
@@ -340,7 +332,7 @@ export function CreateSessionPage() {
               className={`flex items-start gap-3 p-4 rounded-2xl text-left transition-all ${
                 mode === 'join'
                   ? 'bg-white border border-blue-200 shadow-sm'
-                  : 'hover:bg-white/70 border border-transparent'
+                  : 'hover:bg-white border border-transparent'
               }`}
             >
               <span className={`w-8 h-8 rounded-full text-sm font-bold flex items-center justify-center flex-shrink-0 transition-colors ${
@@ -452,7 +444,7 @@ export function CreateSessionPage() {
               <button
                 onClick={handleCreate}
                 disabled={isCreating}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl py-3 font-semibold hover:opacity-90 active:scale-95 disabled:opacity-50 transition-all shadow-md mt-1"
+                className="w-full neo-btn-primary py-3 mt-1 disabled:opacity-50"
               >
                 {isCreating ? '생성 중...' : '생성하기'}
               </button>
@@ -521,7 +513,7 @@ export function CreateSessionPage() {
               <button
                 onClick={handleJoin}
                 disabled={isJoining}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl py-3 font-semibold hover:opacity-90 active:scale-95 disabled:opacity-50 transition-all shadow-md mt-1"
+                className="w-full neo-btn-primary py-3 mt-1 disabled:opacity-50"
               >
                 {isJoining ? '참가 중...' : '참가하기'}
               </button>
