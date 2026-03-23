@@ -51,7 +51,7 @@ const DescriptionPanel = () => {
     <div className="hidden md:flex flex-col justify-between w-1/2 p-12 bg-gradient-to-br from-blue-500/10 to-purple-500/10">
       <div>
         <div className="flex items-center mb-8">
-          <span className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <span className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
             Neo
           </span>
           <span className="text-3xl font-bold text-gray-800">CAST</span>

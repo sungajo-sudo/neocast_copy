@@ -95,11 +95,21 @@ export function HomePage() {
       }
     } catch {}
 
-    // 아카이브 초기화
+    // 아카이브 초기화 (항상 더미 데이터를 기본값으로 병합)
     try {
       const saved = localStorage.getItem('nc_archives');
       if (saved) {
-        setArchives(JSON.parse(saved));
+        const existing = JSON.parse(saved) as ArchiveItem[];
+        // 더미 데이터의 세션명이 변경되었을 수 있으므로 병합
+        const merged = DUMMY_ARCHIVES.map(dummy => {
+          const found = existing.find(e => e.archiveId === dummy.archiveId);
+          return found ? { ...found, sessionName: dummy.sessionName } : dummy;
+        });
+        // 더미에 없는 사용자 추가 아카이브도 유지
+        const userAdded = existing.filter(e => !DUMMY_ARCHIVES.some(d => d.archiveId === e.archiveId));
+        const finalArchives = [...merged, ...userAdded];
+        localStorage.setItem('nc_archives', JSON.stringify(finalArchives));
+        setArchives(finalArchives);
       } else {
         localStorage.setItem('nc_archives', JSON.stringify(DUMMY_ARCHIVES));
         setArchives(DUMMY_ARCHIVES);

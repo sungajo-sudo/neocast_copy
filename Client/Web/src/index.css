@@ -171,3 +171,56 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
+/* ─────────────────────────────────────────────────────────────────────────
+   HANDWRITING & LIVE DASHBOARD ANIMATIONS
+   ───────────────────────────────────────────────────────────────────────── */
+
+/* 필기가 그려지는 애니메이션 (빠름) */
+@keyframes draw-handwriting {
+  0% { stroke-dashoffset: 500; opacity: 0; }
+  10% { opacity: 1; }
+  100% { stroke-dashoffset: 0; }
+}
+.animate-draw-handwriting {
+  animation: draw-handwriting 4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* 필기가 그려지는 애니메이션 (느림/추가 공식) */
+@keyframes draw-handwriting-slow {
+  0%, 40% { stroke-dashoffset: 100; opacity: 0; }
+  50% { opacity: 1; }
+  100% { stroke-dashoffset: 0; }
+}
+.animate-draw-handwriting-slow {
+  animation: draw-handwriting-slow 4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* 텍스트 서서히 나타나기 */
+@keyframes fade-in-delayed {
+  0%, 30% { opacity: 0; transform: translateY(2px); }
+  50%, 100% { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-delayed {
+  animation: fade-in-delayed 4s ease-out infinite;
+}
+
+/* 실시간 펜 커서 핑 애니메이션 */
+@keyframes ping-slow {
+  0% { transform: scale(1); opacity: 0.8; }
+  70%, 100% { transform: scale(2.5); opacity: 0; }
+}
+.animate-ping-slow {
+  animation: ping-slow 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* 펜 커서가 경로를 따라 움직이는 애니메이션 */
+@keyframes cursor-move {
+  0% { offset-distance: 0%; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { offset-distance: 100%; opacity: 0; }
+}
+.animate-cursor-move {
+  animation: cursor-move 4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}

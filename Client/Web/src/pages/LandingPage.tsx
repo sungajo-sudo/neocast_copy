@@ -1,4 +1,3 @@
-import { useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 // ── 학습 사이클 4단계 데이터 ──
@@ -14,7 +13,7 @@ const CYCLE_STEPS = [
     subtitle: '데이터 기반 수업 준비',
     desc: '이전 학습 기록을 분석해 학생의 취약점을 미리 파악하고, 수업 난이도와 방향을 설계합니다.',
     tags: ['성적 예측', '데이터 기반'],
-    color: 'from-blue-500 to-indigo-500',
+    color: 'from-violet-500 to-violet-500',
     bgColor: 'bg-blue-50',
     textColor: 'text-blue-700',
   },
@@ -203,386 +202,6 @@ const USAGE_STEPS = [
   },
 ];
 
-
-// ═══════════════════════════════════════
-// 히어로 일러스트: 교실 장면 (학생 필기 → 선생님 모니터 실시간 동기화)
-// ═══════════════════════════════════════
-function HeroIllustration() {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext('2d')!;
-
-    const dpr = window.devicePixelRatio || 1;
-    const displayW = canvas.clientWidth;
-    const displayH = canvas.clientHeight;
-    canvas.width = displayW * dpr;
-    canvas.height = displayH * dpr;
-    ctx.scale(dpr, dpr);
-
-    let animFrame: number;
-    let t = 0;
-
-    // 수학 풀이 — 실제 필기 느낌의 SVG path 시뮬레이션
-    const mathLines = [
-      { text: 'x² − 5x + 6 = 0', y: 0 },
-      { text: '(x−2)(x−3) = 0', y: 1 },
-      { text: '∴ x = 2 또는 x = 3', y: 2 },
-      { text: '검산: 4−10+6 = 0 ✓', y: 3 },
-    ];
-    const totalChars = mathLines.reduce((sum, l) => sum + l.text.length, 0);
-
-    // 글자별 정보
-    interface CharInfo { char: string; lineIdx: number; charIdx: number; globalIdx: number; }
-    const allChars: CharInfo[] = [];
-    let gi = 0;
-    for (let li = 0; li < mathLines.length; li++) {
-      for (let ci = 0; ci < mathLines[li].text.length; ci++) {
-        allChars.push({ char: mathLines[li].text[ci], lineIdx: li, charIdx: ci, globalIdx: gi++ });
-      }
-    }
-
-    // 학생 데스크 위치 (교실 장면)
-    const studentNames = ['김민수', '이서연', '박준호', '최예은', '정하늘', '한지우'];
-
-    function draw() {
-      const W = displayW;
-      const H = displayH;
-      ctx.clearRect(0, 0, W, H);
-
-      const isMobile = W < 500;
-
-      // ── 배경: 교실 ──
-      // 교실 바닥
-      ctx.fillStyle = '#f0ebe3';
-      ctx.fillRect(0, H * 0.55, W, H * 0.45);
-      // 교실 벽
-      const wallGrad = ctx.createLinearGradient(0, 0, 0, H * 0.55);
-      wallGrad.addColorStop(0, '#f8f6f3');
-      wallGrad.addColorStop(1, '#ede8e0');
-      ctx.fillStyle = wallGrad;
-      ctx.fillRect(0, 0, W, H * 0.55);
-
-      // ── 전면 스크린 (선생님 모니터) ──
-      const screenW = isMobile ? W * 0.52 : W * 0.48;
-      const screenH = isMobile ? H * 0.34 : H * 0.38;
-      const screenX = (W - screenW) / 2;
-      const screenY = H * 0.04;
-
-      // 모니터 프레임
-      ctx.save();
-      ctx.shadowColor = 'rgba(0,0,0,0.15)';
-      ctx.shadowBlur = 20;
-      ctx.shadowOffsetY = 4;
-      ctx.fillStyle = '#1e293b';
-      roundRect(ctx, screenX - 6, screenY - 6, screenW + 12, screenH + 12, 8);
-      ctx.fill();
-      ctx.restore();
-
-      // 모니터 화면
-      ctx.fillStyle = '#f8fafc';
-      roundRect(ctx, screenX, screenY, screenW, screenH, 4);
-      ctx.fill();
-
-      // 상단 바
-      ctx.fillStyle = '#f1f5f9';
-      roundRect(ctx, screenX, screenY, screenW, 18, 4);
-      ctx.fill();
-      ctx.fillRect(screenX, screenY + 14, screenW, 4);
-
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = `${isMobile ? 6 : 8}px "Noto Sans KR", sans-serif`;
-      ctx.fillText('NeoCAST — 수업 모니터링', screenX + 6, screenY + 12);
-
-      // LIVE 뱃지
-      const liveW = isMobile ? 24 : 32;
-      ctx.fillStyle = '#d1fae5';
-      roundRect(ctx, screenX + screenW - liveW - 4, screenY + 4, liveW, 11, 5);
-      ctx.fill();
-      ctx.fillStyle = '#065f46';
-      ctx.font = `bold ${isMobile ? 5 : 6}px "Inter", sans-serif`;
-      ctx.fillText('● LIVE', screenX + screenW - liveW - 1, screenY + 12);
-
-      // 현재까지 보이는 글자 수
-      const visibleChars = Math.min(Math.floor(t * 0.7), totalChars);
-
-      // 학생 그리드 (3x2)
-      const gridPad = isMobile ? 4 : 6;
-      const gridGap = isMobile ? 3 : 4;
-      const gridCols = 3;
-      const gridRows = 2;
-      const gridAreaW = screenW - gridPad * 2;
-      const gridAreaH = screenH - 22 - gridPad;
-      const cellW = (gridAreaW - (gridCols - 1) * gridGap) / gridCols;
-      const cellH = (gridAreaH - (gridRows - 1) * gridGap) / gridRows;
-
-      for (let row = 0; row < gridRows; row++) {
-        for (let col = 0; col < gridCols; col++) {
-          const gx = screenX + gridPad + col * (cellW + gridGap);
-          const gy = screenY + 20 + gridPad + row * (cellH + gridGap);
-          const sIdx = row * gridCols + col;
-
-          ctx.fillStyle = '#ffffff';
-          roundRect(ctx, gx, gy, cellW, cellH, 3);
-          ctx.fill();
-
-          const isHighlighted = sIdx === 0;
-          ctx.strokeStyle = isHighlighted ? '#6366f1' : '#e2e8f0';
-          ctx.lineWidth = isHighlighted ? 1.5 : 0.5;
-          roundRect(ctx, gx, gy, cellW, cellH, 3);
-          ctx.stroke();
-
-          // 미니 텍스트 (동기화 — 학생마다 딜레이)
-          const cellVisChars = Math.max(0, visibleChars - sIdx * 3);
-          const miniFontSize = isMobile ? 4 : 5;
-          const miniLineH = isMobile ? 8 : 9;
-          ctx.font = `${miniFontSize}px "Noto Sans KR", sans-serif`;
-          ctx.fillStyle = '#334155';
-
-          let miniIdx = 0;
-          for (let li = 0; li < mathLines.length; li++) {
-            const lineText = mathLines[li].text;
-            const visLen = Math.max(0, Math.min(cellVisChars - miniIdx, lineText.length));
-            miniIdx += lineText.length;
-            if (visLen <= 0) continue;
-            const partial = lineText.substring(0, visLen);
-            ctx.fillText(partial, gx + 3, gy + 10 + li * miniLineH, cellW - 6);
-          }
-
-          // 학생 이름
-          ctx.fillStyle = '#94a3b8';
-          ctx.font = `${isMobile ? 5 : 6}px "Noto Sans KR", sans-serif`;
-          ctx.fillText(studentNames[sIdx], gx + 3, gy + cellH - 3);
-
-          // 필기중 뱃지
-          if (sIdx < 4 && visibleChars > 5 && visibleChars < totalChars - 5) {
-            const badgeW = isMobile ? 16 : 22;
-            ctx.fillStyle = '#dbeafe';
-            roundRect(ctx, gx + cellW - badgeW - 2, gy + 2, badgeW, isMobile ? 7 : 9, 3);
-            ctx.fill();
-            ctx.fillStyle = '#2563eb';
-            ctx.font = `bold ${isMobile ? 4 : 5}px "Noto Sans KR", sans-serif`;
-            ctx.fillText('필기중', gx + cellW - badgeW, gy + (isMobile ? 7 : 9));
-          }
-        }
-      }
-
-      // 모니터 받침대
-      ctx.fillStyle = '#94a3b8';
-      const standW = screenW * 0.08;
-      const standH = H * 0.05;
-      ctx.fillRect(screenX + (screenW - standW) / 2, screenY + screenH + 12, standW, standH);
-      ctx.fillStyle = '#64748b';
-      const baseW = screenW * 0.2;
-      roundRect(ctx, screenX + (screenW - baseW) / 2, screenY + screenH + 12 + standH, baseW, 4, 2);
-      ctx.fill();
-
-      // ── 선생님 (모니터 앞, 뒤돌아 학생들 보는 모습) ──
-      const teacherX = isMobile ? W * 0.12 : W * 0.15;
-      const teacherY = H * 0.42;
-
-      // 몸통
-      ctx.fillStyle = '#6366f1';
-      ctx.beginPath();
-      ctx.ellipse(teacherX, teacherY + 16, 10, 14, 0, 0, Math.PI * 2);
-      ctx.fill();
-      // 머리
-      ctx.fillStyle = '#f5d0b0';
-      ctx.beginPath();
-      ctx.arc(teacherX, teacherY, 8, 0, Math.PI * 2);
-      ctx.fill();
-      // 머리카락
-      ctx.fillStyle = '#334155';
-      ctx.beginPath();
-      ctx.arc(teacherX, teacherY - 2, 8, Math.PI * 1.1, Math.PI * 1.9);
-      ctx.fill();
-
-      // 라벨
-      ctx.fillStyle = '#6366f1';
-      ctx.font = `bold ${isMobile ? 7 : 9}px "Noto Sans KR", sans-serif`;
-      ctx.textAlign = 'center';
-      ctx.fillText('선생님', teacherX, teacherY + 38);
-      ctx.textAlign = 'start';
-
-      // ── 학생 책상들 (앞에서 봤을 때 2열) ──
-      const deskColors = ['#f5d0b0', '#e8c49a', '#f5d0b0', '#dbb896', '#f0c8a8', '#e8c49a'];
-      const hairColors = ['#1a1a2e', '#4a3728', '#2d1b0e', '#1a1a2e', '#3d2b1f', '#4a3728'];
-      const shirtColors = ['#93c5fd', '#fca5a5', '#86efac', '#fde68a', '#c4b5fd', '#f9a8d4'];
-
-      const deskRowY = [H * 0.6, H * 0.78];
-      const deskCols = 3;
-      const deskSpacingX = isMobile ? W * 0.28 : W * 0.24;
-      const deskStartX = (W - (deskCols - 1) * deskSpacingX) / 2;
-
-      for (let row = 0; row < 2; row++) {
-        for (let col = 0; col < deskCols; col++) {
-          const sIdx = row * deskCols + col;
-          const dx = deskStartX + col * deskSpacingX;
-          const dy = deskRowY[row];
-          const scale = row === 0 ? 0.85 : 1.0;  // 앞줄은 좀 작게 (원근감)
-
-          // 책상
-          ctx.fillStyle = '#d4a574';
-          const dw = (isMobile ? 44 : 56) * scale;
-          const dh = (isMobile ? 24 : 30) * scale;
-          roundRect(ctx, dx - dw / 2, dy, dw, dh, 3);
-          ctx.fill();
-          ctx.strokeStyle = '#c4956a';
-          ctx.lineWidth = 0.5;
-          roundRect(ctx, dx - dw / 2, dy, dw, dh, 3);
-          ctx.stroke();
-
-          // 종이 (책상 위)
-          const paperW = dw * 0.65;
-          const paperH = dh * 0.7;
-          ctx.fillStyle = '#fff';
-          ctx.fillRect(dx - paperW / 2, dy + 3, paperW, paperH);
-          ctx.strokeStyle = '#e5e2da';
-          ctx.lineWidth = 0.3;
-          ctx.strokeRect(dx - paperW / 2, dy + 3, paperW, paperH);
-
-          // 종이 위 미니 필기 (동기화)
-          const pVisChars = Math.max(0, visibleChars - sIdx * 4);
-          if (pVisChars > 0) {
-            ctx.fillStyle = '#334155';
-            ctx.font = `${(isMobile ? 3 : 3.5) * scale}px "Noto Sans KR", sans-serif`;
-            let pIdx = 0;
-            for (let li = 0; li < Math.min(mathLines.length, 3); li++) {
-              const lt = mathLines[li].text;
-              const vl = Math.max(0, Math.min(pVisChars - pIdx, lt.length));
-              pIdx += lt.length;
-              if (vl <= 0) continue;
-              ctx.fillText(lt.substring(0, vl), dx - paperW / 2 + 2, dy + 7 + li * (isMobile ? 4 : 5) * scale, paperW - 4);
-            }
-          }
-
-          // 학생 (책상 뒤에 앉아있는 모습 - 상반신)
-          const headR = (isMobile ? 6 : 7) * scale;
-          const studentY = dy - headR * 0.6;
-
-          // 몸통 (셔츠)
-          ctx.fillStyle = shirtColors[sIdx];
-          ctx.beginPath();
-          ctx.ellipse(dx, dy - 1, headR * 1.1, headR * 0.9, 0, 0, Math.PI);
-          ctx.fill();
-
-          // 머리
-          ctx.fillStyle = deskColors[sIdx];
-          ctx.beginPath();
-          ctx.arc(dx, studentY - headR, headR, 0, Math.PI * 2);
-          ctx.fill();
-
-          // 머리카락
-          ctx.fillStyle = hairColors[sIdx];
-          ctx.beginPath();
-          ctx.arc(dx, studentY - headR - 1, headR, Math.PI * 1.0, Math.PI * 2.0);
-          ctx.fill();
-
-          // 팔 (필기 중인 경우 펜 잡는 모습)
-          if (sIdx < 4 && visibleChars > 3) {
-            ctx.strokeStyle = deskColors[sIdx];
-            ctx.lineWidth = 2.5 * scale;
-            ctx.beginPath();
-            ctx.moveTo(dx + headR * 0.6, dy - 1);
-            ctx.quadraticCurveTo(dx + headR * 1.2, dy + dh * 0.3, dx + paperW * 0.2, dy + 5);
-            ctx.stroke();
-
-            // 작은 펜
-            ctx.fillStyle = '#334155';
-            ctx.save();
-            ctx.translate(dx + paperW * 0.2, dy + 5);
-            ctx.rotate(-0.6);
-            ctx.fillRect(-1, -8, 2, 8);
-            ctx.fillStyle = '#6366f1';
-            ctx.fillRect(-1.5, -12, 3, 4);
-            ctx.restore();
-          }
-        }
-      }
-
-      // ── 데이터 전송 파티클 (학생 → 모니터) ──
-      if (visibleChars > 3 && visibleChars < totalChars) {
-        for (let i = 0; i < 5; i++) {
-          const progress = ((t * 2 + i * 20) % 100) / 100;
-          const startX = deskStartX + (i % 3) * deskSpacingX;
-          const startY = deskRowY[0] - 10;
-          const endX = screenX + screenW / 2;
-          const endY = screenY + screenH;
-
-          const px = startX + (endX - startX) * progress;
-          const py = startY + (endY - startY) * progress - Math.sin(progress * Math.PI) * 30;
-          const alpha = progress < 0.2 ? progress * 5 : progress > 0.8 ? (1 - progress) * 5 : 1;
-
-          ctx.fillStyle = `rgba(99, 102, 241, ${0.6 * alpha})`;
-          ctx.beginPath();
-          ctx.arc(px, py, 2, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      // ── 라벨: 실시간 동기화 ──
-      if (visibleChars > 5) {
-        const syncAlpha = Math.min(1, (visibleChars - 5) / 10);
-        ctx.fillStyle = `rgba(99, 102, 241, ${syncAlpha * 0.8})`;
-        ctx.font = `bold ${isMobile ? 8 : 10}px "Noto Sans KR", sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.fillText('⚡ 실시간 동기화', W / 2, H * 0.52);
-        ctx.textAlign = 'start';
-      }
-
-      t += 0.5;
-      if (t > totalChars / 0.7 + 80) t = 0;
-      animFrame = requestAnimationFrame(draw);
-    }
-
-    draw();
-
-    const resizeHandler = () => {
-      const dpr = window.devicePixelRatio || 1;
-      const w = canvas.clientWidth;
-      const h = canvas.clientHeight;
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.scale(dpr, dpr);
-    };
-    window.addEventListener('resize', resizeHandler);
-
-    return () => {
-      cancelAnimationFrame(animFrame);
-      window.removeEventListener('resize', resizeHandler);
-    };
-  }, []);
-
-  return (
-    <canvas
-      ref={canvasRef}
-      className="w-full rounded-2xl"
-      style={{ height: 380, maxWidth: 800 }}
-    />
-  );
-}
-
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.lineTo(x + w - r, y);
-  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-  ctx.lineTo(x + w, y + h - r);
-  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  ctx.lineTo(x + r, y + h);
-  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-  ctx.lineTo(x, y + r);
-  ctx.quadraticCurveTo(x, y, x + r, y);
-  ctx.closePath();
-}
-
-
-// ═══════════════════════════════════════
-// LandingPage 메인 컴포넌트
-// ═══════════════════════════════════════
 export function LandingPage() {
   const navigate = useNavigate();
 
@@ -591,262 +210,204 @@ export function LandingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-app-bg">
+    <div className="min-h-screen bg-app-bg font-sans">
       {/* ═══ HERO 섹션 ═══ */}
-      <section className="relative overflow-hidden">
-        {/* 배경 그라디언트 */}
-        <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/80 via-white/60 to-purple-50/60" />
-        <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-bl from-violet-200/30 to-transparent rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 bg-gradient-to-tr from-blue-200/20 to-transparent rounded-full blur-3xl" />
+      <section className="relative overflow-hidden pt-12 sm:pt-20 pb-20 sm:pb-32">
+        <div className="absolute inset-0 bg-gradient-to-br from-violet-50/60 via-white to-purple-50/40 -z-10" />
+        
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
+            <div className="inline-flex items-center px-4 py-2 rounded-full bg-violet-50 border border-violet-100 mb-6 group cursor-default shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-violet-500 mr-2 animate-pulse"></span>
+              <span className="text-xs font-bold text-violet-600 tracking-wider uppercase">Next Gen Education</span>
+            </div>
 
-        <div className="relative z-10 max-w-6xl mx-auto px-4 sm:px-6 pt-10 sm:pt-14 pb-10 sm:pb-16">
-          {/* 텍스트 (중앙 정렬) */}
-          <div className="text-center mb-8 sm:mb-10">
-            <span className="neo-tag mb-3 inline-block">NeoCAST</span>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black text-gray-900 leading-[1.25] mt-3">
-              떨어져 있어도, 선생님의 눈이 닿는
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 leading-[1.15] tracking-tight">
+              손글씨로 이어지는
               <br />
-              <span className="neo-gradient-text whitespace-nowrap">「손글씨로 이어지는 교육」</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600">실시간 교육의 혁신</span>
             </h1>
-            <p className="text-base sm:text-lg text-gray-600 leading-relaxed mt-4 sm:mt-5 max-w-xl mx-auto">
-              다수의 문제 풀이 과정이 한눈에 보이는
+
+            <p className="mt-8 text-lg sm:text-xl text-slate-500 leading-relaxed font-medium">
+              멀리 떨어져 있어도 종이 위의 펜 끝이 실시간으로 연결됩니다.
               <br />
-              <strong className="text-gray-800">필기 데이터에 기반한 실시간 학습 플랫폼</strong>
+              <span className="text-slate-800">지연 시간 걱정 없는 실시간 필기 공유, NeoCAST와 함께라면 가능합니다.</span>
             </p>
-            <div className="flex items-center gap-3 justify-center mt-5 sm:mt-6">
-              <button
-                onClick={handleStart}
-                className="neo-btn-primary text-base"
-              >
-                시작하기
+
+            <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
+              <button onClick={handleStart} className="w-full sm:w-auto px-8 py-4 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl font-bold text-lg shadow-xl shadow-violet-200 transition-all hover:scale-105 active:scale-95">
+                지금 무료로 시작하기
               </button>
-              <button
-                onClick={() => {
-                  document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="neo-btn-ghost text-base"
-              >
-                이용 방법 보기
+              <button onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })} className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-2xl font-bold text-lg transition-all">
+                서비스 가이드 보기
               </button>
             </div>
           </div>
 
-          {/* 메인 일러스트 (교실 장면) */}
-          <div className="max-w-3xl mx-auto">
-            <div className="neo-card p-3 sm:p-4 bg-white/80 backdrop-blur-sm">
-              <HeroIllustration />
-              <div className="flex justify-center gap-3 mt-3">
-                {['교실 수업', '원격 수업', '자습 관리'].map((label) => (
-                  <span key={label} className="text-[10px] sm:text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full">
-                    {label}
-                  </span>
-                ))}
+          <div className="relative group">
+            <div className="absolute -inset-4 bg-gradient-to-r from-violet-500/10 to-purple-500/10 rounded-[48px] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
+
+            <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
+              {/* 왼쪽: 학생의 필기 (실시간 싱크의 마법 강조) */}
+              {/* 왼쪽: 학생의 필기 (노트북을 숨기고 펜 끝에만 집중) */}
+              <div className="lg:col-span-5 relative group/hand">
+                <div className="h-full min-h-[460px] rounded-[40px] overflow-hidden shadow-2xl border border-white/50 relative bg-[#f8fafc]">
+                  <div className="w-full h-full overflow-hidden">
+                    <img 
+                      src="/images/student-hero.png" 
+                      alt="종이 위 필기에 집중하는 펜 끝" 
+                      className="w-full h-full object-cover scale-[1.7] origin-bottom translate-y-[2%] transition-transform duration-700 group-hover/hand:scale-[1.8]"
+                    />
+                  </div>
+                  <div className="absolute inset-0 bg-violet-900/5 mix-blend-multiply"></div>
+
+                  <div className="absolute top-8 left-8 flex items-center gap-2.5 px-5 py-2.5 bg-white/95 backdrop-blur-md rounded-[20px] shadow-xl border border-white">
+                    <span className="w-2.5 h-2.5 rounded-full bg-violet-600 animate-pulse"></span>
+                    <span className="text-[11px] font-black text-slate-800 tracking-widest uppercase">Real-Ink Sync</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 중앙 데이터 브릿지 */}
+              <div className="hidden lg:flex lg:col-span-1 flex-col items-center justify-center relative">
+                <div className="w-12 h-12 rounded-full bg-violet-600 shadow-xl flex items-center justify-center border-4 border-white z-20">
+                  <svg className="w-6 h-6 text-white animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                  </svg>
+                </div>
+              </div>
+
+              {/* 오른쪽: 하이브리드 대시보드 */}
+              {/* 오른쪽: 네오캐스트 대형 모니터링 뷰 (단일 대시보드 강점 피드백 반영) */}
+              <div className="lg:col-span-6">
+                <div className="h-full bg-slate-50/50 p-2 rounded-[36px] shadow-2xl border border-white overflow-hidden">
+                  <div className="h-full bg-white rounded-[30px] overflow-hidden flex flex-col">
+                    <div className="h-10 bg-slate-50/80 px-5 flex items-center border-b border-slate-100 justify-between">
+                      <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase">NeoCAST Monitor Console</span>
+                      <div className="flex gap-1.5">
+                        <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
+                        <span className="text-[8px] font-bold text-slate-400 tracking-wider">SYNCED AT 0.5s LATENCY</span>
+                      </div>
+                    </div>
+                    
+                    {/* 대형 필기 뷰 (단일 화면의 시각적 임팩트) */}
+                    <div className="flex-1 bg-white p-10 flex flex-col items-center justify-center relative overflow-hidden">
+                      {/* 배경 모눈종이 패턴 */}
+                      <div className="absolute inset-0 bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] [background-size:24px_24px] opacity-40"></div>
+                      
+                      <div className="relative w-full max-w-lg aspect-[4/3] bg-white rounded-3xl shadow-[0_20px_50px_rgba(124,58,237,0.12)] border border-violet-100 p-12 flex flex-col items-center justify-center gap-10 group/screen">
+                         <div className="absolute top-6 left-6 flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-black text-xs">SM</div>
+                            <div className="flex flex-col">
+                               <span className="text-[11px] font-black text-slate-800 leading-none">최민준 학생</span>
+                               <span className="text-[9px] font-bold text-violet-500 mt-1 uppercase">Math Session Active</span>
+                            </div>
+                         </div>
+
+                         {/* 대형 필기 애니메이션: 마법 같은 동기화 */}
+                         <div className="w-full flex items-center justify-center">
+                            <svg className="w-full max-w-[320px] drop-shadow-[0_10px_20px_rgba(124,58,237,0.2)]" viewBox="0 0 120 80">
+                                <path 
+                                  d="M20 20 L40 20 L30 40 L40 60 L20 60 M45 30 L60 30 M45 50 L60 50" 
+                                  fill="none" stroke="#7c3aed" strokeWidth="4.5" strokeLinecap="round" strokeLinejoin="round" 
+                                  className="animate-draw-handwriting" 
+                                  style={{ strokeDasharray: 200, strokeDashoffset: 200 }}
+                                />
+                                <text x="75" y="48" className="text-[20px] font-serif italic fill-violet-700 font-extrabold tracking-tighter">f(x)</text>
+                                <circle cx="40" cy="62" r="3" fill="#7c3aed" className="animate-ping" />
+                            </svg>
+                         </div>
+
+                         <div className="absolute bottom-6 right-6 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100">
+                             <span className="text-[10px] font-bold text-slate-400">SESSION RECORDING...</span>
+                         </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* 3개 통계 배지로 롤백 */}
+            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-xl border border-slate-200 rounded-[32px] px-12 py-6 shadow-2xl flex items-center gap-12 whitespace-nowrap">
+              <div className="text-center border-r border-slate-100 pr-12">
+                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Status</p>
+                <p className="text-2xl font-black text-violet-600 tracking-tighter">REAL-TIME</p>
+              </div>
+              <div className="text-center border-r border-slate-100 pr-12">
+                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Stability</p>
+                <p className="text-2xl font-black text-emerald-600 tracking-tighter">99.9%</p>
+              </div>
+              <div className="text-center">
+                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Classes</p>
+                <p className="text-2xl font-black text-slate-900 tracking-tighter">1:N 30+</p>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ 학습 사이클 4단계 ═══ */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
-        <div className="text-center mb-10 sm:mb-14">
-          <span className="neo-tag">Learning Cycle</span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-3 sm:mt-4">
-            사고의 흐름을 데이터로 잇는 배움의 사이클
-          </h2>
-          <p className="text-gray-500 mt-2 sm:mt-3 text-sm sm:text-base">
-            예측에서 성장까지 — 필기 데이터가 만드는 완전한 학습 루프
-          </p>
+      {/* ── 학습 사이클 ── */}
+      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-24 sm:py-32">
+        <div className="text-center mb-16">
+          <span className="neo-tag">Holistic Learning Loop</span>
+          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mt-4 tracking-tight">사고의 흐름을 데이터로 잇는 배움의 사이클</h2>
         </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {CYCLE_STEPS.map((step, idx) => (
-            <div key={idx} className="neo-card p-5 sm:p-6 flex flex-col gap-3 sm:gap-4 hover:shadow-lg transition-shadow">
-              <div className="flex items-center gap-3">
-                <div className={`w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br ${step.color} flex items-center justify-center text-white`}>
-                  {step.icon}
-                </div>
-                <div>
-                  <span className="text-[10px] sm:text-xs font-bold text-gray-400 uppercase tracking-wide">{step.step}</span>
-                  <h3 className="text-base sm:text-lg font-bold text-gray-900">{step.title}</h3>
-                </div>
-              </div>
-              <p className="text-sm font-semibold text-gray-700">{step.subtitle}</p>
-              <p className="text-xs sm:text-sm text-gray-500 leading-relaxed flex-1">{step.desc}</p>
-              <div className="flex flex-wrap gap-1.5">
-                {step.tags.map((tag) => (
-                  <span key={tag} className={`text-[10px] font-bold px-2.5 py-1 rounded-full ${step.bgColor} ${step.textColor}`}>
-                    {tag}
-                  </span>
-                ))}
-              </div>
+            <div key={idx} className="bg-white border border-slate-100 rounded-[32px] p-8 hover:shadow-2xl transition-all">
+              <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${step.color} flex items-center justify-center text-white mb-6`}>{step.icon}</div>
+              <span className="text-[10px] font-black text-violet-600 uppercase tracking-widest block mb-1">{step.step}</span>
+              <h3 className="text-xl font-black text-slate-900 mb-4">{step.title}</h3>
+              <p className="text-sm text-slate-500 leading-relaxed mb-6">{step.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ═══ 핵심 가치 ═══ */}
-      <section className="bg-gradient-to-b from-white/80 to-indigo-50/30">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
-          <div className="text-center mb-10 sm:mb-14">
-            <span className="neo-tag">Core Features</span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-3 sm:mt-4">
-              펜과 종이로 연결되는 실시간 학습
-            </h2>
-            <p className="text-gray-500 mt-2 sm:mt-3 text-sm sm:text-base">
-              전자칠판도, 추가 장비도 필요 없습니다.
-              <br className="sm:hidden" />{' '}
-              스마트펜으로 종이에 쓰기만 하면 됩니다
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {CORE_VALUES.map((item, idx) => (
-              <div key={idx} className="neo-card p-5 sm:p-6 flex items-start gap-3 sm:gap-4 hover:shadow-lg transition-shadow">
-                <div className="neo-icon-wrap flex-shrink-0 text-indigo-600">
-                  {item.icon}
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 text-sm">{item.title}</h3>
-                  <p className="text-xs sm:text-sm text-gray-500 mt-1 leading-relaxed">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ 이용 방법 ═══ */}
-      <section id="how-it-works" className="max-w-6xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
-        <div className="text-center mb-10 sm:mb-14">
-          <span className="neo-tag">How to Use</span>
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-3 sm:mt-4">
-            NeoCAST 이용 방법
-          </h2>
-          <p className="text-gray-500 mt-2 sm:mt-3 text-sm sm:text-base">
-            막힘없이, 사고의 흐름을 잡아냅니다
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
-          {USAGE_STEPS.map((step, idx) => (
-            <div key={idx} className="flex flex-col items-center text-center gap-3 sm:gap-4">
-              <div className="relative">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-3xl bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white shadow-lg">
-                  {step.icon}
-                </div>
-                <span className="absolute -top-2 -right-2 w-6 h-6 sm:w-7 sm:h-7 bg-white border-2 border-indigo-400 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-black text-indigo-600">
-                  {step.num}
-                </span>
-              </div>
-              <h3 className="font-bold text-gray-900 text-sm sm:text-base">{step.title}</h3>
-              <p className="text-xs sm:text-sm text-gray-500 leading-relaxed">{step.desc}</p>
+      {/* ── 핵심 가치 ── */}
+      <section className="bg-slate-50/50 py-24 sm:py-32">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6">
+          <div className="flex flex-col lg:flex-row gap-16 items-center">
+            <div className="lg:w-1/3">
+              <span className="neo-tag">Core Value</span>
+              <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mt-4 leading-tight tracking-tight">준비물은 오직 익숙한 종이와 펜</h2>
+              <p className="mt-6 text-slate-500 leading-relaxed font-medium">값비싼 장비나 교실 환경에 구애받지 마세요. 익숙한 종이의 집중력을 디지털로 연결합니다.</p>
             </div>
-          ))}
-        </div>
-
-        {/* 배지 */}
-        <div className="flex flex-wrap justify-center gap-3 sm:gap-4 mt-10 sm:mt-12">
-          {['나만의 학습지도 OK', '기존 교재도 OK', '원격 수업도 OK'].map((label) => (
-            <span key={label} className="neo-card px-4 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-gray-700 flex items-center gap-2">
-              <svg className="w-4 h-4 sm:w-5 sm:h-5 text-green-500 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              {label}
-            </span>
-          ))}
-        </div>
-      </section>
-
-      {/* ═══ AS-IS vs TO-BE 비교 ═══ */}
-      <section className="bg-gradient-to-b from-indigo-50/40 to-white/80">
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
-          <div className="text-center mb-10 sm:mb-14">
-            <span className="neo-tag">도입 효과</span>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mt-3 sm:mt-4">
-              현장의 고민, 이렇게 해결합니다
-            </h2>
-            <p className="text-gray-500 mt-2 sm:mt-3 text-xs sm:text-sm">※ 일부 개발 중 기능 포함</p>
-          </div>
-
-          {/* 데스크톱 테이블 */}
-          <div className="hidden md:block neo-card overflow-hidden">
-            <div className="grid grid-cols-[140px_1fr_1fr] border-b-2 border-gray-100">
-              <div className="px-5 py-4" />
-              <div className="px-5 py-4 bg-gray-50 text-center">
-                <span className="text-sm font-bold text-gray-500">AS-IS</span>
-              </div>
-              <div className="px-5 py-4 bg-gradient-to-r from-indigo-500 to-purple-500 text-center">
-                <span className="text-sm font-bold text-white">TO-BE (NeoCAST)</span>
-              </div>
-            </div>
-            {COMPARISON_DATA.map((row, idx) => (
-              <div
-                key={idx}
-                className={`grid grid-cols-[140px_1fr_1fr] ${idx !== COMPARISON_DATA.length - 1 ? 'border-b border-gray-100' : ''}`}
-              >
-                <div className="px-5 py-4 flex items-center">
-                  <span className="text-sm font-bold text-gray-700">{row.category}</span>
-                </div>
-                <div className="px-5 py-4 bg-gray-50/50 flex items-center">
-                  <span className="text-sm text-gray-500">{row.asIs}</span>
-                </div>
-                <div className="px-5 py-4 flex items-center">
-                  <span className="text-sm text-indigo-700 font-medium">{row.toBe}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* 모바일 카드 */}
-          <div className="md:hidden flex flex-col gap-4">
-            {COMPARISON_DATA.map((row, idx) => (
-              <div key={idx} className="neo-card p-4">
-                <h4 className="text-sm font-bold text-gray-800 mb-3">{row.category}</h4>
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-start gap-2">
-                    <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded flex-shrink-0 mt-0.5">AS-IS</span>
-                    <span className="text-xs text-gray-500">{row.asIs}</span>
-                  </div>
-                  <div className="flex items-start gap-2">
-                    <span className="text-[10px] font-bold text-white bg-indigo-500 px-1.5 py-0.5 rounded flex-shrink-0 mt-0.5">TO-BE</span>
-                    <span className="text-xs text-indigo-700 font-medium">{row.toBe}</span>
+            <div className="lg:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {CORE_VALUES.map((v, i) => (
+                <div key={i} className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm flex items-start gap-4">
+                  <div className="text-violet-600 p-2 bg-violet-50 rounded-xl">{v.icon}</div>
+                  <div>
+                    <h4 className="font-black text-slate-900 text-sm mb-1">{v.title}</h4>
+                    <p className="text-xs text-slate-400 leading-relaxed">{v.desc}</p>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ CTA 섹션 ═══ */}
-      <section className="max-w-4xl mx-auto px-4 sm:px-6 py-14 sm:py-20">
-        <div className="neo-card p-8 sm:p-12 text-center bg-gradient-to-br from-indigo-50/80 to-purple-50/60">
-          <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-3 sm:mb-4">
-            지금 바로 체험해 보세요
-          </h2>
-          <p className="text-sm sm:text-base text-gray-600 mb-6 sm:mb-8">
-            종이 위의 손글씨가 실시간으로 연결되는 새로운 수업을 경험하세요
-          </p>
-          <button
-            onClick={handleStart}
-            className="neo-btn-primary text-base sm:text-lg px-8 sm:px-10"
-          >
-            테스트 버전으로 시작
-          </button>
+      {/* ── CTA ── */}
+      <section className="max-w-4xl mx-auto px-4 py-24 sm:py-32">
+        <div className="bg-gradient-to-br from-violet-600 to-violet-700 rounded-[48px] p-12 sm:p-20 text-center shadow-2xl relative overflow-hidden">
+          <h2 className="text-3xl sm:text-5xl font-black text-white mb-6 tracking-tight">사고의 궤적을 실시간 데이터로</h2>
+          <p className="text-violet-100 text-lg sm:text-xl mb-12 font-medium opacity-90">필기 속에 숨겨진 성장의 실마리를 NeoCAST로 찾아보세요.</p>
+          <button onClick={handleStart} className="bg-white text-violet-600 px-12 py-5 rounded-2xl font-black text-xl hover:scale-105 transition-transform active:scale-95">지금 시작하기</button>
         </div>
       </section>
 
-      {/* ═══ 푸터 ═══ */}
-      <footer className="border-t border-gray-100 bg-white/60">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 sm:py-8 flex flex-col sm:flex-row items-center justify-between gap-3 sm:gap-4">
-          <div className="flex items-center gap-1">
-            <span className="text-lg font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Neo</span>
-            <span className="text-lg font-bold text-gray-800">CAST</span>
+      {/* ── 푸터 ── */}
+      <footer className="border-t border-slate-100 py-12">
+        <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-1.5 grayscale opacity-60">
+            <span className="text-2xl font-black tracking-tighter text-slate-800">Neo</span>
+            <span className="text-2xl font-black tracking-tighter text-violet-600">CAST</span>
           </div>
-          <div className="text-xs text-gray-400 text-center sm:text-right">
-            <p>NEO.LAB Convergence</p>
-            <p className="mt-1">neosmartpen.jp | info@neolab.co.jp</p>
+          <div className="text-right text-slate-400">
+            <p className="text-[10px] font-bold tracking-widest">NEO.LAB CONVERGENCE INC.</p>
+            <p className="text-[10px] tracking-tight mt-1">info@neolab.co.jp</p>
           </div>
         </div>
       </footer>
