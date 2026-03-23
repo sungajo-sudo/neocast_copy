@@ -1,0 +1,205 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" font-family="Pretendard, sans-serif">
+  <defs>
+    <!-- 수채화 배경 -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#daeef9"/>
+      <stop offset="40%" stop-color="#f0eafc"/>
+      <stop offset="100%" stop-color="#daf5ea"/>
+    </linearGradient>
+    <radialGradient id="blob1" cx="8%"  cy="20%" r="38%">
+      <stop offset="0%" stop-color="#bfdbfe" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#bfdbfe" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blob2" cx="85%" cy="15%" r="30%">
+      <stop offset="0%" stop-color="#fecdd3" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#fecdd3" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blob3" cx="70%" cy="80%" r="40%">
+      <stop offset="0%" stop-color="#bbf7d0" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#bbf7d0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blob4" cx="18%" cy="75%" r="35%">
+      <stop offset="0%" stop-color="#ddd6fe" stop-opacity="0.40"/>
+      <stop offset="100%" stop-color="#ddd6fe" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- 그라디언트 -->
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="playBtn" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+
+    <!-- 필터 -->
+    <filter id="cardShadow" x="-3%" y="-2%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#94a3b8" flood-opacity="0.14"/>
+    </filter>
+    <filter id="softShadow" x="-2%" y="-2%" width="108%" height="114%">
+      <feDropShadow dx="0" dy="1" stdDeviation="4" flood-color="#94a3b8" flood-opacity="0.09"/>
+    </filter>
+  </defs>
+
+  <!-- ── 배경 ── -->
+  <rect width="1440" height="900" fill="url(#bgGrad)"/>
+  <rect width="1440" height="900" fill="url(#blob1)"/>
+  <rect width="1440" height="900" fill="url(#blob2)"/>
+  <rect width="1440" height="900" fill="url(#blob3)"/>
+  <rect width="1440" height="900" fill="url(#blob4)"/>
+  <rect width="1440" height="900" fill="white" fill-opacity="0.32"/>
+
+  <!-- ══════════════════════════════════════
+       GNB 상단 바 (h=28)
+  ══════════════════════════════════════ -->
+  <rect width="1440" height="28" fill="white" fill-opacity="0.96"/>
+  <line x1="0" y1="28" x2="1440" y2="28" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="18" y="18" font-size="13" font-weight="800" fill="url(#logoGrad)">Neo</text>
+  <text x="43" y="18" font-size="13" font-weight="800" fill="#1e293b">CAST</text>
+  <!-- 우측 컨트롤 -->
+  <rect x="1118" y="5" width="88" height="18" rx="4" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1128" y="17" font-size="10" fill="#374151">🇰🇷 한국어</text>
+  <text x="1200" y="17" font-size="8" fill="#9ca3af">▾</text>
+  <rect x="1214" y="5" width="112" height="18" rx="4" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <circle cx="1226" cy="14" r="5" fill="url(#logoGrad)"/>
+  <text x="1236" y="17" font-size="10" fill="#374151"> 선생님 (Mock)</text>
+  <text x="1320" y="17" font-size="8" fill="#9ca3af">▾</text>
+
+  <!-- ══════════════════════════════════════
+       네비게이션 바 (y=28, h=32)
+       ← 뒤로가기 | 김선생의 필기 리플레이 | 1 / 5
+  ══════════════════════════════════════ -->
+  <rect x="0" y="28" width="1440" height="32" fill="white" fill-opacity="0.92"/>
+  <line x1="0" y1="60" x2="1440" y2="60" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="18" y="49" font-size="12" fill="#6b7280">← 뒤로가기</text>
+  <text x="720" y="49" font-size="14" font-weight="700" fill="#1e293b" text-anchor="middle">김선생의 필기 리플레이</text>
+  <text x="1422" y="49" font-size="12" fill="#6b7280" text-anchor="end">1 / 5</text>
+
+  <!-- ══════════════════════════════════════
+       본문 레이아웃
+       content x=150, width=1140
+       left panel: x=150, width=784
+       gap: 20
+       right panel: x=954, width=336
+       content starts y=80
+  ══════════════════════════════════════ -->
+
+  <!-- ══════════════════════════════════════
+       LEFT PANEL: 전체 페이지
+       x=150, y=80, width=784, height=810
+  ══════════════════════════════════════ -->
+  <rect x="150" y="80" width="784" height="810" rx="24" fill="white" fill-opacity="0.82" filter="url(#cardShadow)"/>
+  <rect x="150" y="80" width="784" height="810" rx="24" fill="none" stroke="white" stroke-opacity="0.65" stroke-width="1"/>
+
+  <!-- 패널 제목 -->
+  <text x="170" y="108" font-size="13" font-weight="600" fill="#475569">전체 페이지</text>
+
+  <!--
+    inner grid: x=170, inner_w=744
+    col_w=240, gap=12
+    col0_x=170, col1_x=422, col2_x=674
+    canvas_h=334
+    label_h=26
+    card_h=360
+    row1_y=120, row2_y=120+360+12=492
+  -->
+
+  <!-- ── Row 1 ── -->
+
+  <!-- Card 1P: 선택됨 (파란 border) -->
+  <rect x="170" y="120" width="240" height="360" rx="12" fill="white" filter="url(#softShadow)"/>
+  <rect x="169" y="119" width="242" height="362" rx="13" fill="none" stroke="#3b82f6" stroke-width="2"/>
+  <!-- canvas area -->
+  <rect x="171" y="121" width="238" height="333" rx="10" fill="white"/>
+  <!-- label bar (선택됨 → blue-50 bg) -->
+  <rect x="170" y="454" width="240" height="26" rx="0" fill="#eff6ff"/>
+  <rect x="170" y="454" width="240" height="26" rx="0" fill="none"/>
+  <!-- 하단 둥근 처리 -->
+  <path d="M170,454 L170,480 Q170,480 182,480 L398,480 Q410,480 410,480 L410,454 Z" fill="#eff6ff"/>
+  <text x="190" y="470" font-size="11" font-weight="600" fill="#2563eb">1P</text>
+  <text x="210" y="470" font-size="9" fill="#60a5fa"> ● 선택</text>
+
+  <!-- Card 2P: 파란 dot 뱃지 있음 -->
+  <rect x="422" y="120" width="240" height="360" rx="12" fill="white" filter="url(#softShadow)"/>
+  <rect x="421" y="119" width="242" height="362" rx="13" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+  <rect x="423" y="121" width="238" height="333" rx="10" fill="white"/>
+  <!-- blue dot badge (hasFeedback) -->
+  <circle cx="653" cy="131" r="7" fill="#3b82f6"/>
+  <text x="653" y="134" font-size="7" fill="white" text-anchor="middle" font-weight="700">✓</text>
+  <rect x="422" y="454" width="240" height="26" rx="0" fill="#f9fafb"/>
+  <path d="M422,454 L422,480 Q422,480 434,480 L650,480 Q662,480 662,480 L662,454 Z" fill="#f9fafb"/>
+  <text x="442" y="470" font-size="11" font-weight="600" fill="#64748b">2P</text>
+
+  <!-- Card 3P: 뱃지 없음 -->
+  <rect x="674" y="120" width="240" height="360" rx="12" fill="white" filter="url(#softShadow)"/>
+  <rect x="673" y="119" width="242" height="362" rx="13" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+  <rect x="675" y="121" width="238" height="333" rx="10" fill="white"/>
+  <rect x="674" y="454" width="240" height="26" rx="0" fill="#f9fafb"/>
+  <path d="M674,454 L674,480 Q674,480 686,480 L902,480 Q914,480 914,480 L914,454 Z" fill="#f9fafb"/>
+  <text x="694" y="470" font-size="11" font-weight="600" fill="#64748b">3P</text>
+
+  <!-- ── Row 2 (y=492) ── -->
+
+  <!-- Card 4P: 파란 dot 뱃지 있음 -->
+  <rect x="170" y="492" width="240" height="360" rx="12" fill="white" filter="url(#softShadow)"/>
+  <rect x="169" y="491" width="242" height="362" rx="13" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+  <rect x="171" y="493" width="238" height="333" rx="10" fill="white"/>
+  <circle cx="401" cy="503" r="7" fill="#3b82f6"/>
+  <text x="401" y="506" font-size="7" fill="white" text-anchor="middle" font-weight="700">✓</text>
+  <rect x="170" y="826" width="240" height="26" rx="0" fill="#f9fafb"/>
+  <path d="M170,826 L170,852 Q170,852 182,852 L398,852 Q410,852 410,852 L410,826 Z" fill="#f9fafb"/>
+  <text x="190" y="842" font-size="11" font-weight="600" fill="#64748b">4P</text>
+
+  <!-- Card 5P -->
+  <rect x="422" y="492" width="240" height="360" rx="12" fill="white" filter="url(#softShadow)"/>
+  <rect x="421" y="491" width="242" height="362" rx="13" fill="none" stroke="#e5e7eb" stroke-width="1"/>
+  <rect x="423" y="493" width="238" height="333" rx="10" fill="white"/>
+  <rect x="422" y="826" width="240" height="26" rx="0" fill="#f9fafb"/>
+  <path d="M422,826 L422,852 Q422,852 434,852 L650,852 Q662,852 662,852 L662,826 Z" fill="#f9fafb"/>
+  <text x="442" y="842" font-size="11" font-weight="600" fill="#64748b">5P</text>
+
+  <!-- ══════════════════════════════════════
+       RIGHT PANEL: 1P 상세
+       x=954, y=80, width=336
+  ══════════════════════════════════════ -->
+  <rect x="954" y="80" width="336" height="500" rx="24" fill="white" fill-opacity="0.82" filter="url(#cardShadow)"/>
+  <rect x="954" y="80" width="336" height="500" rx="24" fill="none" stroke="white" stroke-opacity="0.65" stroke-width="1"/>
+
+  <!-- 패널 제목 -->
+  <text x="974" y="108" font-size="13" font-weight="600" fill="#374151">1P 상세</text>
+
+  <!-- 선택 페이지 캔버스 (A4 비율로 가능한 크기) -->
+  <!-- canvas width=296, height=296×(297/210)=419 → 너무 크니 height=280 고정 -->
+  <rect x="965" y="118" width="314" height="275" rx="10" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+
+  <!-- 메타 정보 구분선 -->
+  <line x1="965" y1="406" x2="1279" y2="406" stroke="#f1f5f9" stroke-width="1"/>
+
+  <!-- 필기 시간 -->
+  <text x="974" y="428" font-size="12" fill="#9ca3af">필기 시간</text>
+  <text x="1270" y="428" font-size="13" font-weight="500" fill="#374151" text-anchor="end">8분</text>
+
+  <!-- 구분선 -->
+  <line x1="965" y1="440" x2="1279" y2="440" stroke="#f1f5f9" stroke-width="1"/>
+
+  <!-- 첨삭 -->
+  <text x="974" y="462" font-size="12" fill="#9ca3af">첨삭</text>
+  <text x="1270" y="462" font-size="13" font-weight="500" fill="#d1d5db" text-anchor="end">—</text>
+
+  <!-- ▶ 필기 재생 버튼 -->
+  <rect x="965" y="478" width="314" height="40" rx="12" fill="#2563eb"/>
+  <text x="1122" y="503" font-size="13" font-weight="600" fill="white" text-anchor="middle">▶ 필기 재생</text>
+
+  <!-- 다운로드 버튼 -->
+  <rect x="965" y="526" width="314" height="38" rx="12" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="1122" y="549" font-size="13" font-weight="500" fill="#374151" text-anchor="middle">다운로드</text>
+
+  <!-- ══════════════════════════════════════
+       하단 푸터 (y=870, h=30)
+  ══════════════════════════════════════ -->
+  <rect x="0" y="870" width="1440" height="30" fill="white" fill-opacity="0.90"/>
+  <line x1="0" y1="870" x2="1440" y2="870" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="18" y="888" font-size="11" fill="#9ca3af">NeoCAST v1.2.11</text>
+  <text x="1422" y="888" font-size="11" fill="#9ca3af" text-anchor="end">Real-time collaborative drawing</text>
+</svg>

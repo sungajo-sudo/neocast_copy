@@ -1,0 +1,218 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" font-family="Pretendard, sans-serif">
+  <defs>
+    <!-- 수채화 배경 -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e0f0fc"/>
+      <stop offset="45%" stop-color="#f5eefe"/>
+      <stop offset="100%" stop-color="#e8f8f0"/>
+    </linearGradient>
+    <radialGradient id="blob1" cx="10%" cy="18%" r="38%">
+      <stop offset="0%" stop-color="#bfdbfe" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#bfdbfe" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blob2" cx="88%" cy="30%" r="35%">
+      <stop offset="0%" stop-color="#fecdd3" stop-opacity="0.35"/>
+      <stop offset="100%" stop-color="#fecdd3" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blob3" cx="75%" cy="78%" r="40%">
+      <stop offset="0%" stop-color="#bbf7d0" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#bbf7d0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blob4" cx="22%" cy="72%" r="35%">
+      <stop offset="0%" stop-color="#ddd6fe" stop-opacity="0.40"/>
+      <stop offset="100%" stop-color="#ddd6fe" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- 로고 그라디언트 -->
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+
+    <!-- 버튼 그라디언트 -->
+    <linearGradient id="btnGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+
+    <!-- 필터 -->
+    <filter id="cardShadow" x="-4%" y="-4%" width="112%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="8" flood-color="#94a3b8" flood-opacity="0.13"/>
+    </filter>
+    <filter id="softShadow" x="-2%" y="-2%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="1" stdDeviation="4" flood-color="#94a3b8" flood-opacity="0.10"/>
+    </filter>
+  </defs>
+
+  <!-- ── 배경 ── -->
+  <rect width="1440" height="900" fill="url(#bgGrad)"/>
+  <rect width="1440" height="900" fill="url(#blob1)"/>
+  <rect width="1440" height="900" fill="url(#blob2)"/>
+  <rect width="1440" height="900" fill="url(#blob3)"/>
+  <rect width="1440" height="900" fill="url(#blob4)"/>
+  <rect width="1440" height="900" fill="white" fill-opacity="0.35"/>
+
+  <!-- ══════════════════════════════════════
+       GNB 상단 바 (h=28)
+  ══════════════════════════════════════ -->
+  <rect width="1440" height="28" fill="white" fill-opacity="0.95"/>
+  <line x1="0" y1="28" x2="1440" y2="28" stroke="#e5e7eb" stroke-width="1"/>
+  <!-- 로고 -->
+  <text x="18" y="18" font-size="13" font-weight="800" fill="url(#logoGrad)" letter-spacing="-0.3">Neo</text>
+  <text x="43" y="18" font-size="13" font-weight="800" fill="#1e293b" letter-spacing="-0.3">CAST</text>
+  <!-- 우측: 언어 선택 + 유저 -->
+  <rect x="1120" y="5" width="88" height="18" rx="4" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1130" y="17" font-size="10" fill="#374151">🇰🇷 한국어</text>
+  <text x="1202" y="17" font-size="8" fill="#9ca3af">▾</text>
+  <rect x="1216" y="5" width="110" height="18" rx="4" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <circle cx="1228" cy="14" r="5" fill="url(#btnGrad)"/>
+  <text x="1238" y="17" font-size="10" fill="#374151"> 선생님 (Mock)</text>
+  <text x="1320" y="17" font-size="8" fill="#9ca3af">▾</text>
+
+  <!-- ══════════════════════════════════════
+       두 번째 헤더 바 (h=32, y=28)
+  ══════════════════════════════════════ -->
+  <rect x="0" y="28" width="1440" height="32" fill="white" fill-opacity="0.90"/>
+  <line x1="0" y1="60" x2="1440" y2="60" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="18" y="50" font-size="13" font-weight="700" fill="#1e293b">NeoCAST</text>
+
+  <!-- ══════════════════════════════════════
+       본문 콘텐츠 (y=60~870)
+       중앙 정렬: x=290, width=860
+  ══════════════════════════════════════ -->
+
+  <!-- ← 뒤로가기 -->
+  <text x="290" y="92" font-size="12" fill="#94a3b8">← 뒤로가기</text>
+
+  <!-- 세션 제목 -->
+  <text x="290" y="120" font-size="22" font-weight="700" fill="#0f172a">고등 국어 - 현대시 분석</text>
+
+  <!-- 날짜 + 배지 -->
+  <text x="290" y="140" font-size="12" fill="#64748b">2026-03-07 14:30</text>
+  <rect x="382" y="128" width="32" height="16" rx="8" fill="#f1f5f9"/>
+  <text x="398" y="139" font-size="10" fill="#94a3b8" text-anchor="middle">종료</text>
+
+  <!-- ══════════════════════════════════════
+       요약 카드 3개 (y=156, h=72)
+  ══════════════════════════════════════ -->
+  <!-- 카드 1: 참가자 수 -->
+  <rect x="290" y="156" width="276" height="72" rx="16" fill="white" fill-opacity="0.75" filter="url(#cardShadow)"/>
+  <rect x="290" y="156" width="276" height="72" rx="16" fill="none" stroke="white" stroke-opacity="0.70" stroke-width="1"/>
+  <text x="310" y="178" font-size="11" fill="#94a3b8">참가자 수</text>
+  <text x="310" y="208" font-size="22" font-weight="700" fill="#3b82f6">8명</text>
+
+  <!-- 카드 2: 진행 시간 -->
+  <rect x="582" y="156" width="276" height="72" rx="16" fill="white" fill-opacity="0.75" filter="url(#cardShadow)"/>
+  <rect x="582" y="156" width="276" height="72" rx="16" fill="none" stroke="white" stroke-opacity="0.70" stroke-width="1"/>
+  <text x="602" y="178" font-size="11" fill="#94a3b8">진행 시간</text>
+  <text x="602" y="208" font-size="22" font-weight="700" fill="#8b5cf6">45분</text>
+
+  <!-- 카드 3: 첨삭 횟수 -->
+  <rect x="874" y="156" width="276" height="72" rx="16" fill="white" fill-opacity="0.75" filter="url(#cardShadow)"/>
+  <rect x="874" y="156" width="276" height="72" rx="16" fill="none" stroke="white" stroke-opacity="0.70" stroke-width="1"/>
+  <text x="894" y="178" font-size="11" fill="#94a3b8">첨삭 횟수</text>
+  <text x="894" y="205" font-size="22" font-weight="700" fill="#f97316">12회</text>
+  <text x="894" y="220" font-size="10" fill="#9ca3af">호스트 첨삭 사용 횟수</text>
+
+  <!-- ══════════════════════════════════════
+       PDF 선택 바 (y=244, h=44)
+  ══════════════════════════════════════ -->
+  <rect x="290" y="244" width="860" height="44" rx="14" fill="white" fill-opacity="0.75" filter="url(#cardShadow)"/>
+  <rect x="290" y="244" width="860" height="44" rx="14" fill="none" stroke="white" stroke-opacity="0.70" stroke-width="1"/>
+
+  <!-- 드롭다운 영역 -->
+  <rect x="302" y="254" width="620" height="24" rx="8" fill="white" fill-opacity="0.80" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="314" y="270" font-size="11" fill="#374151">고등_국어_현대시_분석_워크시트.pdf · 2P · 2026/03/07 · SOBP: 5.255.0.250</text>
+  <text x="914" y="270" font-size="9" fill="#94a3b8">▼</text>
+
+  <!-- 보기 버튼 -->
+  <rect x="936" y="254" width="52" height="24" rx="7" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="962" y="270" font-size="11" fill="#374151" text-anchor="middle">👁 보기</text>
+
+  <!-- 인쇄 버튼 -->
+  <rect x="994" y="254" width="52" height="24" rx="7" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1020" y="270" font-size="11" fill="#374151" text-anchor="middle">🖨 인쇄</text>
+
+  <!-- ══════════════════════════════════════
+       참가자 필기 섹션 라벨 (y=304)
+  ══════════════════════════════════════ -->
+  <text x="290" y="308" font-size="12" font-weight="600" fill="#475569">참가자 필기 (6명)</text>
+
+  <!-- ══════════════════════════════════════
+       카드 Row 1 (y=318, canvas h=198, name h=30)
+       col1=290, col2=582, col3=874, card_w=276
+  ══════════════════════════════════════ -->
+
+  <!-- ─ 카드 1: 김선생 (호스트, "나" badge, 파란 border) ─ -->
+  <rect x="290" y="318" width="276" height="228" rx="16" fill="white" fill-opacity="0.85" filter="url(#cardShadow)"/>
+  <!-- 파란 border (border-2 border-blue-500) -->
+  <rect x="289" y="317" width="278" height="230" rx="17" fill="none" stroke="#3b82f6" stroke-width="2"/>
+  <!-- "나" 배지 -->
+  <rect x="302" y="328" width="22" height="16" rx="8" fill="#3b82f6"/>
+  <text x="313" y="339" font-size="9" fill="white" text-anchor="middle" font-weight="600">나</text>
+  <!-- 빈 캔버스 영역 -->
+  <rect x="292" y="318" width="272" height="198" rx="14" fill="white"/>
+  <!-- 하단 이름 영역 -->
+  <rect x="290" y="516" width="276" height="30" rx="0" fill="white" fill-opacity="0.85"/>
+  <rect x="290" y="516" width="276" height="30" rx="0" fill="none"/>
+  <!-- 둥근 하단 처리 (마스크 대신 직접 그리기) -->
+  <rect x="290" y="532" width="276" height="16" rx="0" fill="white" fill-opacity="0.85"/>
+  <rect x="290" y="538" width="276" height="8" rx="0" fill="white" fill-opacity="0.85"/>
+  <path d="M290,532 L290,546 Q290,546 306,546 L550,546 Q566,546 566,546 L566,532 Z" fill="white" fill-opacity="0.85"/>
+  <text x="304" y="533" font-size="12" font-weight="500" fill="#1e293b">김선생</text>
+  <!-- 호스트 배지 -->
+  <rect x="516" y="521" width="38" height="18" rx="9" fill="#dbeafe"/>
+  <text x="535" y="533" font-size="10" fill="#2563eb" text-anchor="middle" font-weight="500">호스트</text>
+
+  <!-- ─ 카드 2: 박민준 (게스트) ─ -->
+  <rect x="582" y="318" width="276" height="228" rx="16" fill="white" fill-opacity="0.85" filter="url(#cardShadow)"/>
+  <rect x="581" y="317" width="278" height="230" rx="17" fill="none" stroke="white" stroke-opacity="0.65" stroke-width="1"/>
+  <rect x="584" y="318" width="272" height="198" rx="14" fill="white"/>
+  <text x="596" y="533" font-size="12" font-weight="500" fill="#1e293b">박민준</text>
+  <rect x="808" y="521" width="38" height="18" rx="9" fill="#f3f4f6"/>
+  <text x="827" y="533" font-size="10" fill="#6b7280" text-anchor="middle">게스트</text>
+
+  <!-- ─ 카드 3: 이서연 (게스트) ─ -->
+  <rect x="874" y="318" width="276" height="228" rx="16" fill="white" fill-opacity="0.85" filter="url(#cardShadow)"/>
+  <rect x="873" y="317" width="278" height="230" rx="17" fill="none" stroke="white" stroke-opacity="0.65" stroke-width="1"/>
+  <rect x="876" y="318" width="272" height="198" rx="14" fill="white"/>
+  <text x="888" y="533" font-size="12" font-weight="500" fill="#1e293b">이서연</text>
+  <rect x="1100" y="521" width="38" height="18" rx="9" fill="#f3f4f6"/>
+  <text x="1119" y="533" font-size="10" fill="#6b7280" text-anchor="middle">게스트</text>
+
+  <!-- ══════════════════════════════════════
+       카드 Row 2 (y=558, canvas h=198, name h=30)
+  ══════════════════════════════════════ -->
+
+  <!-- ─ 카드 4: 최도윤 (게스트) ─ -->
+  <rect x="290" y="558" width="276" height="228" rx="16" fill="white" fill-opacity="0.85" filter="url(#cardShadow)"/>
+  <rect x="289" y="557" width="278" height="230" rx="17" fill="none" stroke="white" stroke-opacity="0.65" stroke-width="1"/>
+  <rect x="292" y="558" width="272" height="198" rx="14" fill="white"/>
+  <text x="304" y="773" font-size="12" font-weight="500" fill="#1e293b">최도윤</text>
+  <rect x="516" y="761" width="38" height="18" rx="9" fill="#f3f4f6"/>
+  <text x="535" y="773" font-size="10" fill="#6b7280" text-anchor="middle">게스트</text>
+
+  <!-- ─ 카드 5: 정하은 (게스트) ─ -->
+  <rect x="582" y="558" width="276" height="228" rx="16" fill="white" fill-opacity="0.85" filter="url(#cardShadow)"/>
+  <rect x="581" y="557" width="278" height="230" rx="17" fill="none" stroke="white" stroke-opacity="0.65" stroke-width="1"/>
+  <rect x="584" y="558" width="272" height="198" rx="14" fill="white"/>
+  <text x="596" y="773" font-size="12" font-weight="500" fill="#1e293b">정하은</text>
+  <rect x="808" y="761" width="38" height="18" rx="9" fill="#f3f4f6"/>
+  <text x="827" y="773" font-size="10" fill="#6b7280" text-anchor="middle">게스트</text>
+
+  <!-- ─ 카드 6: 강지우 (게스트) ─ -->
+  <rect x="874" y="558" width="276" height="228" rx="16" fill="white" fill-opacity="0.85" filter="url(#cardShadow)"/>
+  <rect x="873" y="557" width="278" height="230" rx="17" fill="none" stroke="white" stroke-opacity="0.65" stroke-width="1"/>
+  <rect x="876" y="558" width="272" height="198" rx="14" fill="white"/>
+  <text x="888" y="773" font-size="12" font-weight="500" fill="#1e293b">강지우</text>
+  <rect x="1100" y="761" width="38" height="18" rx="9" fill="#f3f4f6"/>
+  <text x="1119" y="773" font-size="10" fill="#6b7280" text-anchor="middle">게스트</text>
+
+  <!-- ══════════════════════════════════════
+       하단 푸터 (y=870, h=30)
+  ══════════════════════════════════════ -->
+  <rect x="0" y="870" width="1440" height="30" fill="white" fill-opacity="0.88"/>
+  <line x1="0" y1="870" x2="1440" y2="870" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="18" y="888" font-size="11" fill="#9ca3af">NeoCAST v1.2.11</text>
+  <text x="1422" y="888" font-size="11" fill="#9ca3af" text-anchor="end">Real-time collaborative drawing</text>
+</svg>

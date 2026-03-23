@@ -1,6 +1,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { HandwritingThumbnail } from '../components/HandwritingThumbnail';
+import { ArchiveDetailV2 } from './ArchiveDetailV2';
 
 interface ArchiveItem {
   archiveId: string;
@@ -70,6 +71,11 @@ export function ArchiveDetailPage() {
         <p className="text-slate-400 font-bold">아카이브를 찾을 수 없습니다.</p>
       </div>
     );
+  }
+
+  // archive_003 (이차 방정식 문제풀이)만 새 시안으로 렌더링
+  if (archiveId === 'archive_003') {
+    return <ArchiveDetailV2 archive={archive} />;
   }
 
   const pdfLabel = `${selectedPdf.filename} · ${selectedPdf.pages}P · ${selectedPdf.date} · SOBP: ${selectedPdf.sobp}`;

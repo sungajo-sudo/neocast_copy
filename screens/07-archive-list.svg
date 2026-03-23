@@ -1,0 +1,147 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" font-family="Pretendard, sans-serif">
+  <defs>
+    <!-- 수채화 배경 그라디언트 -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#e8f4fd"/>
+      <stop offset="50%" stop-color="#f5eefe"/>
+      <stop offset="100%" stop-color="#f0e8fc"/>
+    </linearGradient>
+
+    <!-- 로고 그라디언트 -->
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+
+    <!-- 새 세션 아이콘 그라디언트 -->
+    <linearGradient id="btnGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+
+    <!-- 글래스모피즘 카드 그림자 -->
+    <filter id="cardShadow" x="-5%" y="-5%" width="115%" height="125%">
+      <feDropShadow dx="0" dy="4" stdDeviation="12" flood-color="#94a3b8" flood-opacity="0.15"/>
+    </filter>
+    <filter id="headerShadow" x="0%" y="0%" width="100%" height="300%">
+      <feDropShadow dx="0" dy="1" stdDeviation="4" flood-color="#94a3b8" flood-opacity="0.08"/>
+    </filter>
+
+    <!-- 수채화 blob -->
+    <radialGradient id="blob1" cx="15%" cy="15%" r="40%">
+      <stop offset="0%" stop-color="#bfdbfe" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#bfdbfe" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blob2" cx="82%" cy="68%" r="45%">
+      <stop offset="0%" stop-color="#ddd6fe" stop-opacity="0.50"/>
+      <stop offset="100%" stop-color="#ddd6fe" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blob3" cx="55%" cy="92%" r="38%">
+      <stop offset="0%" stop-color="#fbcfe8" stop-opacity="0.30"/>
+      <stop offset="100%" stop-color="#fbcfe8" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- ── 배경 ── -->
+  <rect width="1440" height="900" fill="url(#bgGrad)"/>
+  <rect width="1440" height="900" fill="url(#blob1)"/>
+  <rect width="1440" height="900" fill="url(#blob2)"/>
+  <rect width="1440" height="900" fill="url(#blob3)"/>
+  <rect width="1440" height="900" fill="white" fill-opacity="0.40"/>
+
+  <!-- ── 헤더 ── -->
+  <rect width="1440" height="56" fill="white" fill-opacity="0.72" filter="url(#headerShadow)"/>
+  <line x1="0" y1="56" x2="1440" y2="56" stroke="white" stroke-opacity="0.60" stroke-width="1"/>
+  <!-- 로고 -->
+  <text x="32" y="36" font-size="20" font-weight="700" fill="url(#logoGrad)" letter-spacing="-0.5">Neo</text>
+  <text x="75" y="36" font-size="20" font-weight="700" fill="#1e293b" letter-spacing="-0.5">CAST</text>
+  <!-- 유저명 -->
+  <text x="1408" y="35" font-size="14" font-weight="500" fill="#475569" text-anchor="end">선생님</text>
+
+  <!-- ── 본문 (중앙 정렬, 너비 700, x: 370~1070) ── -->
+
+  <!-- 인사말 -->
+  <text x="370" y="126" font-size="24" font-weight="700" fill="#1e293b">안녕하세요, 선생님님!</text>
+
+  <!-- ── 새 세션 시작 카드 ── -->
+  <rect x="370" y="150" width="700" height="88" rx="24" fill="white" fill-opacity="0.82" filter="url(#cardShadow)"/>
+  <rect x="370" y="150" width="700" height="88" rx="24" fill="none" stroke="white" stroke-opacity="0.65" stroke-width="1"/>
+  <!-- 아이콘 박스 -->
+  <rect x="398" y="172" width="48" height="48" rx="14" fill="url(#btnGrad)"/>
+  <text x="422" y="200" font-size="28" font-weight="300" fill="white" text-anchor="middle" dominant-baseline="middle">+</text>
+  <!-- 텍스트 -->
+  <text x="462" y="188" font-size="15" font-weight="700" fill="#1e293b">새 세션 시작</text>
+  <text x="462" y="209" font-size="13" fill="#64748b">지금 바로 수업을 시작하세요</text>
+  <!-- 화살표 -->
+  <polyline points="1040,184 1048,194 1040,204" fill="none" stroke="#94a3b8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- ── 검색 바 ── -->
+  <rect x="370" y="265" width="700" height="44" rx="14" fill="white" fill-opacity="0.80" filter="url(#cardShadow)"/>
+  <rect x="370" y="265" width="700" height="44" rx="14" fill="none" stroke="white" stroke-opacity="0.65" stroke-width="1"/>
+  <!-- 돋보기 -->
+  <circle cx="400" cy="287" r="8.5" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+  <line x1="406" y1="293" x2="413" y2="300" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round"/>
+  <text x="424" y="292" font-size="13" fill="#94a3b8" dominant-baseline="middle">수업명으로 검색...</text>
+  <!-- 필터 버튼 -->
+  <rect x="1008" y="272" width="54" height="30" rx="8" fill="white" fill-opacity="0.90" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1035" y="291" font-size="12" fill="#374151" text-anchor="middle" font-weight="500">필터</text>
+
+  <!-- ── 지난 수업 기록 레이블 ── -->
+  <text x="370" y="346" font-size="15" font-weight="600" fill="#374151">지난 수업 기록</text>
+
+  <!-- ── 아카이브 리스트 카드 ── -->
+  <!-- 5행: 각 행 64px, 카드 총 높이 5×64 = 320px -->
+  <rect x="370" y="363" width="700" height="320" rx="24" fill="white" fill-opacity="0.82" filter="url(#cardShadow)"/>
+  <rect x="370" y="363" width="700" height="320" rx="24" fill="none" stroke="white" stroke-opacity="0.65" stroke-width="1"/>
+
+  <!-- ─ 행 1: 중학교 수학 - 이차방정식 ─ -->
+  <text x="398" y="393" font-size="14" font-weight="500" fill="#1e293b">중학교 수학 - 이차방정식</text>
+  <text x="398" y="413" font-size="12" fill="#9ca3af">2026.03.10 · 15:30</text>
+  <text x="820" y="405" font-size="12" fill="#94a3b8" text-anchor="middle">45분</text>
+  <text x="960" y="405" font-size="13" fill="#64748b" text-anchor="end">12명</text>
+  <!-- [보기] 버튼 -->
+  <rect x="978" y="391" width="52" height="28" rx="8" fill="url(#btnGrad)"/>
+  <text x="1004" y="409" font-size="12" fill="white" text-anchor="middle" font-weight="500">보기</text>
+  <line x1="395" y1="427" x2="1045" y2="427" stroke="#f1f5f9" stroke-width="1"/>
+
+  <!-- ─ 행 2: 고등 국어 - 현대시 분석 ─ -->
+  <text x="398" y="457" font-size="14" font-weight="500" fill="#1e293b">고등 국어 - 현대시 분석</text>
+  <text x="398" y="477" font-size="12" fill="#9ca3af">2026.03.07 · 11:00</text>
+  <text x="820" y="469" font-size="12" fill="#94a3b8" text-anchor="middle">32분</text>
+  <text x="960" y="469" font-size="13" fill="#64748b" text-anchor="end">8명</text>
+  <rect x="978" y="455" width="52" height="28" rx="8" fill="url(#btnGrad)"/>
+  <text x="1004" y="473" font-size="12" fill="white" text-anchor="middle" font-weight="500">보기</text>
+  <line x1="395" y1="491" x2="1045" y2="491" stroke="#f1f5f9" stroke-width="1"/>
+
+  <!-- ─ 행 3: 영어 회화 중급반 ─ -->
+  <text x="398" y="521" font-size="14" font-weight="500" fill="#1e293b">영어 회화 중급반</text>
+  <text x="398" y="541" font-size="12" fill="#9ca3af">2026.03.05 · 17:00</text>
+  <text x="820" y="533" font-size="12" fill="#94a3b8" text-anchor="middle">58분</text>
+  <text x="960" y="533" font-size="13" fill="#64748b" text-anchor="end">15명</text>
+  <rect x="978" y="519" width="52" height="28" rx="8" fill="url(#btnGrad)"/>
+  <text x="1004" y="537" font-size="12" fill="white" text-anchor="middle" font-weight="500">보기</text>
+  <line x1="395" y1="555" x2="1045" y2="555" stroke="#f1f5f9" stroke-width="1"/>
+
+  <!-- ─ 행 4: 중등 과학 - 물리 기초 ─ -->
+  <text x="398" y="585" font-size="14" font-weight="500" fill="#1e293b">중등 과학 - 물리 기초</text>
+  <text x="398" y="605" font-size="12" fill="#9ca3af">2026.02.28 · 09:00</text>
+  <text x="820" y="597" font-size="12" fill="#94a3b8" text-anchor="middle">40분</text>
+  <text x="960" y="597" font-size="13" fill="#64748b" text-anchor="end">10명</text>
+  <rect x="978" y="583" width="52" height="28" rx="8" fill="url(#btnGrad)"/>
+  <text x="1004" y="601" font-size="12" fill="white" text-anchor="middle" font-weight="500">보기</text>
+  <line x1="395" y1="619" x2="1045" y2="619" stroke="#f1f5f9" stroke-width="1"/>
+
+  <!-- ─ 행 5: 고등 수학 - 미적분 심화 ─ -->
+  <text x="398" y="649" font-size="14" font-weight="500" fill="#1e293b">고등 수학 - 미적분 심화</text>
+  <text x="398" y="669" font-size="12" fill="#9ca3af">2026.02.20 · 14:00</text>
+  <text x="820" y="661" font-size="12" fill="#94a3b8" text-anchor="middle">50분</text>
+  <text x="960" y="661" font-size="13" fill="#64748b" text-anchor="end">18명</text>
+  <rect x="978" y="647" width="52" height="28" rx="8" fill="url(#btnGrad)"/>
+  <text x="1004" y="665" font-size="12" fill="white" text-anchor="middle" font-weight="500">보기</text>
+
+  <!-- ── 컬럼 헤더 라벨 (리스트 상단) ── -->
+  <!-- 세션명/날짜·시간/진행시간/참여인원/보기 레이블 -->
+  <text x="398" y="355" font-size="11" fill="#94a3b8" font-weight="500">세션명 / 날짜·시간</text>
+  <text x="820" y="355" font-size="11" fill="#94a3b8" font-weight="500" text-anchor="middle">진행시간</text>
+  <text x="960" y="355" font-size="11" fill="#94a3b8" font-weight="500" text-anchor="end">참여인원</text>
+</svg>

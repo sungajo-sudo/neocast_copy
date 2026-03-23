@@ -1,0 +1,238 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1440" height="900" viewBox="0 0 1440 900" font-family="Pretendard, sans-serif">
+  <defs>
+    <!-- 수채화 배경 -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#daeef9"/>
+      <stop offset="40%" stop-color="#f0eafc"/>
+      <stop offset="100%" stop-color="#daf5ea"/>
+    </linearGradient>
+    <radialGradient id="blob1" cx="8%"  cy="18%" r="36%">
+      <stop offset="0%" stop-color="#bfdbfe" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#bfdbfe" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blob2" cx="87%" cy="14%" r="30%">
+      <stop offset="0%" stop-color="#fecdd3" stop-opacity="0.38"/>
+      <stop offset="100%" stop-color="#fecdd3" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blob3" cx="68%" cy="82%" r="40%">
+      <stop offset="0%" stop-color="#bbf7d0" stop-opacity="0.32"/>
+      <stop offset="100%" stop-color="#bbf7d0" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blob4" cx="20%" cy="76%" r="34%">
+      <stop offset="0%" stop-color="#ddd6fe" stop-opacity="0.42"/>
+      <stop offset="100%" stop-color="#ddd6fe" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+    <linearGradient id="playBtnGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#4f46e5"/>
+    </linearGradient>
+    <linearGradient id="progressGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#6366f1"/>
+    </linearGradient>
+
+    <filter id="cardShadow" x="-3%" y="-2%" width="110%" height="115%">
+      <feDropShadow dx="0" dy="4" stdDeviation="10" flood-color="#94a3b8" flood-opacity="0.14"/>
+    </filter>
+    <filter id="softShadow" x="-2%" y="-2%" width="108%" height="114%">
+      <feDropShadow dx="0" dy="1" stdDeviation="4" flood-color="#94a3b8" flood-opacity="0.09"/>
+    </filter>
+  </defs>
+
+  <!-- ── 배경 ── -->
+  <rect width="1440" height="900" fill="url(#bgGrad)"/>
+  <rect width="1440" height="900" fill="url(#blob1)"/>
+  <rect width="1440" height="900" fill="url(#blob2)"/>
+  <rect width="1440" height="900" fill="url(#blob3)"/>
+  <rect width="1440" height="900" fill="url(#blob4)"/>
+  <rect width="1440" height="900" fill="white" fill-opacity="0.32"/>
+
+  <!-- ══ GNB 상단 바 (h=28) ══ -->
+  <rect width="1440" height="28" fill="white" fill-opacity="0.96"/>
+  <line x1="0" y1="28" x2="1440" y2="28" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="18" y="18" font-size="13" font-weight="800" fill="url(#logoGrad)">Neo</text>
+  <text x="43" y="18" font-size="13" font-weight="800" fill="#1e293b">CAST</text>
+  <rect x="1118" y="5" width="88" height="18" rx="4" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1128" y="17" font-size="10" fill="#374151">🇰🇷 한국어</text>
+  <text x="1200" y="17" font-size="8" fill="#9ca3af">▾</text>
+  <rect x="1214" y="5" width="112" height="18" rx="4" fill="#f8fafc" stroke="#e2e8f0" stroke-width="1"/>
+  <circle cx="1226" cy="14" r="5" fill="url(#logoGrad)"/>
+  <text x="1236" y="17" font-size="10" fill="#374151"> 선생님 (Mock)</text>
+  <text x="1320" y="17" font-size="8" fill="#9ca3af">▾</text>
+
+  <!-- ══ 네비게이션 바 (y=28, h=32) ══ -->
+  <rect x="0" y="28" width="1440" height="32" fill="white" fill-opacity="0.92"/>
+  <line x1="0" y1="60" x2="1440" y2="60" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="18" y="49" font-size="12" fill="#6b7280">← 뒤로가기</text>
+  <text x="720" y="49" font-size="14" font-weight="700" fill="#1e293b" text-anchor="middle">박민준의 필기 리플레이</text>
+  <text x="1422" y="49" font-size="12" fill="#6b7280" text-anchor="end">1 / 5</text>
+
+  <!--
+    콘텐츠: x=208, width=1024
+    col_w = (1024-32)/3 = 330px
+    col0=208, col1=554, col2=900
+  -->
+
+  <!-- ══ Section 1: 요약 카드 3개 (y=72, h=60) ══ -->
+
+  <!-- 활동 시간 -->
+  <rect x="208" y="72" width="330" height="60" rx="16" fill="white" fill-opacity="0.80" filter="url(#cardShadow)"/>
+  <rect x="208" y="72" width="330" height="60" rx="16" fill="none" stroke="white" stroke-opacity="0.65" stroke-width="1"/>
+  <text x="226" y="91"  font-size="11" fill="#94a3b8">활동 시간</text>
+  <text x="226" y="118" font-size="24" font-weight="700" fill="#3b82f6">15분</text>
+
+  <!-- 참여 페이지 -->
+  <rect x="554" y="72" width="330" height="60" rx="16" fill="white" fill-opacity="0.80" filter="url(#cardShadow)"/>
+  <rect x="554" y="72" width="330" height="60" rx="16" fill="none" stroke="white" stroke-opacity="0.65" stroke-width="1"/>
+  <text x="572" y="91"  font-size="11" fill="#94a3b8">참여 페이지</text>
+  <text x="572" y="118" font-size="24" font-weight="700" fill="#8b5cf6">3 / 5</text>
+
+  <!-- 받은 첨삭 수 -->
+  <rect x="900" y="72" width="330" height="60" rx="16" fill="white" fill-opacity="0.80" filter="url(#cardShadow)"/>
+  <rect x="900" y="72" width="330" height="60" rx="16" fill="none" stroke="white" stroke-opacity="0.65" stroke-width="1"/>
+  <text x="918" y="91"  font-size="11" fill="#94a3b8">받은 첨삭 수</text>
+  <text x="918" y="118" font-size="24" font-weight="700" fill="#10b981">2회</text>
+
+  <!-- ══ Section 2: 필기 재생 플레이어 카드 (y=146, h=324) ══ -->
+  <!-- 카드 배경 -->
+  <rect x="208" y="146" width="1024" height="324" rx="24" fill="white" fill-opacity="0.82" filter="url(#cardShadow)"/>
+  <rect x="208" y="146" width="1024" height="324" rx="24" fill="none" stroke="white" stroke-opacity="0.65" stroke-width="1"/>
+
+  <!-- 좌측 캔버스 영역 (x=208~992, width=784) -->
+  <!-- 세로 구분선 -->
+  <line x1="992" y1="146" x2="992" y2="434" stroke="#f1f5f9" stroke-width="1"/>
+
+  <!-- 캔버스: 가로 3분할로 배치 (각 col_w≈240) -->
+  <!-- Canvas 1 (leftmost) -->
+  <rect x="232" y="162" width="192" height="248" rx="8" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+  <!-- Canvas 2 (middle) -->
+  <rect x="440" y="162" width="192" height="248" rx="8" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+  <!-- Canvas 3 (rightmost) — 넓은 영역 활용 -->
+  <rect x="648" y="162" width="192" height="248" rx="8" fill="white" stroke="#e5e7eb" stroke-width="1"/>
+
+  <!-- 페이지 이동 nav (y=418) -->
+  <rect x="480" y="418" width="70" height="22" rx="6" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="515" y="432" font-size="11" fill="#6b7280" text-anchor="middle">← 이전</text>
+  <text x="572" y="432" font-size="11" fill="#6b7280" text-anchor="middle">1 / 5</text>
+  <rect x="598" y="418" width="70" height="22" rx="6" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="633" y="432" font-size="11" fill="#6b7280" text-anchor="middle">다음 →</text>
+
+  <!-- 우측 컨트롤 패널 (x=1002, width=220) 수직 중앙 -->
+  <!-- ▶ 실시간기록 버튼 -->
+  <rect x="1002" y="208" width="210" height="36" rx="12" fill="url(#playBtnGrad)"/>
+  <text x="1107" y="230" font-size="13" font-weight="600" fill="white" text-anchor="middle">▶ 실시간기록</text>
+
+  <!-- ○ 처음으로 버튼 -->
+  <rect x="1002" y="252" width="210" height="32" rx="12" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1107" y="271" font-size="12" fill="#374151" text-anchor="middle">○ 처음으로</text>
+
+  <!-- 재생 속도 -->
+  <text x="1002" y="302" font-size="11" fill="#9ca3af">재생 속도</text>
+  <!-- 0.5x -->
+  <rect x="1002" y="310" width="56" height="24" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1030" y="325" font-size="11" fill="#64748b" text-anchor="middle">0.5x</text>
+  <!-- 1x (선택됨 — 파란 배경) -->
+  <rect x="1066" y="310" width="56" height="24" rx="8" fill="#2563eb"/>
+  <text x="1094" y="325" font-size="11" fill="white" text-anchor="middle" font-weight="600">1x</text>
+  <!-- 2x -->
+  <rect x="1130" y="310" width="56" height="24" rx="8" fill="white" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1158" y="325" font-size="11" fill="#64748b" text-anchor="middle">2x</text>
+
+  <!-- 타임라인 -->
+  <text x="1002" y="352" font-size="11" fill="#9ca3af">타임라인</text>
+  <!-- 진행바 배경 -->
+  <rect x="1002" y="358" width="210" height="6" rx="3" fill="#e5e7eb"/>
+  <!-- 진행바 (0%에 가까운 상태) -->
+  <rect x="1002" y="358" width="4" height="6" rx="3" fill="url(#progressGrad)"/>
+  <!-- 진행 핸들 -->
+  <circle cx="1006" cy="361" r="6" fill="white" stroke="#3b82f6" stroke-width="2"/>
+  <!-- 시간 레이블 -->
+  <text x="1002" y="378" font-size="10" fill="#9ca3af">00:00</text>
+  <text x="1212" y="378" font-size="10" fill="#9ca3af" text-anchor="end">01:15</text>
+
+  <!-- 하단 통계 바 (y=434, h=36) — bg gray-50, border-top -->
+  <rect x="208" y="434" width="1024" height="36" rx="0" fill="#f8fafc"/>
+  <rect x="208" y="434" width="1024" height="36" rx="0" fill="none"/>
+  <!-- 둥근 하단 처리 -->
+  <path d="M208,434 L208,470 Q208,470 232,470 L1208,470 Q1232,470 1232,470 L1232,434 Z" fill="#f8fafc"/>
+  <line x1="208" y1="434" x2="1232" y2="434" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="226" y="455" font-size="12" fill="#374151" font-weight="500">박민준</text>
+  <text x="296" y="455" font-size="12" fill="#d1d5db">·</text>
+  <text x="308" y="455" font-size="12" fill="#64748b">참여 <tspan font-weight="700" fill="#374151">3</tspan> / 5 페이지</text>
+  <text x="436" y="455" font-size="12" fill="#d1d5db">·</text>
+  <text x="448" y="455" font-size="12" fill="#64748b">현재 <tspan font-weight="700" fill="#374151">1P</tspan> / 5P</text>
+  <text x="554" y="455" font-size="12" fill="#d1d5db">·</text>
+  <text x="566" y="455" font-size="12" fill="#9ca3af">00:00 / 01:15</text>
+  <text x="672" y="455" font-size="12" fill="#d1d5db">·</text>
+  <text x="684" y="455" font-size="12" fill="#64748b">스트로크 <tspan font-weight="700" fill="#374151">24</tspan>개</text>
+
+  <!-- ══ Section 3: 피드백 다시보기 (y=482, h=88) ══ -->
+  <rect x="208" y="482" width="1024" height="88" rx="24" fill="white" fill-opacity="0.82" filter="url(#cardShadow)"/>
+  <rect x="208" y="482" width="1024" height="88" rx="24" fill="none" stroke="white" stroke-opacity="0.65" stroke-width="1"/>
+  <text x="228" y="507" font-size="14" font-weight="700" fill="#1e293b">피드백 다시보기</text>
+  <text x="228" y="524" font-size="12" fill="#64748b">2페이지에 첨삭이 있어요</text>
+  <!-- [2P] 버튼 -->
+  <rect x="228" y="534" width="40" height="26" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="248" y="550" font-size="12" fill="#2563eb" font-weight="600" text-anchor="middle">2P</text>
+  <!-- [4P] 버튼 -->
+  <rect x="276" y="534" width="40" height="26" rx="10" fill="#eff6ff" stroke="#bfdbfe" stroke-width="1"/>
+  <text x="296" y="550" font-size="12" fill="#2563eb" font-weight="600" text-anchor="middle">4P</text>
+
+  <!-- ══ Section 4: 페이지 참여 요약 (y=582, h=280) ══ -->
+  <rect x="208" y="582" width="1024" height="282" rx="24" fill="white" fill-opacity="0.82" filter="url(#cardShadow)"/>
+  <rect x="208" y="582" width="1024" height="282" rx="24" fill="none" stroke="white" stroke-opacity="0.65" stroke-width="1"/>
+
+  <!-- 섹션 타이틀 -->
+  <text x="228" y="608" font-size="14" font-weight="700" fill="#1e293b">페이지 참여 요약</text>
+  <line x1="208" y1="618" x2="1232" y2="618" stroke="#f1f5f9" stroke-width="1"/>
+
+  <!-- 테이블 헤더 (bg gray-50) -->
+  <rect x="208" y="618" width="1024" height="30" fill="#f9fafb"/>
+  <line x1="208" y1="648" x2="1232" y2="648" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="228" y="637" font-size="12" font-weight="600" fill="#475569">페이지</text>
+  <text x="600" y="637" font-size="12" font-weight="600" fill="#475569">필기 시간</text>
+  <text x="950" y="637" font-size="12" font-weight="600" fill="#475569">첨삭</text>
+
+  <!-- Row 1: 1P ● 현재 (bg blue-50/60, current page) -->
+  <rect x="208" y="648" width="1024" height="38" fill="#eff6ff" fill-opacity="0.60"/>
+  <line x1="208" y1="686" x2="1232" y2="686" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="228" y="671" font-size="12" font-weight="500" fill="#1e293b">1P</text>
+  <circle cx="257" cy="668" r="4" fill="#3b82f6"/>
+  <text x="265" y="671" font-size="11" fill="#3b82f6"> 현재</text>
+  <text x="600" y="671" font-size="12" fill="#64748b">8분</text>
+  <text x="950" y="671" font-size="12" fill="#d1d5db">—</text>
+
+  <!-- Row 2: 2P ✓ (첨삭 있음) -->
+  <line x1="208" y1="724" x2="1232" y2="724" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="228" y="709" font-size="12" font-weight="500" fill="#1e293b">2P</text>
+  <text x="600" y="709" font-size="12" fill="#64748b">12분</text>
+  <text x="950" y="709" font-size="13" font-weight="700" fill="#2563eb">✓</text>
+
+  <!-- Row 3: 3P -->
+  <line x1="208" y1="762" x2="1232" y2="762" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="228" y="747" font-size="12" font-weight="500" fill="#1e293b">3P</text>
+  <text x="600" y="747" font-size="12" fill="#64748b">15분</text>
+  <text x="950" y="747" font-size="12" fill="#d1d5db">—</text>
+
+  <!-- Row 4: 4P ✓ (첨삭 있음) -->
+  <line x1="208" y1="800" x2="1232" y2="800" stroke="#f1f5f9" stroke-width="1"/>
+  <text x="228" y="785" font-size="12" font-weight="500" fill="#1e293b">4P</text>
+  <text x="600" y="785" font-size="12" fill="#64748b">7분</text>
+  <text x="950" y="785" font-size="13" font-weight="700" fill="#2563eb">✓</text>
+
+  <!-- Row 5: 5P -->
+  <text x="228" y="823" font-size="12" font-weight="500" fill="#1e293b">5P</text>
+  <text x="600" y="823" font-size="12" fill="#64748b">3분</text>
+  <text x="950" y="823" font-size="12" fill="#d1d5db">—</text>
+
+  <!-- ══ 하단 푸터 (y=870, h=30) ══ -->
+  <rect x="0" y="870" width="1440" height="30" fill="white" fill-opacity="0.90"/>
+  <line x1="0" y1="870" x2="1440" y2="870" stroke="#e5e7eb" stroke-width="1"/>
+  <text x="18" y="888" font-size="11" fill="#9ca3af">NeoCAST v1.2.11</text>
+  <text x="1422" y="888" font-size="11" fill="#9ca3af" text-anchor="end">Real-time collaborative drawing</text>
+</svg>

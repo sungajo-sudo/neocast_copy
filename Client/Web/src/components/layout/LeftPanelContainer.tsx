@@ -52,7 +52,7 @@ export const LeftPanelContainer: React.FC = () => {
   return (
     <aside
       ref={containerRef}
-      className="relative border-r border-white/50 bg-white/40 backdrop-blur-md flex-shrink-0 transition-colors duration-300 ease-in-out h-full"
+      className="relative border-r border-[#fff1e6] bg-white flex-shrink-0 h-full"
       style={{
         width: `${leftPanelWidth}px`,
       }}

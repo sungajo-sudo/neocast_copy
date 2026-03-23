@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { SessionLobby } from '../components/session';
 import { useSessionStore } from '../stores/session-store';
-import watercolorBg from '../assets/images/watercolor-bg.png';
-
 export function LobbyPage() {
   const { t } = useTranslation();
   const session = useSessionStore((state) => state.session);
@@ -19,17 +17,10 @@ export function LobbyPage() {
 
   return (
     <div className="h-full relative overflow-hidden font-sans flex flex-col">
-      {/* Background with texture overlay */}
-      <div
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60"
-        style={{ backgroundImage: `url(${watercolorBg})` }}
-      />
-      <div className="absolute inset-0 z-0 bg-white/40 pointer-events-none" />
-
       {/* Main Content Container */}
       <div className="relative z-10 flex-1 flex flex-col items-center justify-center p-4 sm:p-8">
 
-        <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-5 lg:gap-8 lg:bg-white/60 lg:backdrop-blur-xl lg:rounded-3xl lg:shadow-2xl lg:p-8 lg:border lg:border-white/50">
+        <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-5 lg:gap-8 lg:bg-white lg:rounded-3xl lg:shadow-[var(--shadow-modern)] lg:p-8 lg:border lg:border-[#fff1e6]">
 
           {/* Left Side: Info / Intro */}
           <div className="hidden lg:flex lg:col-span-2 flex-col justify-center space-y-6 lg:border-r lg:border-gray-200/50 lg:pr-8">
@@ -43,7 +34,7 @@ export function LobbyPage() {
             </div>
 
             <div className="space-y-4">
-              <div className="bg-white/50 p-4 rounded-2xl border border-white/60">
+              <div className="bg-[#fafafa] p-4 rounded-2xl border border-[#fff1e6]">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
@@ -55,7 +46,7 @@ export function LobbyPage() {
                 </p>
               </div>
 
-              <div className="bg-white/50 p-4 rounded-2xl border border-white/60">
+              <div className="bg-[#fafafa] p-4 rounded-2xl border border-[#fff1e6]">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="w-8 h-8 rounded-full bg-purple-100 flex items-center justify-center text-purple-600">
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>

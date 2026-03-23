@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import watercolorBg from '../assets/images/watercolor-bg.png';
-
 // ─── 타입 ─────────────────────────────────────────────────────────────────────
 
 interface PageStat {
@@ -119,15 +117,8 @@ export function ReplayGuestPage() {
 
   return (
     <div className="min-h-screen relative">
-      {/* 수채화 배경 */}
-      <div
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60"
-        style={{ backgroundImage: `url(${watercolorBg})` }}
-      />
-      <div className="fixed inset-0 z-0 bg-white/40 pointer-events-none" />
-
       {/* ─── 헤더 ─── */}
-      <header className="sticky top-0 z-10 bg-white/70 backdrop-blur-md border-b border-white/50 h-14 flex items-center px-6 gap-4">
+      <header className="sticky top-0 z-10 bg-white border-b border-[#fff1e6] h-14 flex items-center px-6 gap-4">
         <button
           onClick={() => navigate(-1)}
           className="text-gray-600 hover:text-gray-900 text-sm transition-colors flex-shrink-0"
@@ -147,24 +138,24 @@ export function ReplayGuestPage() {
 
         {/* ══ 요약 카드 3개 ══ */}
         <div className="grid grid-cols-3 gap-4">
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow p-5 flex flex-col gap-1">
+          <div className="bg-white rounded-2xl border border-[#fff1e6] shadow-[var(--shadow-card)] p-5 flex flex-col gap-1">
             <span className="text-xs text-gray-500">활동 시간</span>
             <span className="text-2xl font-bold text-blue-600">{formatActivityTime(participant.activityTime)}</span>
           </div>
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow p-5 flex flex-col gap-1">
+          <div className="bg-white rounded-2xl border border-[#fff1e6] shadow-[var(--shadow-card)] p-5 flex flex-col gap-1">
             <span className="text-xs text-gray-500">참여 페이지</span>
             <span className="text-2xl font-bold text-purple-600">
               {participant.participatedPages} / {participant.totalPages}
             </span>
           </div>
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow p-5 flex flex-col gap-1">
+          <div className="bg-white rounded-2xl border border-[#fff1e6] shadow-[var(--shadow-card)] p-5 flex flex-col gap-1">
             <span className="text-xs text-gray-500">받은 첨삭 수</span>
             <span className="text-2xl font-bold text-emerald-600">{participant.feedbackCount}회</span>
           </div>
         </div>
 
         {/* ══ 필기 페이지 그리드 ══ */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl p-5 flex flex-col gap-4">
+        <div className="neo-card p-5 flex flex-col gap-4">
           <div className="flex items-center justify-between">
             <p className="text-sm font-semibold text-gray-600">필기 페이지</p>
             <div className="flex items-center gap-2">
@@ -224,7 +215,7 @@ export function ReplayGuestPage() {
 
         {/* ══ 피드백 다시보기 (첨삭 있을 때만) ══ */}
         {feedbackPages.length > 0 && (
-          <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl p-5 flex flex-col gap-3">
+          <div className="neo-card p-5 flex flex-col gap-3">
             <h2 className="font-bold text-gray-800 text-base">피드백 다시보기</h2>
             <p className="text-sm text-gray-500">{feedbackPages.length}페이지에 첨삭이 있어요</p>
             <div className="flex items-center gap-2 flex-wrap">
@@ -242,7 +233,7 @@ export function ReplayGuestPage() {
         )}
 
         {/* ══ 페이지 참여 요약 테이블 ══ */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl overflow-hidden">
+        <div className="neo-card overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
             <h2 className="font-bold text-gray-800 text-base">페이지 참여 요약</h2>
           </div>
@@ -293,7 +284,7 @@ export function ReplayGuestPage() {
           onClick={() => setModalOpen(false)}
         >
           <div
-            className="bg-white/95 backdrop-blur-xl rounded-3xl border border-white/60 shadow-2xl w-full max-w-md flex flex-col gap-0 overflow-hidden"
+            className="neo-card w-full max-w-md flex flex-col gap-0 overflow-hidden"
             onClick={e => e.stopPropagation()}
           >
             {/* 모달 헤더 */}

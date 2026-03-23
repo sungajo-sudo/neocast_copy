@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import watercolorBg from '../assets/images/watercolor-bg.png';
-
 // ─── 더미 데이터 ────────────────────────────────────────────────
 
 const TOTAL_PAGES = 5;
@@ -102,21 +100,15 @@ export function StudentReportDetail() {
 
   return (
     <div className="min-h-screen relative">
-      {/* 배경 — 호스트: 단색 연파랑 / 게스트: 수채화 */}
+      {/* 배경 — 호스트: brand tint / 게스트: 빈 배경 */}
       {isHost ? (
-        <div className="fixed inset-0 z-0 bg-[#dce9f8]" />
+        <div className="fixed inset-0 z-0 bg-[#f5f3ff]" />
       ) : (
-        <>
-          <div
-            className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60"
-            style={{ backgroundImage: `url(${watercolorBg})` }}
-          />
-          <div className="fixed inset-0 z-0 bg-white/40 pointer-events-none" />
-        </>
+        <div className="fixed inset-0 z-0 bg-[#fffcf9]" />
       )}
 
       {/* ─── 2-A. 상단 네비게이션 바 ─── */}
-      <header className="sticky top-0 z-10 bg-white/70 backdrop-blur-md border-b border-white/50 h-14 flex items-center px-6">
+      <header className="sticky top-0 z-10 bg-white border-b border-[#fff1e6] h-14 flex items-center px-6">
         <button
           onClick={() => navigate(`/archive/${archiveId}`)}
           className="text-gray-600 hover:text-gray-900 text-sm transition-colors flex-shrink-0"
@@ -135,7 +127,7 @@ export function StudentReportDetail() {
           <div className="flex gap-5 items-start">
 
             {/* ── 좌측 70%: 페이지 그리드 ── */}
-            <div className="flex-[7] bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl p-5">
+            <div className="flex-[7] neo-card p-5">
               <p className="text-sm font-semibold text-gray-600 mb-4">전체 페이지</p>
               <div className="grid grid-cols-3 gap-3">
                 {HOST_PAGE_STATS.map(pg => (
@@ -175,7 +167,7 @@ export function StudentReportDetail() {
             </div>
 
             {/* ── 우측 30%: 선택된 페이지 상세 패널 ── */}
-            <div className="flex-[3] bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl p-5 flex flex-col gap-4 sticky top-20">
+            <div className="flex-[3] neo-card p-5 sticky top-20 flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <p className="text-sm font-semibold text-gray-700">{currentPage}P 상세</p>
                 {HOST_PAGE_STATS.find(p => p.page === currentPage)?.hasFeedback && (
@@ -257,7 +249,7 @@ export function StudentReportDetail() {
           ].map(card => (
             <div
               key={card.label}
-              className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow p-5 flex flex-col gap-1"
+              className="bg-white rounded-2xl border border-[#fff1e6] shadow-[var(--shadow-card)] p-5 flex flex-col gap-1"
             >
               <span className="text-xs text-gray-500">{card.label}</span>
               <span className={`text-2xl font-bold ${card.color}`}>{card.value}</span>
@@ -266,7 +258,7 @@ export function StudentReportDetail() {
         </div>
 
         {/* ─── 필기 재생 플레이어 ─── */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl overflow-hidden">
+        <div className="neo-card overflow-hidden">
           <div className="flex gap-0">
             {/* ─── 캔버스 영역 ─── */}
             <div className="flex-1 flex flex-col items-center p-5 gap-4 border-r border-gray-100">
@@ -289,7 +281,7 @@ export function StudentReportDetail() {
             {/* ─── 우측 컨트롤 패널 ─── */}
             <div className="w-60 flex-shrink-0 flex flex-col gap-5 p-6 justify-center">
               <div className="flex flex-col gap-2">
-                <button onClick={() => setIsPlaying(v => !v)} className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium text-sm hover:opacity-90 active:scale-95 transition-all shadow-md">
+                <button onClick={() => setIsPlaying(v => !v)} className="w-full neo-btn-primary text-sm py-3">
                   {isPlaying ? '⏸ 일시정지' : '▶ 실시간기록'}
                 </button>
                 <button onClick={handleReset} className="w-full py-2.5 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm hover:bg-gray-50 active:scale-95 transition-all">○ 처음으로</button>
@@ -335,7 +327,7 @@ export function StudentReportDetail() {
         </div>
 
         {/* ─── 피드백 다시보기 ─── */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl p-6 flex flex-col gap-4">
+        <div className="neo-card p-6 flex flex-col gap-4">
           <h2 className="font-bold text-gray-800 text-base">피드백 다시보기</h2>
           <p className="text-sm text-gray-500">
             {DUMMY_FEEDBACKS.length}페이지에 첨삭이 있어요
@@ -354,7 +346,7 @@ export function StudentReportDetail() {
         </div>
 
         {/* ─── 페이지 참여 요약 표 ─── */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white/60 shadow-xl overflow-hidden">
+        <div className="neo-card overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100">
             <h2 className="font-bold text-gray-800 text-base">페이지 참여 요약</h2>
           </div>

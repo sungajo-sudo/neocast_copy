@@ -1,7 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
-import watercolorBg from '../assets/images/watercolor-bg.png';
-
 interface StrokePoint {
   x: number;
   y: number;
@@ -205,15 +203,8 @@ export function ReplayPage() {
 
   return (
     <div className="min-h-screen relative">
-      {/* 배경 */}
-      <div
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat opacity-60"
-        style={{ backgroundImage: `url(${watercolorBg})` }}
-      />
-      <div className="fixed inset-0 z-0 bg-white/40 pointer-events-none" />
-
       {/* 헤더 */}
-      <header className="sticky top-0 z-10 bg-white/70 backdrop-blur-md border-b border-white/50 h-14 flex items-center px-6 gap-4">
+      <header className="sticky top-0 z-10 bg-white border-b border-[#fff1e6] h-14 flex items-center px-6 gap-4">
         <button
           onClick={() => navigate(`/archive/${archiveId}`)}
           className="text-gray-600 hover:text-gray-900 flex items-center gap-1 text-sm transition-colors flex-shrink-0"
@@ -230,7 +221,7 @@ export function ReplayPage() {
           <button
             onClick={() => goToPage(currentPage - 1)}
             disabled={currentPage <= 1}
-            className="w-7 h-7 rounded-full bg-white/80 border border-white/60 shadow text-gray-600 hover:bg-white disabled:opacity-30 transition-all text-sm"
+            className="w-7 h-7 rounded-full bg-white border border-[#fff1e6] shadow-[var(--shadow-card)] text-gray-600 hover:bg-white disabled:opacity-30 transition-all text-sm"
           >
             ←
           </button>
@@ -240,7 +231,7 @@ export function ReplayPage() {
           <button
             onClick={() => goToPage(currentPage + 1)}
             disabled={currentPage >= totalPages}
-            className="w-7 h-7 rounded-full bg-white/80 border border-white/60 shadow text-gray-600 hover:bg-white disabled:opacity-30 transition-all text-sm"
+            className="w-7 h-7 rounded-full bg-white border border-[#fff1e6] shadow-[var(--shadow-card)] text-gray-600 hover:bg-white disabled:opacity-30 transition-all text-sm"
           >
             →
           </button>
@@ -250,7 +241,7 @@ export function ReplayPage() {
       {/* 본문 */}
       <div className="relative z-10 flex flex-col items-center gap-5 px-4 py-6">
         {/* A4 캔버스 */}
-        <div className="bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow-xl overflow-hidden">
+        <div className="neo-card overflow-hidden">
           <canvas
             ref={canvasRef}
             width={700}
@@ -261,12 +252,12 @@ export function ReplayPage() {
         </div>
 
         {/* 컨트롤 패널 */}
-        <div className="w-full max-w-sm sm:max-w-md bg-white/80 backdrop-blur-xl rounded-2xl border border-white/60 shadow-xl p-5 flex flex-col gap-4">
+        <div className="w-full max-w-sm sm:max-w-md neo-card p-5 flex flex-col gap-4">
           {/* 재생 버튼 그룹 */}
           <div className="flex items-center justify-center gap-3">
             <button
               onClick={() => setIsPlaying(v => !v)}
-              className="px-5 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-medium text-sm hover:opacity-90 active:scale-95 transition-all shadow-md min-w-[80px]"
+              className="neo-btn-primary text-sm min-w-[80px]"
             >
               {isPlaying ? '⏸ 일시정지' : '▶ 재생'}
             </button>

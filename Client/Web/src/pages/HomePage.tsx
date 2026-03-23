@@ -17,6 +17,27 @@ interface ArchiveItem {
   pages: number;
 }
 
+const DUMMY_ENDED_SESSIONS: EndedSession[] = [
+  {
+    sessionId: 'test-001',
+    title: '수학 월요일 오전반',
+    participantCount: 5,
+    endedAt: '2026-03-23T10:30:00',
+  },
+  {
+    sessionId: 'test-002',
+    title: '영어 화요일 저녁반',
+    participantCount: 8,
+    endedAt: '2026-03-22T18:00:00',
+  },
+  {
+    sessionId: 'test-003',
+    title: '국어 수요일 오후반',
+    participantCount: 12,
+    endedAt: '2026-03-21T14:00:00',
+  },
+];
+
 const DUMMY_ARCHIVES: ArchiveItem[] = [
   {
     archiveId: 'archive_001',
@@ -34,10 +55,10 @@ const DUMMY_ARCHIVES: ArchiveItem[] = [
   },
   {
     archiveId: 'archive_003',
-    sessionName: '영어 회화 중급반',
-    participantCount: 15,
-    endedAt: '2026-03-05T17:00:00',
-    pages: 4,
+    sessionName: '이차방정식 문제풀이',
+    participantCount: 6,
+    endedAt: '2026-03-21T16:30:00',
+    pages: 3,
   },
 ];
 
@@ -64,11 +85,13 @@ export function HomePage() {
       if (auth.nickname) setNickname(auth.nickname);
     } catch {}
 
-    // 종료된 세션 로드
+    // 종료된 세션 로드 (없으면 더미 데이터 사용)
     try {
       const saved = localStorage.getItem('nc_ended_sessions');
       if (saved) {
         setEndedSessions(JSON.parse(saved));
+      } else {
+        setEndedSessions(DUMMY_ENDED_SESSIONS);
       }
     } catch {}
 
