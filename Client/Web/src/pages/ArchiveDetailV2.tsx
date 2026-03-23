@@ -1,8 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { HandwritingThumbnail } from '../components/HandwritingThumbnail';
 import { VOICE_EVENTS } from '../data/voiceScenario';
 import type { VoiceEvent } from '../data/voiceScenario';
+import { getParticipationLevel } from '../types/archive';
+import type { ParticipationLevel } from '../types/archive';
+import { getAnalysisCache, setAnalysisCache, clearAnalysisCache } from '../utils/analysisCache';
 
 interface ArchiveItem {
   archiveId: string;
@@ -35,7 +38,6 @@ interface WorksheetInfo {
   sobp: string;
 }
 
-// AI 분석 결과 타입
 interface SessionAnalysis {
   summary: string;
   keyConcepts: string[];
@@ -50,7 +52,6 @@ interface StudentAnalysis {
   studyRecommendation: string;
 }
 
-// 워크시트 정보
 const WORKSHEET: WorksheetInfo = {
   filename: '중3_이차방정식_단원평가.pdf',
   pages: 3,
@@ -58,7 +59,6 @@ const WORKSHEET: WorksheetInfo = {
   sobp: '3.27.168.1',
 };
 
-// 더미 학생 데이터 (5명)
 const STUDENTS: Student[] = [
   { userId: 'guest_001', nickname: '박민준' },
   { userId: 'guest_002', nickname: '이서연' },
@@ -67,7 +67,6 @@ const STUDENTS: Student[] = [
   { userId: 'guest_005', nickname: '강지우' },
 ];
 
-// 페이지별 더미 데이터
 const PAGES_DATA: PageData[] = [
   {
     pageNum: 1,
@@ -104,7 +103,6 @@ const PAGES_DATA: PageData[] = [
   },
 ];
 
-// 더미 AI 분석 결과 — 세션 전체
 const DUMMY_SESSION_ANALYSIS: SessionAnalysis = {
   summary: '인수분해, 완전제곱식, 근의 공식 세 가지 풀이법을 순서대로 다룬 수업입니다. 판별식 개념(2페이지)과 허근(5페이지) 구간에서 학생 질문이 집중되었으며, 7페이지에서는 풀이법 간 관계에 대한 심화 질문이 있었습니다. 필기 데이터 기준 전체 평균 참여율은 68%이며, 후반부로 갈수록 필기 밀도가 높아졌습니다.',
   keyConcepts: ['판별식', '중근', '인수분해', '근의 공식', '완전제곱식', '허근'],
@@ -112,7 +110,6 @@ const DUMMY_SESSION_ANALYSIS: SessionAnalysis = {
   nextClassRecommendation: '판별식의 부호에 따라 포물선과 x축의 위치 관계가 어떻게 달라지는지 그래프로 비교하는 활동을 권장합니다. 부호 실수가 있는 학생에게는 근의 공식 대입 시 괄호 표기를 강조하는 연습 문제를 사전 배포하세요.',
 };
 
-// 더미 AI 분석 결과 — 학생별
 const DUMMY_STUDENT_ANALYSES: Record<string, StudentAnalysis> = {
   guest_001: {
     currentStatus: '3개 페이지 전체에 고른 필기 활동을 보였으며, 평균 참여율 79%로 양호합니다. 풀이 방향은 정확하나 중간 계산 과정에서 부호 처리 실수가 간헐적으로 발생합니다.',
@@ -148,7 +145,7 @@ const DUMMY_STUDENT_ANALYSES: Record<string, StudentAnalysis> = {
 
 function formatDate(iso: string) {
   const d = new Date(iso);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return `${d.getFullYear()}.${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
 function getRate(strokeCount: number, maxStroke: number): number {
@@ -156,49 +153,90 @@ function getRate(strokeCount: number, maxStroke: number): number {
   return Math.round((strokeCount / maxStroke) * 100);
 }
 
-function getRateColor(rate: number): string {
-  if (rate < 40) return 'text-red-500';
-  if (rate < 70) return 'text-amber-500';
-  return 'text-emerald-600';
+// Modern Soft: getParticipationLevel 기반 스타일링
+function getRateBarWidth(rate: number): string {
+  return `${rate}%`;
 }
 
-function getRateBarColor(rate: number): string {
-  if (rate < 40) return 'bg-red-400';
-  if (rate < 70) return 'bg-amber-400';
-  return 'bg-emerald-500';
+function getLevelBarColor(level: ParticipationLevel): string {
+  switch (level) {
+    case 'none': return 'bg-gray-200';
+    case 'low': return 'bg-brand-primary/30';
+    case 'mid': return 'bg-brand-primary/60';
+    case 'high': return 'bg-brand-primary';
+  }
+}
+
+function getRateBarColor(rate: number, hasWriting: boolean): string {
+  return getLevelBarColor(getParticipationLevel(rate, hasWriting));
 }
 
 type ViewTab = 'page' | 'student' | 'ai';
+type VoiceFilter = 'all' | 'questions' | 'feedback';
 
-// Q&A 타임라인 이벤트 타입 라벨
 function getEventTypeLabel(e: VoiceEvent): { label: string; color: string } {
-  if (e.type === 'explanation') return { label: '설명', color: 'bg-blue-100 text-blue-700' };
-  if (e.type === 'question') return { label: '질문', color: 'bg-amber-100 text-amber-700' };
-  if (e.type === 'answer') return { label: '답변', color: 'bg-emerald-100 text-emerald-700' };
-  if (e.type === 'feedback') return { label: '첨삭', color: 'bg-rose-100 text-rose-700' };
+  if (e.type === 'explanation') return { label: '설명', color: 'bg-gray-100 text-gray-600' };
+  if (e.type === 'question') return { label: '질문', color: 'bg-brand-tint text-brand-primary' };
+  if (e.type === 'answer') return { label: '답변', color: 'bg-gray-100 text-gray-700' };
+  if (e.type === 'feedback') return { label: '첨삭', color: 'bg-brand-tint text-brand-primary' };
   return { label: '', color: '' };
 }
 
 export function ArchiveDetailV2({ archive }: { archive: ArchiveItem }) {
   const navigate = useNavigate();
   const [viewTab, setViewTab] = useState<ViewTab>('page');
-  const [openPages, setOpenPages] = useState<Set<number>>(new Set([1]));
 
-  // AI 분석 상태
   const [sessionAnalysis, setSessionAnalysis] = useState<SessionAnalysis | null>(null);
   const [sessionAnalyzing, setSessionAnalyzing] = useState(false);
   const [expandedStudents, setExpandedStudents] = useState<Set<string>>(new Set());
   const [studentAnalyses, setStudentAnalyses] = useState<Record<string, StudentAnalysis>>({});
   const [studentAnalyzing, setStudentAnalyzing] = useState<Set<string>>(new Set());
 
-  const togglePage = (pageNum: number) => {
-    setOpenPages(prev => {
-      const next = new Set(prev);
-      if (next.has(pageNum)) next.delete(pageNum);
-      else next.add(pageNum);
-      return next;
+  // 필기 리플레이 모달
+  const [writingModal, setWritingModal] = useState<{ open: boolean; studentIdx: number; pageIdx: number }>({ open: false, studentIdx: 0, pageIdx: 0 });
+  const [replayState, setReplayState] = useState<{ playing: boolean; progress: number }>({ playing: false, progress: 0 });
+  const replayTimerRef = useRef<number | null>(null);
+  const modalCanvasRef = useRef<HTMLCanvasElement>(null);
+
+  // Q&A 타임라인 필터
+  const [voiceFilter, setVoiceFilter] = useState<VoiceFilter>('all');
+  const [studentFilter, setStudentFilter] = useState<string>('all');
+  const timelineRef = useRef<HTMLDivElement>(null);
+
+  const filteredEvents = useMemo(() => {
+    return VOICE_EVENTS.filter(event => {
+      const voiceMatch =
+        voiceFilter === 'all' ||
+        (voiceFilter === 'questions' && event.type === 'question') ||
+        (voiceFilter === 'feedback' && event.type === 'feedback');
+      const studentMatch =
+        studentFilter === 'all' ||
+        event.studentId === studentFilter ||
+        event.speaker === 'host';
+      return voiceMatch && studentMatch;
     });
-  };
+  }, [voiceFilter, studentFilter]);
+
+  // 캐시에서 이전 분석 결과 복원
+  useEffect(() => {
+    const cache = getAnalysisCache(archive.archiveId);
+    if (cache?.sessionResult) {
+      try {
+        setSessionAnalysis(JSON.parse(cache.sessionResult));
+      } catch { /* 파싱 실패 시 무시 */ }
+    }
+    if (cache?.studentResults) {
+      const restored: Record<string, StudentAnalysis> = {};
+      for (const [userId, json] of Object.entries(cache.studentResults)) {
+        try { restored[userId] = JSON.parse(json); } catch { /* skip */ }
+      }
+      if (Object.keys(restored).length > 0) {
+        setStudentAnalyses(restored);
+      }
+    }
+  }, [archive.archiveId]);
+
+
 
   const toggleStudentExpand = (userId: string) => {
     setExpandedStudents(prev => {
@@ -209,20 +247,38 @@ export function ArchiveDetailV2({ archive }: { archive: ArchiveItem }) {
     });
   };
 
-  // 세션 AI 분석 시작 (더미 — 실제로는 Claude API 호출)
   const startSessionAnalysis = () => {
+    if (sessionAnalyzing) return; // 중복 클릭 방어
     setSessionAnalyzing(true);
     setTimeout(() => {
       setSessionAnalysis(DUMMY_SESSION_ANALYSIS);
       setSessionAnalyzing(false);
+      setAnalysisCache(archive.archiveId, {
+        sessionResult: JSON.stringify(DUMMY_SESSION_ANALYSIS),
+      });
     }, 2000);
   };
 
-  // 학생 AI 분석 시작 (더미)
+  const resetSessionAnalysis = () => {
+    clearAnalysisCache(archive.archiveId);
+    setSessionAnalysis(null);
+    setStudentAnalyses({});
+  };
+
   const startStudentAnalysis = (userId: string) => {
+    if (studentAnalyzing.has(userId)) return; // 중복 클릭 방어
     setStudentAnalyzing(prev => new Set(prev).add(userId));
     setTimeout(() => {
-      setStudentAnalyses(prev => ({ ...prev, [userId]: DUMMY_STUDENT_ANALYSES[userId] }));
+      const result = DUMMY_STUDENT_ANALYSES[userId];
+      setStudentAnalyses(prev => {
+        const updated = { ...prev, [userId]: result };
+        // 학생 분석 결과도 캐시에 저장
+        const cache = getAnalysisCache(archive.archiveId);
+        const studentResults = cache?.studentResults ?? {};
+        studentResults[userId] = JSON.stringify(result);
+        setAnalysisCache(archive.archiveId, { studentResults });
+        return updated;
+      });
       setStudentAnalyzing(prev => {
         const next = new Set(prev);
         next.delete(userId);
@@ -230,6 +286,177 @@ export function ArchiveDetailV2({ archive }: { archive: ArchiveItem }) {
       });
     }, 1500);
   };
+
+  // ── 필기 모달 ──
+  const openWritingModal = (studentIdx: number, pageIdx: number) => {
+    stopReplay();
+    setWritingModal({ open: true, studentIdx, pageIdx });
+  };
+
+  const closeWritingModal = () => {
+    stopReplay();
+    setWritingModal(prev => ({ ...prev, open: false }));
+  };
+
+  const modalNavPage = (dir: number) => {
+    stopReplay();
+    setWritingModal(prev => {
+      const newPi = prev.pageIdx + dir;
+      if (newPi < 0 || newPi >= PAGES_DATA.length) return prev;
+      return { ...prev, pageIdx: newPi };
+    });
+  };
+
+  const stopReplay = () => {
+    if (replayTimerRef.current) {
+      clearTimeout(replayTimerRef.current);
+      replayTimerRef.current = null;
+    }
+    setReplayState({ playing: false, progress: 0 });
+  };
+
+  const startReplay = () => {
+    const canvas = modalCanvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+
+    const { studentIdx, pageIdx } = writingModal;
+    const student = PAGES_DATA[pageIdx]?.students[studentIdx];
+    if (!student || student.strokeCount === 0) return;
+
+    // Get handwriting data
+    const hwIdx = studentIdx % 5;
+    const pgIdx = pageIdx % 3;
+    const hw = (window as any).__HANDWRITING_SETS?.[hwIdx]?.[pgIdx];
+    if (!hw || !hw.lines || hw.lines.length === 0) return;
+
+    // Flatten all chars
+    const allChars: string[] = [];
+    hw.lines.forEach((line: string) => {
+      for (const ch of line) allChars.push(ch);
+      allChars.push('\n');
+    });
+
+    setReplayState({ playing: true, progress: 0 });
+    let idx = 0;
+
+    const tick = () => {
+      if (idx >= allChars.length) {
+        setReplayState({ playing: false, progress: 100 });
+        return;
+      }
+
+      // Draw up to current char (simple reveal)
+      const progress = Math.round((idx / allChars.length) * 100);
+      setReplayState(prev => prev.playing ? { playing: true, progress } : prev);
+
+      // Redraw canvas with partial text
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Background
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#f1f5f9';
+      ctx.fillRect(0, 0, canvas.width, 110);
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(0, 110); ctx.lineTo(canvas.width, 110); ctx.stroke();
+
+      // Lines
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 0.5;
+      for (let y = 80; y < canvas.height; y += 36) {
+        ctx.beginPath(); ctx.moveTo(20, y); ctx.lineTo(canvas.width - 20, y); ctx.stroke();
+      }
+
+      // Partial handwriting
+      ctx.fillStyle = '#1a1a2e';
+      ctx.font = '20px "Noto Sans KR", sans-serif';
+      let lineNum = 0;
+      let charInLine = 0;
+      let drawn = 0;
+      for (let c = 0; c <= idx && c < allChars.length; c++) {
+        if (allChars[c] === '\n') {
+          lineNum++;
+          charInLine = 0;
+        } else {
+          const xJitter = ((studentIdx * 7 + lineNum * 3) % 5) - 2;
+          ctx.fillText(allChars[c], 30 + xJitter + charInLine * 12, 290 + lineNum * 42);
+          charInLine++;
+          drawn++;
+        }
+      }
+
+      idx += 2; // 2 chars at a time for speed
+      replayTimerRef.current = window.setTimeout(tick, 50);
+    };
+
+    tick();
+  };
+
+  const toggleReplay = () => {
+    if (replayState.playing) {
+      if (replayTimerRef.current) {
+        clearTimeout(replayTimerRef.current);
+        replayTimerRef.current = null;
+      }
+      setReplayState(prev => ({ ...prev, playing: false }));
+    } else {
+      if (replayState.progress >= 100) {
+        // Restart
+        stopReplay();
+        setTimeout(startReplay, 50);
+      } else {
+        startReplay();
+      }
+    }
+  };
+
+  // keyboard for modal
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if (!writingModal.open) return;
+      if (e.key === 'Escape') closeWritingModal();
+      if (e.key === 'ArrowLeft') modalNavPage(-1);
+      if (e.key === 'ArrowRight') modalNavPage(1);
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [writingModal.open]);
+
+  // Expose handwriting data for replay
+  useEffect(() => {
+    // Make HANDWRITING_SETS available for replay
+    (window as any).__HANDWRITING_SETS = [
+      [
+        { lines: ['x² - 5x + 6 = 0', '(x - 2)(x - 3) = 0', '∴ x = 2 또는 x = 3'] },
+        { lines: ['x = (-3 ± √(9+16)) / 4', 'x = (-3 ± 5) / 4', 'x = 1/2 또는 x = -2'] },
+        { lines: ['근과 계수의 관계:', '합: -(-7)/1 = 7', '곱: 12/1 = 12'] },
+      ],
+      [
+        { lines: ['x² - 5x + 6 = 0', '두 근의 합=5, 곱=6', '(x-2)(x-3) = 0', 'x = 2 또는 x = 3', '검산: 4-10+6=0 ✓'] },
+        { lines: ['2x² + 3x - 2 = 0', 'a=2, b=3, c=-2', 'D = 9+16 = 25', 'x = (-3±5)/4', 'x=1/2, x=-2'] },
+        { lines: ['합: 7, 곱: 12', '(x-3)(x-4) = 0', '검산: 3+4=7, 3×4=12 ✓'] },
+      ],
+      [
+        { lines: ['x² - 5x + 6 = 0', '합:5 곱:6 탐색...', '(x-2)(x-3)=0'] },
+        { lines: ['근의 공식 적용', 'x = (-3 ± √25) / 4', '...계산 중'] },
+        { lines: ['합 = 7', '곱 = 12'] },
+      ],
+      [
+        { lines: ['[풀이]', 'x² - 5x + 6 = 0', '→ (x-2)(x-3) = 0', '→ x = 2, x = 3', '[답] x = 2 또는 3'] },
+        { lines: ['[풀이]', '2x²+3x-2 = 0', 'D = b²-4ac = 25', 'x = (-3±5)/4', '[답] x=1/2, -2'] },
+        { lines: ['[풀이]', '비에타 공식 적용', '합: -b/a = 7', '곱: c/a = 12', '[답] 합=7, 곱=12'] },
+      ],
+      [
+        { lines: ['x² - 5x + 6 = 0', '...'] },
+        { lines: ['2x² + 3x - 2 = 0', '근의 공식...', 'x = (-3 ± ?) / 4'] },
+        { lines: [] },
+      ],
+    ];
+    return () => { delete (window as any).__HANDWRITING_SETS; };
+  }, []);
 
   const getStudentTotalRate = (userId: string) => {
     let totalStroke = 0;
@@ -244,359 +471,159 @@ export function ArchiveDetailV2({ archive }: { archive: ArchiveItem }) {
     return totalMax === 0 ? 0 : Math.round((totalStroke / totalMax) * 100);
   };
 
-  // 학생의 Q&A 이벤트 필터링
   const getStudentVoiceEvents = (nickname: string) => {
     return VOICE_EVENTS.filter(e => e.studentName === nickname || (e.type === 'feedback' && e.transcript.includes(nickname)));
   };
 
-  return (
-    <div className="min-h-screen bg-app-bg text-slate-800 font-noto overflow-x-hidden">
-      <div className="max-w-6xl mx-auto px-10 py-16 flex flex-col gap-10">
+  const avgRate = Math.round(STUDENTS.reduce((sum, s) => sum + getStudentTotalRate(s.userId), 0) / STUDENTS.length);
 
-        {/* 헤더 */}
-        <div className="flex flex-col gap-3">
+  return (
+    <div className="min-h-screen bg-app-bg">
+      <main className="max-w-5xl mx-auto px-6 pt-12 pb-32">
+
+        {/* ── 헤더 ── */}
+        <section className="mb-12">
           <button
             onClick={() => navigate('/home')}
-            className="flex items-center gap-1.5 text-slate-400 font-bold text-sm hover:text-brand-primary transition-colors w-fit group"
+            className="flex items-center text-gray-400 hover:text-brand-primary mb-6 group transition-colors"
           >
-            <svg className="w-4 h-4 transform group-hover:-translate-x-1 transition" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15 19l-7-7 7-7" />
+            <svg className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            뒤로가기
+            <span className="text-sm font-medium">목록으로 돌아가기</span>
           </button>
-          <h1 className="text-3xl font-black text-slate-900 tracking-tight">{archive.sessionName}</h1>
-          <span className="text-sm text-slate-400 font-medium">
-            {formatDate(archive.endedAt)} · {new Date(archive.endedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </span>
-        </div>
 
-        {/* 워크시트 정보 */}
-        <div className="neo-card p-5 flex items-center justify-between bg-white/60 backdrop-blur-lg">
-          <div className="flex items-center gap-3 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-brand-tint flex items-center justify-center flex-shrink-0">
-              <svg className="w-5 h-5 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-sm font-bold text-slate-800 truncate">{WORKSHEET.filename}</span>
-              <span className="text-xs text-slate-400">{WORKSHEET.pages}페이지 · {WORKSHEET.uploadedAt} · SOBP {WORKSHEET.sobp}</span>
-            </div>
-          </div>
-        </div>
-
-        {/* 요약 카드 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="neo-card p-6 flex flex-col gap-1 border-b-4 border-b-brand-primary/20">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">수업 시간</span>
-            <span className="text-3xl font-black text-brand-primary tracking-tighter">42분</span>
-          </div>
-          <div className="neo-card p-6 flex flex-col gap-1 border-b-4 border-b-brand-secondary/20">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">참여 학생</span>
-            <span className="text-3xl font-black text-brand-secondary tracking-tighter">{STUDENTS.length}명</span>
-          </div>
-          <div className="neo-card p-6 flex flex-col gap-1 border-b-4 border-b-amber-300/20">
-            <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest">평균 참여율</span>
-            <span className="text-3xl font-black text-amber-500 tracking-tighter">
-              {Math.round(STUDENTS.reduce((sum, s) => sum + getStudentTotalRate(s.userId), 0) / STUDENTS.length)}%
-            </span>
-          </div>
-        </div>
-
-        {/* 참여율 히트맵 */}
-        <section className="neo-card overflow-hidden">
-          <div className="px-6 py-4 border-b border-app-border">
-            <h2 className="text-base font-bold text-slate-800">참여율 히트맵</h2>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-slate-50/80">
-                  <th className="text-left px-6 py-3 font-bold text-slate-500 text-xs w-32">학생</th>
-                  {PAGES_DATA.map(p => (
-                    <th key={p.pageNum} className="text-center px-4 py-3 font-bold text-slate-500 text-xs">P{p.pageNum}</th>
-                  ))}
-                  <th className="text-center px-6 py-3 font-bold text-slate-700 text-xs">전체</th>
-                </tr>
-              </thead>
-              <tbody>
-                {STUDENTS.map(student => {
-                  const totalRate = getStudentTotalRate(student.userId);
-                  return (
-                    <tr key={student.userId} className="border-t border-slate-100 hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-3 font-bold text-slate-700">{student.nickname}</td>
-                      {PAGES_DATA.map(page => {
-                        const s = page.students.find(st => st.userId === student.userId);
-                        const rate = s ? getRate(s.strokeCount, s.maxStroke) : 0;
-                        return (
-                          <td key={page.pageNum} className="px-4 py-3">
-                            <div className="flex flex-col items-center gap-1">
-                              <div className="w-full max-w-[80px] h-2 bg-slate-100 rounded-full overflow-hidden">
-                                <div
-                                  className={`h-full rounded-full transition-all ${getRateBarColor(rate)}`}
-                                  style={{ width: `${rate}%` }}
-                                />
-                              </div>
-                              <span className={`text-xs font-bold ${getRateColor(rate)}`}>
-                                {rate === 0 ? '미필기' : `${rate}%`}
-                              </span>
-                            </div>
-                          </td>
-                        );
-                      })}
-                      <td className="px-6 py-3">
-                        <div className="flex flex-col items-center gap-1">
-                          <div className="w-full max-w-[80px] h-2.5 bg-slate-100 rounded-full overflow-hidden">
-                            <div
-                              className={`h-full rounded-full transition-all ${getRateBarColor(totalRate)}`}
-                              style={{ width: `${totalRate}%` }}
-                            />
-                          </div>
-                          <span className={`text-xs font-black ${getRateColor(totalRate)}`}>{totalRate}%</span>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+          <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-3">
+            {archive.sessionName}
+          </h1>
+          <div className="flex items-center gap-3 text-gray-400 text-sm">
+            <span className="font-medium">{formatDate(archive.endedAt)}</span>
+            <span className="w-1 h-1 rounded-full bg-gray-300" />
+            <span>{STUDENTS.length}명 참여</span>
+            <span className="w-1 h-1 rounded-full bg-gray-300" />
+            <span>42분</span>
           </div>
         </section>
 
-        {/* 뷰 탭 */}
-        <div className="flex gap-1 p-1 bg-white border border-app-border rounded-2xl w-fit">
-          {[
-            { key: 'page' as const, label: '페이지별 보기' },
-            { key: 'student' as const, label: '학생별 보기' },
-            { key: 'ai' as const, label: 'AI 분석' },
-          ].map(tab => (
-            <button
-              key={tab.key}
-              onClick={() => setViewTab(tab.key)}
-              className={`px-5 py-2 text-sm font-bold rounded-xl transition-all ${
-                viewTab === tab.key
-                  ? 'bg-brand-primary text-white shadow-sm'
-                  : 'text-slate-400 hover:text-slate-600'
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        {/* ── 워크시트 정보 ── */}
+        <section className="mb-10 flex items-center gap-3 text-sm text-gray-500">
+          <div className="neo-icon-wrap w-8 h-8 flex-shrink-0">
+            <svg className="w-4 h-4 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+          </div>
+          <span className="font-medium text-gray-700">{WORKSHEET.filename}</span>
+          <span className="text-gray-300">·</span>
+          <span>{WORKSHEET.pages}페이지</span>
+          <span className="text-gray-300">·</span>
+          <span>SOBP {WORKSHEET.sobp}</span>
+        </section>
 
-        {/* ─── 페이지별 보기 ─── */}
+        {/* ── 요약 메트릭 ── */}
+        <section className="mb-16 border-y border-app-border py-8">
+          <div className="flex flex-wrap gap-12 text-gray-600 tracking-tight">
+            <div className="flex items-center gap-3">
+              <span className="text-xs uppercase tracking-widest text-gray-400 font-medium">수업시간</span>
+              <span className="text-lg font-semibold">42분</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs uppercase tracking-widest text-gray-400 font-medium">참여학생</span>
+              <span className="text-lg font-semibold">{STUDENTS.length}명</span>
+            </div>
+            <div className="flex items-center gap-3">
+              <span className="text-xs uppercase tracking-widest text-gray-400 font-medium">평균완료율</span>
+              <span className="text-lg font-semibold">{avgRate}%</span>
+            </div>
+          </div>
+        </section>
+
+        {/* ── 탭 ── */}
+        <section className="mb-8">
+          <div className="flex gap-1.5 p-1 bg-brand-tint/30 rounded-2xl w-fit">
+            {[
+              { key: 'page' as const, label: '페이지별 보기' },
+              { key: 'student' as const, label: '학생별 보기' },
+              { key: 'ai' as const, label: 'AI 분석' },
+            ].map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setViewTab(tab.key)}
+                className={`px-6 py-2.5 text-sm font-bold rounded-xl transition-all ${
+                  viewTab === tab.key
+                    ? 'bg-white shadow-sm text-brand-primary'
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* ── 페이지별 보기 ── */}
         {viewTab === 'page' && (
-          <section className="flex flex-col gap-4">
-            {PAGES_DATA.map(page => {
-              const isOpen = openPages.has(page.pageNum);
-              const doneCount = page.students.filter(s => s.strokeCount > 0).length;
-              const cols = Math.max(page.students.length, 3);
-
-              return (
-                <div key={page.pageNum} className="neo-card overflow-hidden">
-                  <button
-                    onClick={() => togglePage(page.pageNum)}
-                    className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50/50 transition-colors text-left"
-                  >
-                    <div className="flex items-center gap-3">
-                      <span className="text-sm font-black text-brand-primary bg-brand-tint rounded-lg px-3 py-1">
-                        P{page.pageNum}
-                      </span>
-                      <span className="text-xs text-slate-400 font-medium">학생 {page.students.length}명</span>
-                    </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-xs text-slate-400 font-medium">
-                        {doneCount}명 <span className="font-bold text-emerald-600">완료</span>
-                      </span>
-                      <svg
-                        className={`w-4 h-4 text-slate-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-                        fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </div>
-                  </button>
-
-                  {isOpen && (
-                    <div className="px-6 pb-6 pt-2 border-t border-app-border">
-                      <div
-                        className="grid gap-4"
-                        style={{ gridTemplateColumns: `repeat(${Math.min(cols, 5)}, 1fr)` }}
-                      >
-                        {page.students.map((student, idx) => {
-                          const rate = getRate(student.strokeCount, student.maxStroke);
-                          return (
-                            <div
-                              key={student.userId}
-                              className="flex flex-col gap-2 bg-white border border-slate-100 rounded-2xl overflow-hidden hover:border-brand-primary/30 transition-colors"
-                            >
-                              <div className="px-3 pt-2 flex items-center justify-between">
-                                <span className="text-xs font-bold text-slate-700">{student.nickname}</span>
-                                {rate > 0 ? (
-                                  <span className="text-[10px] font-bold text-emerald-600">완료</span>
-                                ) : (
-                                  <span className="text-[10px] font-bold text-red-500">미필기</span>
-                                )}
-                              </div>
-                              <div className="w-full bg-slate-50 mx-auto" style={{ aspectRatio: '210 / 297' }}>
-                                <HandwritingThumbnail seed={idx} studentName={student.nickname} pageNum={page.pageNum} />
-                              </div>
-                              <div className="px-3 pb-3 flex flex-col gap-1.5">
-                                <div className="flex items-center gap-2">
-                                  <div className="flex-1 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                    <div
-                                      className={`h-full rounded-full ${getRateBarColor(rate)}`}
-                                      style={{ width: `${rate}%` }}
-                                    />
-                                  </div>
-                                  <span className={`text-[10px] font-bold ${getRateColor(rate)}`}>
-                                    {rate === 0 ? '미필기' : `${rate}%`}
-                                  </span>
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </section>
-        )}
-
-        {/* ─── 학생별 보기 ─── */}
-        {viewTab === 'student' && (
-          <section className="flex flex-col gap-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              {STUDENTS.map((student, idx) => {
-                const totalRate = getStudentTotalRate(student.userId);
-                return (
-                  <button
-                    key={student.userId}
-                    onClick={() => navigate(`/replay/guest/${archive.archiveId}/${student.userId}`)}
-                    className="group relative bg-white rounded-modern overflow-hidden transition-all duration-300 text-left border-2 border-app-border hover:-translate-y-1 hover:shadow-modern hover:border-brand-primary/30"
-                    style={{ height: '420px' }}
-                  >
-                    <div className="absolute inset-x-0 top-0 bottom-[56px] bg-slate-50 overflow-hidden">
-                      <HandwritingThumbnail seed={idx} studentName={student.nickname} pageNum={1} />
-                    </div>
-                    <div className="absolute inset-x-0 bottom-0 h-[56px] bg-white border-t border-app-border px-5 flex items-center justify-between">
-                      <span className="text-sm font-bold text-slate-800">{student.nickname}</span>
-                      <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${getRateBarColor(totalRate)}`} />
-                        <span className={`text-xs font-bold ${getRateColor(totalRate)}`}>{totalRate}%</span>
-                      </div>
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
-          </section>
-        )}
-
-        {/* ─── AI 분석 ─── */}
-        {viewTab === 'ai' && (
-          <section className="flex flex-col gap-8">
-
-            {/* 1. 세션 요약 분석 */}
+          <section className="flex flex-col gap-6 mb-16">
+            {/* 참여율 히트맵 테이블 */}
             <div className="neo-card overflow-hidden">
-              <div className="px-6 py-4 border-b border-app-border flex items-center justify-between">
-                <div className="flex flex-col gap-0.5">
-                  <h2 className="text-base font-bold text-slate-800">수업 요약 분석</h2>
-                  <span className="text-xs text-slate-400">수업 전체 흐름, 핵심 개념, 질문 패턴을 분석합니다</span>
-                </div>
-                {!sessionAnalysis && !sessionAnalyzing && (
-                  <button
-                    onClick={startSessionAnalysis}
-                    className="px-4 py-2 bg-brand-primary text-white text-sm font-bold rounded-xl hover:bg-brand-primary/90 transition-colors flex items-center gap-2"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                    </svg>
-                    AI 분석 시작
-                  </button>
-                )}
-              </div>
-
-              {/* 로딩 */}
-              {sessionAnalyzing && (
-                <div className="px-6 py-12 flex flex-col items-center gap-3">
-                  <div className="w-8 h-8 border-3 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin" />
-                  <span className="text-sm text-slate-400 font-medium">수업 내용을 분석하고 있습니다...</span>
-                </div>
-              )}
-
-              {/* 분석 결과 */}
-              {sessionAnalysis && (
-                <div className="px-6 py-6 flex flex-col gap-6">
-                  {/* 수업 흐름 요약 */}
-                  <div className="flex flex-col gap-2">
-                    <h3 className="text-sm font-bold text-slate-700">수업 흐름 요약</h3>
-                    <p className="text-sm text-slate-600 leading-relaxed">{sessionAnalysis.summary}</p>
-                  </div>
-
-                  {/* 핵심 개념 태그 */}
-                  <div className="flex flex-col gap-2">
-                    <h3 className="text-sm font-bold text-slate-700">핵심 개념</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {sessionAnalysis.keyConcepts.map(tag => (
-                        <span key={tag} className="px-3 py-1 bg-brand-tint text-brand-primary text-xs font-bold rounded-lg">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* 질문 집중 구간 */}
-                  <div className="flex flex-col gap-2">
-                    <h3 className="text-sm font-bold text-slate-700">질문 집중 구간</h3>
-                    <p className="text-sm text-slate-600 leading-relaxed">{sessionAnalysis.questionHotspot}</p>
-                  </div>
-
-                  {/* 다음 수업 권장 */}
-                  <div className="flex flex-col gap-2 p-4 bg-amber-50 rounded-xl border border-amber-100">
-                    <h3 className="text-sm font-bold text-amber-700">다음 수업 권장사항</h3>
-                    <p className="text-sm text-amber-800 leading-relaxed">{sessionAnalysis.nextClassRecommendation}</p>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* 2. Q&A 타임라인 — 항상 노출 */}
-            <div className="neo-card overflow-hidden">
-              <div className="px-6 py-4 border-b border-app-border">
-                <h2 className="text-base font-bold text-slate-800">Q&A 타임라인</h2>
-                <span className="text-xs text-slate-400">수업 중 발생한 질문, 답변, 첨삭 기록</span>
-              </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full border-collapse text-sm">
                   <thead>
-                    <tr className="bg-slate-50/80">
-                      <th className="text-left px-6 py-3 font-bold text-slate-500 text-xs w-16">시간</th>
-                      <th className="text-center px-4 py-3 font-bold text-slate-500 text-xs w-14">페이지</th>
-                      <th className="text-center px-4 py-3 font-bold text-slate-500 text-xs w-16">유형</th>
-                      <th className="text-left px-4 py-3 font-bold text-slate-500 text-xs w-20">발화자</th>
-                      <th className="text-left px-4 py-3 font-bold text-slate-500 text-xs">내용</th>
+                    <tr className="bg-brand-tint/20">
+                      <th className="text-left px-5 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-widest w-24">학생</th>
+                      {PAGES_DATA.map(p => (
+                        <th key={p.pageNum} className="text-left px-5 py-3 text-[11px] font-bold text-gray-400 uppercase tracking-widest">
+                          P{p.pageNum}
+                        </th>
+                      ))}
+                      <th className="text-left px-5 py-3 text-[11px] font-bold text-gray-500 uppercase tracking-widest">
+                        <span className="flex items-center gap-1.5">
+                          전체 참여율
+                          <span className="relative group cursor-help">
+                            <span className="w-4 h-4 rounded-full bg-gray-200 text-gray-500 text-[10px] font-bold inline-flex items-center justify-center">?</span>
+                            <span className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 p-2.5 bg-gray-800 text-white text-[11px] font-normal normal-case tracking-normal leading-snug rounded-lg shadow-lg z-20">
+                              각 페이지의 필기 밀도(스트로크 수 / 최대 스트로크 수)를 평균한 값입니다.
+                              <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
+                            </span>
+                          </span>
+                        </span>
+                      </th>
                     </tr>
                   </thead>
-                  <tbody>
-                    {VOICE_EVENTS.map((event, i) => {
-                      const { label, color } = getEventTypeLabel(event);
+                  <tbody className="divide-y divide-app-border">
+                    {STUDENTS.map(student => {
+                      const totalRate = getStudentTotalRate(student.userId);
                       return (
-                        <tr key={i} className="border-t border-slate-100 hover:bg-slate-50/50 transition-colors">
-                          <td className="px-6 py-3 font-mono text-xs text-slate-500">{event.timestamp}</td>
-                          <td className="px-4 py-3 text-center">
-                            <span className="text-xs font-bold text-brand-primary">P{event.pageNumber}</span>
+                        <tr key={student.userId} className="hover:bg-brand-tint/10 transition-colors">
+                          <td className="px-5 py-3 font-semibold text-gray-700 text-xs">{student.nickname}</td>
+                          {PAGES_DATA.map(page => {
+                            const s = page.students.find(st => st.userId === student.userId);
+                            const rate = s ? getRate(s.strokeCount, s.maxStroke) : 0;
+                            return (
+                              <td key={page.pageNum} className="px-5 py-3">
+                                <div className="flex items-center gap-2">
+                                  <div className="h-1 w-24 bg-brand-tint/40 rounded-full overflow-hidden">
+                                    <div
+                                      className={`h-full ${getRateBarColor(rate, rate > 0)}`}
+                                      style={{ width: getRateBarWidth(rate) }}
+                                    />
+                                  </div>
+                                  <span className="text-[10px] font-medium text-gray-400">{rate > 0 ? `${rate}%` : '미필기'}</span>
+                                </div>
+                              </td>
+                            );
+                          })}
+                          <td className="px-5 py-3">
+                            <div className="flex items-center gap-2">
+                              <div className="h-1 w-24 bg-brand-tint/40 rounded-full overflow-hidden">
+                                <div
+                                  className={`h-full ${getRateBarColor(totalRate, totalRate > 0)}`}
+                                  style={{ width: getRateBarWidth(totalRate) }}
+                                />
+                              </div>
+                              <span className="text-xs font-bold text-gray-600">{totalRate}%</span>
+                              <span className="text-[9px] text-gray-400">참여율</span>
+                            </div>
                           </td>
-                          <td className="px-4 py-3 text-center">
-                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${color}`}>{label}</span>
-                          </td>
-                          <td className="px-4 py-3 text-xs font-bold text-slate-700">
-                            {event.speaker === 'host' ? '선생님' : event.studentName}
-                          </td>
-                          <td className="px-4 py-3 text-xs text-slate-600 leading-relaxed">{event.transcript}</td>
                         </tr>
                       );
                     })}
@@ -604,64 +631,281 @@ export function ArchiveDetailV2({ archive }: { archive: ArchiveItem }) {
                 </table>
               </div>
             </div>
+            {PAGES_DATA.map(page => {
+              const feedbackCount = VOICE_EVENTS.filter(e => e.type === 'feedback' && e.pageNumber === page.pageNum).length;
 
-            {/* 3. 학생별 개인 분석 */}
+              return (
+                <div key={page.pageNum}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="w-7 h-7 rounded-md bg-gray-800 text-white text-xs font-bold flex items-center justify-center">P{page.pageNum}</span>
+                    <span className="text-xs text-gray-500">
+                      {page.students.filter(s => s.strokeCount > 0).length}명 필기
+                      {feedbackCount > 0 && <> · <span className="text-brand-primary font-semibold">첨삭 {feedbackCount}건</span></>}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-5 gap-3">
+                    {page.students.map((student, idx) => {
+                      const rate = getRate(student.strokeCount, student.maxStroke);
+                      return (
+                        <div
+                          key={student.userId}
+                          className="flex flex-col bg-white rounded-xl overflow-hidden hover:shadow-sm transition-shadow cursor-pointer"
+                          onClick={() => openWritingModal(idx, page.pageNum - 1)}
+                        >
+                          <div className="px-2.5 pt-2 pb-1 flex items-center justify-between">
+                            <span className="text-[11px] font-semibold text-gray-700">{student.nickname}</span>
+                            <span className="text-[10px] font-medium text-gray-400">
+                              {rate === 0 ? '미필기' : `${rate}%`}
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-100 mx-auto" style={{ aspectRatio: '210 / 297' }}>
+                            <HandwritingThumbnail seed={idx} studentName={student.nickname} pageNum={page.pageNum} />
+                          </div>
+                          <div className="px-2.5 py-1.5">
+                            <div className="h-0.5 bg-brand-tint/40 rounded-full overflow-hidden">
+                              <div
+                                className={`h-full ${getRateBarColor(rate, rate > 0)}`}
+                                style={{ width: getRateBarWidth(rate) }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </section>
+        )}
+
+        {/* ── 학생별 보기 ── */}
+        {viewTab === 'student' && (
+          <section className="mb-16 flex flex-col gap-5">
+            {STUDENTS.map((student, idx) => {
+              return (
+                <div key={student.userId} className="neo-card overflow-hidden">
+                  {/* Header */}
+                  <div className="flex items-center justify-between px-5 py-4 border-b border-app-border">
+                    <div className="flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full bg-brand-tint flex items-center justify-center text-brand-primary font-bold text-sm">
+                        {student.nickname.charAt(0)}
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold text-gray-800">{student.nickname}</div>
+                      </div>
+                    </div>
+                  </div>
+
+
+                  {/* Page thumbnails */}
+                  <div className="grid grid-cols-3 divide-x divide-app-border">
+                    {PAGES_DATA.map((page, pi) => {
+                      const feedbackOnPage = VOICE_EVENTS.filter(e => e.type === 'feedback' && e.pageNumber === page.pageNum && (e.studentName === student.nickname || e.transcript.includes(student.nickname)));
+                      return (
+                        <div
+                          key={page.pageNum}
+                          className="p-3 flex flex-col items-center gap-1.5 cursor-pointer hover:bg-gray-50 transition-colors"
+                          onClick={() => openWritingModal(idx, pi)}
+                        >
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-[10px] font-semibold text-gray-500">P{page.pageNum}</span>
+                            {feedbackOnPage.length > 0 && (
+                              <span className="text-[9px] font-bold text-brand-primary bg-brand-tint px-1.5 rounded">첨삭 {feedbackOnPage.length}</span>
+                            )}
+                          </div>
+                          <div className="w-full bg-gray-50 border border-gray-100 rounded overflow-hidden" style={{ aspectRatio: '210 / 297' }}>
+                            <HandwritingThumbnail seed={idx} studentName={student.nickname} pageNum={page.pageNum} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </section>
+        )}
+
+        {/* ── AI 분석 ── */}
+        {viewTab === 'ai' && (
+          <section className="flex flex-col gap-8 mb-16">
+
+            {/* 세션 요약 분석 */}
             <div className="neo-card overflow-hidden">
-              <div className="px-6 py-4 border-b border-app-border">
-                <h2 className="text-base font-bold text-slate-800">학생별 개인 분석</h2>
-                <span className="text-xs text-slate-400">학생을 선택하여 개인 리포트를 생성할 수 있습니다</span>
+              <div className="px-8 py-6 border-b border-app-border flex items-center justify-between">
+                <div>
+                  <h2 className="text-base font-bold text-gray-900">수업 요약 분석</h2>
+                  <span className="text-xs text-gray-400 mt-0.5 block">수업 전체 흐름, 핵심 개념, 질문 패턴을 분석합니다</span>
+                </div>
+                {!sessionAnalysis && !sessionAnalyzing && (
+                  <button
+                    onClick={startSessionAnalysis}
+                    className="px-6 py-2.5 border-2 border-brand-primary text-brand-primary text-sm font-semibold rounded-full hover:bg-brand-primary hover:text-white transition-all"
+                  >
+                    AI 분석 시작
+                  </button>
+                )}
+                {sessionAnalysis && !sessionAnalyzing && (
+                  <button
+                    onClick={resetSessionAnalysis}
+                    className="px-4 py-1.5 text-xs font-medium text-gray-400 hover:text-brand-primary transition-colors"
+                  >
+                    재분석
+                  </button>
+                )}
               </div>
-              <div className="flex flex-col">
+
+              {sessionAnalyzing && (
+                <div className="px-8 py-12 flex flex-col items-center gap-3">
+                  <div className="w-6 h-6 border-2 border-gray-200 border-t-brand-primary rounded-full animate-spin" />
+                  <span className="text-sm text-gray-400">분석 중...</span>
+                </div>
+              )}
+
+              {sessionAnalysis && (
+                <div className="px-8 py-8 flex flex-col gap-8">
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-500 mb-2">수업 흐름 요약</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">{sessionAnalysis.summary}</p>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-500 mb-2">핵심 개념</h3>
+                    <div className="flex flex-wrap gap-2">
+                      {sessionAnalysis.keyConcepts.map(tag => (
+                        <span key={tag} className="px-3 py-1.5 bg-brand-tint/30 text-gray-600 text-xs font-medium rounded-lg">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="text-sm font-bold text-gray-500 mb-2">질문 집중 구간</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">{sessionAnalysis.questionHotspot}</p>
+                  </div>
+
+                  <div className="p-5 bg-brand-tint/30 rounded-xl">
+                    <h3 className="text-sm font-bold text-gray-600 mb-2">다음 수업 권장사항</h3>
+                    <p className="text-sm text-gray-600 leading-relaxed">{sessionAnalysis.nextClassRecommendation}</p>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Q&A 타임라인 */}
+            <div ref={timelineRef} className="neo-card overflow-hidden">
+              <div className="px-8 py-6 border-b border-app-border">
+                <h2 className="text-base font-bold text-gray-900">풀이 타임라인</h2>
+                <span className="text-xs text-gray-400 mt-0.5 block">수업 중 발생한 질문, 답변, 첨삭 기록</span>
+                {/* 필터 버튼 */}
+                <div className="flex gap-2 mt-3">
+                  {([['all', '전체'], ['questions', '질문'], ['feedback', '피드백']] as const).map(([key, label]) => (
+                    <button
+                      key={key}
+                      onClick={() => setVoiceFilter(key)}
+                      className={`px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+                        voiceFilter === key
+                          ? 'bg-gray-800 text-white'
+                          : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                  {studentFilter !== 'all' && (
+                    <span className="px-3 py-1 rounded-full text-xs font-semibold bg-brand-tint text-brand-primary flex items-center gap-1">
+                      {STUDENTS.find(s => s.userId === studentFilter)?.nickname ?? studentFilter}
+                      <button onClick={() => setStudentFilter('all')} className="ml-1 hover:text-gray-600">&times;</button>
+                    </span>
+                  )}
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="bg-brand-tint/20">
+                      <th className="text-left px-8 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest w-20">시간</th>
+                      <th className="text-left px-4 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest w-20">학생</th>
+                      <th className="text-left px-4 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">활동 내용</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-50">
+                    {filteredEvents.map((event, i) => {
+                      const { label, color } = getEventTypeLabel(event);
+                      return (
+                        <tr key={i} className="hover:bg-gray-50/50 transition-colors">
+                          <td className="px-8 py-4 font-mono text-xs text-gray-400">{event.timestamp}</td>
+                          <td className="px-4 py-4 text-xs font-medium text-gray-600">
+                            {event.speaker === 'host' ? '선생님' : event.studentName}
+                          </td>
+                          <td className="px-4 py-4 text-xs text-gray-600 leading-relaxed">
+                            <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-md mr-2 ${color}`}>{label}</span>
+                            {event.transcript}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                    {filteredEvents.length === 0 && (
+                      <tr>
+                        <td colSpan={3} className="px-8 py-8 text-center text-xs text-gray-400">
+                          해당 조건의 이벤트가 없습니다
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* 학생별 개인 분석 */}
+            <div>
+              <h3 className="text-lg font-bold text-gray-900 mb-4">학생별 상세 분석</h3>
+              <div className="flex flex-col gap-3">
                 {STUDENTS.map(student => {
                   const isExpanded = expandedStudents.has(student.userId);
                   const totalRate = getStudentTotalRate(student.userId);
                   const analysis = studentAnalyses[student.userId];
                   const isAnalyzing = studentAnalyzing.has(student.userId);
                   const voiceEvents = getStudentVoiceEvents(student.nickname);
+                  const initial = student.nickname.charAt(0);
 
                   return (
-                    <div key={student.userId} className="border-t border-slate-100 first:border-t-0">
-                      {/* 학생 헤더 — 클릭으로 확장 */}
+                    <div key={student.userId} className="neo-card overflow-hidden">
                       <button
                         onClick={() => toggleStudentExpand(student.userId)}
-                        className="w-full flex items-center justify-between px-6 py-4 hover:bg-slate-50/50 transition-colors text-left"
+                        className="w-full flex items-center justify-between px-6 py-5 hover:bg-gray-50 transition-colors text-left group"
                       >
-                        <div className="flex items-center gap-3">
-                          <span className="text-sm font-bold text-slate-800">{student.nickname}</span>
-                          <span className={`text-xs font-bold ${getRateColor(totalRate)}`}>{totalRate}%</span>
-                          {voiceEvents.length > 0 && (
-                            <span className="text-[10px] text-slate-400 font-medium">질문 {voiceEvents.filter(e => e.type === 'question').length}건</span>
-                          )}
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-brand-tint flex items-center justify-center text-brand-primary font-bold text-sm">
+                            {initial}
+                          </div>
+                          <span className="text-sm font-semibold text-gray-800">{student.nickname}</span>
+                          <span className="text-sm text-gray-400 font-medium">{totalRate}%</span>
                         </div>
-                        <div className="flex items-center gap-3">
-                          {analysis && (
-                            <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md">분석 완료</span>
-                          )}
-                          <svg
-                            className={`w-4 h-4 text-slate-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
-                            fill="none" viewBox="0 0 24 24" stroke="currentColor"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </div>
+                        <svg
+                          className={`w-5 h-5 text-gray-300 group-hover:text-brand-primary transition-all ${isExpanded ? 'rotate-90' : ''}`}
+                          fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                        >
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
                       </button>
 
-                      {/* 확장 — 상세 분석 */}
                       {isExpanded && (
-                        <div className="px-6 pb-6 flex flex-col gap-4">
+                        <div className="px-6 pb-6 flex flex-col gap-5 border-t border-app-border pt-4">
 
-                          {/* 이 학생의 Q&A */}
                           {voiceEvents.length > 0 && (
-                            <div className="flex flex-col gap-2">
-                              <h4 className="text-xs font-bold text-slate-500">이 학생의 수업 활동</h4>
+                            <div>
+                              <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">수업 활동</h4>
                               <div className="flex flex-col gap-1.5">
                                 {voiceEvents.map((e, i) => {
                                   const { label, color } = getEventTypeLabel(e);
                                   return (
-                                    <div key={i} className="flex items-start gap-2 text-xs">
-                                      <span className="font-mono text-slate-400 flex-shrink-0">{e.timestamp}</span>
-                                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold flex-shrink-0 ${color}`}>{label}</span>
-                                      <span className="text-slate-600">{e.transcript}</span>
+                                    <div key={i} className="flex items-start gap-3 text-xs">
+                                      <span className="font-mono text-gray-400 flex-shrink-0 w-12">{e.timestamp}</span>
+                                      <span className={`px-1.5 py-0.5 rounded text-[10px] font-semibold flex-shrink-0 ${color}`}>{label}</span>
+                                      <span className="text-gray-600 leading-relaxed">{e.transcript}</span>
                                     </div>
                                   );
                                 })}
@@ -669,63 +913,58 @@ export function ArchiveDetailV2({ archive }: { archive: ArchiveItem }) {
                             </div>
                           )}
 
-                          {/* 필기 밀도 요약 */}
-                          <div className="flex flex-col gap-2">
-                            <h4 className="text-xs font-bold text-slate-500">필기 밀도</h4>
-                            <div className="flex gap-3">
+                          <div>
+                            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">필기 밀도</h4>
+                            <div className="flex gap-4">
                               {PAGES_DATA.map(page => {
                                 const s = page.students.find(st => st.userId === student.userId);
                                 const rate = s ? getRate(s.strokeCount, s.maxStroke) : 0;
                                 return (
-                                  <div key={page.pageNum} className="flex items-center gap-1.5 text-xs">
-                                    <span className="font-bold text-brand-primary">P{page.pageNum}</span>
-                                    <div className="w-16 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                      <div className={`h-full rounded-full ${getRateBarColor(rate)}`} style={{ width: `${rate}%` }} />
+                                  <div key={page.pageNum} className="flex items-center gap-2 text-xs">
+                                    <span className="font-semibold text-gray-500">P{page.pageNum}</span>
+                                    <div className="w-20 h-1.5 bg-brand-tint/40 rounded-full overflow-hidden">
+                                      <div className={`h-full ${getRateBarColor(rate, rate > 0)}`} style={{ width: getRateBarWidth(rate) }} />
                                     </div>
-                                    <span className={`font-bold ${getRateColor(rate)}`}>{rate === 0 ? '미필기' : `${rate}%`}</span>
+                                    <span className="font-medium text-gray-400">{rate === 0 ? '—' : `${rate}%`}</span>
                                   </div>
                                 );
                               })}
                             </div>
                           </div>
 
-                          {/* AI 분석 버튼 or 결과 */}
                           {!analysis && !isAnalyzing && (
                             <button
                               onClick={() => startStudentAnalysis(student.userId)}
-                              className="w-fit px-4 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-xl hover:bg-brand-tint hover:text-brand-primary transition-colors flex items-center gap-2"
+                              className="w-fit px-5 py-2 bg-brand-tint/30 text-gray-600 text-xs font-semibold rounded-lg hover:bg-brand-tint hover:text-brand-primary transition-colors"
                             >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                              </svg>
                               개인 분석 생성
                             </button>
                           )}
 
                           {isAnalyzing && (
                             <div className="flex items-center gap-2 py-2">
-                              <div className="w-4 h-4 border-2 border-brand-primary/20 border-t-brand-primary rounded-full animate-spin" />
-                              <span className="text-xs text-slate-400">분석 중...</span>
+                              <div className="w-4 h-4 border-2 border-gray-200 border-t-brand-primary rounded-full animate-spin" />
+                              <span className="text-xs text-gray-400">분석 중...</span>
                             </div>
                           )}
 
                           {analysis && (
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              <div className="flex flex-col gap-1.5 p-4 bg-slate-50 rounded-xl">
-                                <h4 className="text-xs font-bold text-slate-500">학습 현황</h4>
-                                <p className="text-xs text-slate-600 leading-relaxed">{analysis.currentStatus}</p>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div className="p-4 bg-app-bg rounded-xl">
+                                <h4 className="text-xs font-bold text-gray-500 mb-1.5">학습 현황</h4>
+                                <p className="text-xs text-gray-600 leading-relaxed">{analysis.currentStatus}</p>
                               </div>
-                              <div className="flex flex-col gap-1.5 p-4 bg-emerald-50 rounded-xl">
-                                <h4 className="text-xs font-bold text-emerald-700">잘한 점</h4>
-                                <p className="text-xs text-emerald-800 leading-relaxed">{analysis.strengths}</p>
+                              <div className="p-4 bg-app-bg rounded-xl">
+                                <h4 className="text-xs font-bold text-gray-500 mb-1.5">잘한 점</h4>
+                                <p className="text-xs text-gray-600 leading-relaxed">{analysis.strengths}</p>
                               </div>
-                              <div className="flex flex-col gap-1.5 p-4 bg-amber-50 rounded-xl">
-                                <h4 className="text-xs font-bold text-amber-700">보완 필요</h4>
-                                <p className="text-xs text-amber-800 leading-relaxed">{analysis.improvements}</p>
+                              <div className="p-4 bg-app-bg rounded-xl">
+                                <h4 className="text-xs font-bold text-gray-500 mb-1.5">보완 필요</h4>
+                                <p className="text-xs text-gray-600 leading-relaxed">{analysis.improvements}</p>
                               </div>
-                              <div className="flex flex-col gap-1.5 p-4 bg-blue-50 rounded-xl">
-                                <h4 className="text-xs font-bold text-blue-700">추천 학습법</h4>
-                                <p className="text-xs text-blue-800 leading-relaxed">{analysis.studyRecommendation}</p>
+                              <div className="p-4 bg-app-bg rounded-xl">
+                                <h4 className="text-xs font-bold text-gray-500 mb-1.5">추천 학습법</h4>
+                                <p className="text-xs text-gray-600 leading-relaxed">{analysis.studyRecommendation}</p>
                               </div>
                             </div>
                           )}
@@ -740,7 +979,102 @@ export function ArchiveDetailV2({ archive }: { archive: ArchiveItem }) {
           </section>
         )}
 
-      </div>
+      </main>
+
+      {/* ── 필기 리플레이 모달 ── */}
+      {writingModal.open && (() => {
+        const { studentIdx, pageIdx } = writingModal;
+        const page = PAGES_DATA[pageIdx];
+        const student = page?.students[studentIdx];
+        const rate = student ? getRate(student.strokeCount, student.maxStroke) : 0;
+        return (
+          <div
+            className="fixed inset-0 bg-black/60 z-[200] flex items-center justify-center"
+            onClick={(e) => { if (e.target === e.currentTarget) closeWritingModal(); }}
+          >
+            <div className="bg-white rounded-2xl w-[90vw] max-w-[560px] max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-200">
+              {/* Header */}
+              <div className="flex items-center justify-between px-5 py-3 border-b border-gray-100 bg-gray-50">
+                <div>
+                  <div className="text-sm font-bold text-gray-900">{student?.nickname ?? ''} — P{pageIdx + 1}</div>
+                </div>
+                <button
+                  onClick={closeWritingModal}
+                  className="w-8 h-8 rounded-lg border border-gray-200 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors"
+                  title="닫기 (ESC)"
+                >
+                  <svg width="14" height="14" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M5 5l10 10M15 5L5 15"/></svg>
+                </button>
+              </div>
+
+              {/* Canvas */}
+              <div className="flex-1 overflow-y-auto flex items-center justify-center p-5 bg-gray-100">
+                <div className="w-full max-w-[480px] bg-white border border-gray-200 rounded-lg overflow-hidden shadow-md" style={{ aspectRatio: '210 / 297' }}>
+                  {student && student.strokeCount > 0 ? (
+                    <HandwritingThumbnail seed={studentIdx} studentName={student.nickname} pageNum={pageIdx + 1} />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-red-50">
+                      <span className="text-sm font-semibold text-red-400">미필기</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="flex items-center justify-between px-5 py-3 border-t border-gray-100 bg-white">
+                <div className="flex gap-1.5">
+                  <button
+                    onClick={() => modalNavPage(-1)}
+                    disabled={pageIdx === 0}
+                    className="px-3 py-1.5 text-xs font-semibold border border-gray-200 rounded-md text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M13 16l-6-6 6-6"/></svg>
+                    이전
+                  </button>
+                  <button
+                    onClick={() => modalNavPage(1)}
+                    disabled={pageIdx === PAGES_DATA.length - 1}
+                    className="px-3 py-1.5 text-xs font-semibold border border-gray-200 rounded-md text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors flex items-center gap-1"
+                  >
+                    다음
+                    <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><path d="M7 4l6 6-6 6"/></svg>
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
+                    <div className="h-full bg-brand-primary rounded-full transition-all" style={{ width: `${replayState.progress}%` }} />
+                  </div>
+                  <button
+                    onClick={toggleReplay}
+                    disabled={rate === 0}
+                    className={`px-3 py-1.5 text-xs font-semibold rounded-md border transition-colors flex items-center gap-1.5 ${
+                      replayState.playing
+                        ? 'bg-brand-primary text-white border-brand-primary'
+                        : 'border-brand-primary text-brand-primary hover:bg-brand-primary hover:text-white'
+                    } disabled:opacity-30 disabled:cursor-not-allowed`}
+                  >
+                    {replayState.playing ? (
+                      <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><rect x="5" y="4" width="3.5" height="12" rx="1"/><rect x="11.5" y="4" width="3.5" height="12" rx="1"/></svg>
+                    ) : (
+                      <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor"><path d="M6 4l10 6-10 6V4z"/></svg>
+                    )}
+                    {replayState.playing ? '일시정지' : replayState.progress >= 100 ? '재시작' : '리플레이'}
+                  </button>
+                  {replayState.progress > 0 && (
+                    <button
+                      onClick={stopReplay}
+                      className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors"
+                      title="처음부터"
+                    >
+                      <svg width="12" height="12" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M4 10a6 6 0 1 1 1.5 4"/><path d="M4 15V10h5"/></svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
