@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 // ── 학습 사이클 4단계 데이터 ──
 const CYCLE_STEPS = [
@@ -12,7 +13,7 @@ const CYCLE_STEPS = [
     ),
     subtitle: '데이터 기반 수업 준비',
     desc: '이전 학습 기록을 분석해 학생의 취약점을 미리 파악하고, 수업 난이도와 방향을 설계합니다.',
-    tags: ['성적 예측', '데이터 기반'],
+    tags: ['tag1', 'tag2'],
     color: 'from-violet-500 to-indigo-500',
     bgColor: 'bg-indigo-50',
     textColor: 'text-indigo-700',
@@ -27,7 +28,7 @@ const CYCLE_STEPS = [
     ),
     subtitle: '펜 끝에서 실시간으로 연결',
     desc: '온·오프라인 관계없이, 학생의 필기 과정을 실시간으로 모니터링합니다. 펜의 움직임에서 학생의 생각이 보입니다.',
-    tags: ['실시간 소통', '디지털 순회지도'],
+    tags: ['tag3', 'tag4'],
     color: 'from-violet-500 to-purple-500',
     bgColor: 'bg-violet-50',
     textColor: 'text-violet-700',
@@ -42,7 +43,7 @@ const CYCLE_STEPS = [
     ),
     subtitle: '풀이 과정을 정밀하게 진단',
     desc: '정답 여부뿐 아니라, 펜이 멈춘 시간과 궤적을 분석해서 어디서 고민하고 어디서 막히는지 정확히 파악합니다.',
-    tags: ['막힘 포착', '풀이 과정 리플레이'],
+    tags: ['tag5', 'tag6'],
     color: 'from-amber-500 to-orange-500',
     bgColor: 'bg-amber-50',
     textColor: 'text-amber-700',
@@ -57,7 +58,7 @@ const CYCLE_STEPS = [
     ),
     subtitle: '데이터가 증명하는 성장',
     desc: '모든 기록이 자동 저장되어 성장 리포트로 만들어집니다. 복습 자료로 활용하고, 데이터로 학생의 성장을 확인할 수 있습니다.',
-    tags: ['자동 아카이브', '피드백'],
+    tags: ['tag7', 'tag8'],
     color: 'from-emerald-500 to-teal-500',
     bgColor: 'bg-emerald-50',
     textColor: 'text-emerald-700',
@@ -125,6 +126,7 @@ const CORE_VALUES = [
 
 export function LandingPage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const handleStart = () => {
     navigate('/login');
@@ -144,23 +146,23 @@ export function LandingPage() {
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 leading-[1.15] tracking-tight">
-              손글씨로 이어지는
+              {t('newLanding.heroTitle1')}
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600">실시간 교육의 혁신</span>
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600">{t('newLanding.heroTitle2')}</span>
             </h1>
 
             <p className="mt-8 text-lg sm:text-xl text-slate-500 leading-relaxed">
-              멀리 떨어져 있어도 종이 위의 펜 끝이 실시간으로 연결됩니다.
+              {t('newLanding.heroDesc1')}
               <br />
-              <span className="text-slate-700">지연 시간 걱정 없는 실시간 필기 공유, NeoCAST와 함께라면 가능합니다.</span>
+              <span className="text-slate-700">{t('newLanding.heroDesc2')}</span>
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
               <button onClick={handleStart} className="neo-btn-primary w-full sm:w-auto px-8 py-4 text-lg shadow-xl shadow-violet-200 hover:scale-105 active:scale-95">
-                지금 무료로 시작하기
+                {t('newLanding.ctaPrimary')}
               </button>
               <button onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })} className="neo-btn-ghost w-full sm:w-auto px-8 py-4 text-lg">
-                서비스 가이드 보기
+                {t('newLanding.ctaSecondary')}
               </button>
             </div>
           </div>
@@ -279,18 +281,18 @@ export function LandingPage() {
       <section id="how-it-works" className="max-w-6xl mx-auto px-4 sm:px-6 pt-32 sm:pt-40 pb-24 sm:pb-32">
         <div className="text-center mb-16">
           <span className="neo-tag">Holistic Learning Loop</span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-4 tracking-tight">사고의 흐름을 데이터로 잇는 배움의 사이클</h2>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-4 tracking-tight">{t('newLanding.cycleTitle')}</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {CYCLE_STEPS.map((step, idx) => (
             <div key={idx} className="bg-white border border-slate-100 rounded-[32px] p-8 hover:shadow-2xl hover:-translate-y-1 transition-all duration-200 ease-out">
               <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${step.color} flex items-center justify-center text-white mb-6`}>{step.icon}</div>
               <span className="text-[10px] font-semibold text-violet-600 uppercase tracking-widest block mb-1">{step.step}</span>
-              <h3 className="text-xl font-bold text-slate-900 mb-4">{step.title}</h3>
-              <p className="text-sm text-slate-500 leading-relaxed mb-5">{step.desc}</p>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">{t(`newLanding.step${idx + 1}`)}</h3>
+              <p className="text-sm text-slate-500 leading-relaxed mb-5">{t(`newLanding.step${idx + 1}Desc`)}</p>
               <div className="flex flex-wrap gap-1.5">
                 {step.tags.map(tag => (
-                  <span key={tag} className={`text-[10px] font-semibold ${step.bgColor} ${step.textColor} px-2.5 py-1 rounded-full`}>{tag}</span>
+                  <span key={tag} className={`text-[10px] font-semibold ${step.bgColor} ${step.textColor} px-2.5 py-1 rounded-full`}>{t(`newLanding.${tag}`)}</span>
                 ))}
               </div>
             </div>
@@ -304,16 +306,16 @@ export function LandingPage() {
           <div className="flex flex-col lg:flex-row gap-16 items-center">
             <div className="lg:w-1/3">
               <span className="neo-tag">Core Value</span>
-              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-4 leading-tight tracking-tight">준비물은 오직 익숙한 종이와 펜</h2>
-              <p className="mt-6 text-slate-500 leading-relaxed">값비싼 장비나 교실 환경에 구애받지 마세요. 익숙한 종이의 집중력을 디지털로 연결합니다.</p>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-4 leading-tight tracking-tight">{t('newLanding.coreValueTitle')}</h2>
+              <p className="mt-6 text-slate-500 leading-relaxed">{t('newLanding.coreValueDesc')}</p>
             </div>
             <div className="lg:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-4">
               {CORE_VALUES.map((v, i) => (
                 <div key={i} className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm flex items-start gap-3 hover:border-violet-200 hover:shadow-md transition-all duration-200 ease-out">
                   <div className="text-violet-600 p-2 bg-violet-50 rounded-xl shrink-0">{v.icon}</div>
                   <div>
-                    <h4 className="font-semibold text-slate-900 text-sm mb-1">{v.title}</h4>
-                    <p className="text-sm text-slate-500 leading-relaxed">{v.desc}</p>
+                    <h4 className="font-semibold text-slate-900 text-sm mb-1">{t(`newLanding.val${i + 1}`)}</h4>
+                    <p className="text-sm text-slate-500 leading-relaxed">{t(`newLanding.val${i + 1}Desc`)}</p>
                   </div>
                 </div>
               ))}
@@ -325,9 +327,9 @@ export function LandingPage() {
       {/* ── CTA ── */}
       <section className="max-w-4xl mx-auto px-4 py-24 sm:py-32">
         <div className="bg-gradient-to-br from-violet-600 to-violet-700 rounded-[48px] p-12 sm:p-20 text-center shadow-2xl relative overflow-hidden">
-          <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-6 tracking-tight">사고의 궤적을 실시간 데이터로</h2>
-          <p className="text-violet-100 text-lg sm:text-xl mb-12 opacity-90">필기 속에 숨겨진 성장의 실마리를 NeoCAST로 찾아보세요.</p>
-          <button onClick={handleStart} className="bg-white text-violet-600 px-12 py-5 rounded-[var(--radius-pill)] font-bold text-xl hover:bg-violet-50 hover:scale-105 active:scale-95 transition-all shadow-lg">지금 시작하기</button>
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-6 tracking-tight">{t('newLanding.ctaBottom')}</h2>
+          <p className="text-violet-100 text-lg sm:text-xl mb-12 opacity-90">{t('newLanding.ctaBottomDesc')}</p>
+          <button onClick={handleStart} className="bg-white text-violet-600 px-12 py-5 rounded-[var(--radius-pill)] font-bold text-xl hover:bg-violet-50 hover:scale-105 active:scale-95 transition-all shadow-lg">{t('newLanding.ctaBottomBtn')}</button>
         </div>
       </section>
 

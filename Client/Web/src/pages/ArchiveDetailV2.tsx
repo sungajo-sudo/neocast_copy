@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { HandwritingThumbnail } from '../components/HandwritingThumbnail';
 import { ANNOTATION_EVENTS } from '../data/voiceScenario';
 import { getParticipationLevel } from '../types/archive';
@@ -217,11 +218,11 @@ function getWritingStatus(strokeCount: number, classAvg: number): WritingStatus 
   return 'wrote';
 }
 
-function getStatusDot(status: WritingStatus): { color: string; label: string } {
+function getStatusDot(status: WritingStatus): { color: string; labelKey: string } {
   switch (status) {
-    case 'wrote': return { color: 'bg-brand-primary', label: '필기' };
-    case 'low':   return { color: 'bg-amber-400', label: '부진' };
-    case 'none':  return { color: 'bg-gray-200', label: '미필기' };
+    case 'wrote': return { color: 'bg-brand-primary', labelKey: 'archiveDetail.writing' };
+    case 'low':   return { color: 'bg-amber-400', labelKey: 'archiveDetail.poor' };
+    case 'none':  return { color: 'bg-gray-200', labelKey: 'archiveDetail.noWriting' };
   }
 }
 
@@ -232,7 +233,7 @@ function getPageClassAvg(page: PageData): number {
 }
 
 // 학생 전체 요약 상태 — pages 파라미터로 variant 지원
-function getStudentSummary(userId: string, pages: PageData[]): { writtenPages: number; totalPages: number; status: string } {
+function getStudentSummary(userId: string, pages: PageData[]): { writtenPages: number; totalPages: number; status: string; count?: number } {
   const totalPages = pages.length;
   let writtenPages = 0;
   let lowPages = 0;
@@ -244,11 +245,11 @@ function getStudentSummary(userId: string, pages: PageData[]): { writtenPages: n
       if (avg > 0 && s.strokeCount < avg * 0.4) lowPages++;
     }
   });
-  if (writtenPages === 0) return { writtenPages, totalPages, status: '미참여' };
-  if (writtenPages === totalPages && lowPages === 0) return { writtenPages, totalPages, status: '안정적' };
-  if (writtenPages < totalPages) return { writtenPages, totalPages, status: `미필기 ${totalPages - writtenPages}P` };
-  if (lowPages > 0) return { writtenPages, totalPages, status: `부진 ${lowPages}P` };
-  return { writtenPages, totalPages, status: '안정적' };
+  if (writtenPages === 0) return { writtenPages, totalPages, status: 'noParticipation' };
+  if (writtenPages === totalPages && lowPages === 0) return { writtenPages, totalPages, status: 'stable' };
+  if (writtenPages < totalPages) return { writtenPages, totalPages, status: 'noWritingN', count: totalPages - writtenPages };
+  if (lowPages > 0) return { writtenPages, totalPages, status: 'poorN', count: lowPages };
+  return { writtenPages, totalPages, status: 'stable' };
 }
 
 type ViewTab = 'page' | 'student' | 'ai';
@@ -295,6 +296,7 @@ const SIMPLE_ANNOTATIONS = [
 ];
 
 export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: ArchiveItem; variant?: 'full' | 'simple' }) {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const isSimple = variant === 'simple';
   const activeStudents = isSimple ? SIMPLE_STUDENTS : STUDENTS;
@@ -638,7 +640,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
             <svg className="w-5 h-5 mr-2 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
-            <span className="text-sm font-medium">목록으로 돌아가기</span>
+            <span className="text-sm font-medium">{t('archiveDetail.backToList')}</span>
           </button>
 
           <h1 className="text-3xl font-bold tracking-tight text-gray-900 mb-3">
@@ -656,7 +658,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
           </div>
           <span className="font-medium text-gray-700">{WORKSHEET.filename}</span>
           <span className="text-gray-300">·</span>
-          <span>{activePages.length}페이지</span>
+          <span>{t('archiveDetail.pages', { count: activePages.length })}</span>
           <span className="text-gray-300">·</span>
           <span>SOBP {WORKSHEET.sobp}</span>
         </section>
@@ -665,20 +667,20 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
         <section className="mb-10 border-y border-app-border py-8">
           <div className="flex flex-wrap gap-6 sm:gap-12 text-gray-600 tracking-tight">
             <div className="flex items-center gap-3">
-              <span className="text-xs uppercase tracking-widest text-gray-400 font-medium">수업시간</span>
-              <span className="text-lg font-semibold">42분</span>
+              <span className="text-xs uppercase tracking-widest text-gray-400 font-medium">{t('archiveDetail.classTime')}</span>
+              <span className="text-lg font-semibold">{t('archiveDetail.minutes', { count: 42 })}</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-xs uppercase tracking-widest text-gray-400 font-medium">참여학생</span>
-              <span className="text-lg font-semibold">{activeStudents.length}명</span>
+              <span className="text-xs uppercase tracking-widest text-gray-400 font-medium">{t('archiveDetail.participants')}</span>
+              <span className="text-lg font-semibold">{t('archiveDetail.personCount', { count: activeStudents.length })}</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-xs uppercase tracking-widest text-gray-400 font-medium">전체 필기</span>
-              <span className="text-lg font-semibold">{allPageWriters}/{activeStudents.length}명</span>
+              <span className="text-xs uppercase tracking-widest text-gray-400 font-medium">{t('archiveDetail.totalWriting')}</span>
+              <span className="text-lg font-semibold">{t('archiveDetail.writingRatio', { written: allPageWriters, total: activeStudents.length })}</span>
             </div>
             <div className="flex items-center gap-3">
-              <span className="text-xs uppercase tracking-widest text-gray-400 font-medium">첨삭</span>
-              <span className="text-lg font-semibold">{totalAnnotations}건</span>
+              <span className="text-xs uppercase tracking-widest text-gray-400 font-medium">{t('archiveDetail.annotations')}</span>
+              <span className="text-lg font-semibold">{t('archiveDetail.annotationCount', { count: totalAnnotations })}</span>
             </div>
           </div>
         </section>
@@ -687,9 +689,9 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
         <section className="mb-8">
           <div className="flex gap-1.5 p-1 bg-brand-tint/30 rounded-2xl w-fit">
             {([
-              { key: 'page' as const, label: '페이지별 보기' },
-              { key: 'student' as const, label: '학생별 보기' },
-              ...(!isSimple ? [{ key: 'ai' as const, label: 'AI 분석' }] : []),
+              { key: 'page' as const, label: t('archiveDetail.tabPageView') },
+              { key: 'student' as const, label: t('archiveDetail.tabStudentView') },
+              ...(!isSimple ? [{ key: 'ai' as const, label: t('archiveDetail.tabAiAnalysis') }] : []),
             ] as { key: ViewTab; label: string }[]).map(tab => (
               <button
                 key={tab.key}
@@ -713,13 +715,13 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
             <div className="neo-card">
               <div className="px-5 py-4 border-b border-app-border flex items-center justify-between">
                 <div>
-                  <h2 className="text-sm font-semibold text-gray-900">필기 참여 현황</h2>
-                  <span className="text-[11px] text-gray-400 mt-0.5 block">필기 여부 기준 · 도트를 hover하면 획수가 표시됩니다</span>
+                  <h2 className="text-sm font-semibold text-gray-900">{t('archiveDetail.writingStatus')}</h2>
+                  <span className="text-[11px] text-gray-400 mt-0.5 block">{t('archiveDetail.writingStatusDesc')}</span>
                 </div>
                 <div className="flex items-center gap-3 text-[10px] text-gray-400">
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand-primary inline-block" /> 필기</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400 inline-block" /> 부진</span>
-                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-200 inline-block" /> 미필기</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-brand-primary inline-block" /> {t('archiveDetail.writing')}</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-amber-400 inline-block" /> {t('archiveDetail.poor')}</span>
+                  <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-gray-200 inline-block" /> {t('archiveDetail.noWriting')}</span>
                 </div>
               </div>
               <div className="px-5 py-4 flex flex-col gap-3">
@@ -749,7 +751,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                                 />
                                 {/* hover 툴팁 */}
                                 <div className="hidden group-hover:block absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 px-2 py-1 bg-gray-800 text-white text-[10px] rounded-md whitespace-nowrap z-50 font-medium">
-                                  P{page.pageNum} · {strokeCount === 0 ? '미필기' : `${strokeCount}획`}
+                                  P{page.pageNum} · {strokeCount === 0 ? t('archiveDetail.noWriting') : t('archiveDetail.strokes', { count: strokeCount })}
                                   <span className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-800" />
                                 </div>
                               </div>
@@ -762,12 +764,15 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                           {summary.writtenPages}/{summary.totalPages}P
                         </span>
                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded flex-shrink-0 w-20 text-center ${
-                          summary.status === '안정적' ? 'bg-emerald-50 text-emerald-600' :
-                          summary.status === '미참여' ? 'bg-gray-100 text-gray-400' :
-                          summary.status.includes('미필기') ? 'bg-red-50 text-red-500' :
+                          summary.status === 'stable' ? 'bg-emerald-50 text-emerald-600' :
+                          summary.status === 'noParticipation' ? 'bg-gray-100 text-gray-400' :
+                          summary.status === 'noWritingN' ? 'bg-red-50 text-red-500' :
                           'bg-amber-50 text-amber-600'
                         }`}>
-                          {summary.status}
+                          {summary.status === 'stable' ? t('archiveDetail.stable') :
+                           summary.status === 'noParticipation' ? t('archiveDetail.noParticipation') :
+                           summary.status === 'noWritingN' ? t('archiveDetail.noWritingN', { count: summary.count }) :
+                           t('archiveDetail.poorN', { count: summary.count })}
                         </span>
                       </div>
                     );
@@ -776,7 +781,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
             </div>
             {/* ── 페이지 이동 네비게이션 ── */}
             <div className="flex items-center gap-2 py-2 overflow-x-auto">
-              <span className="text-[11px] text-gray-400 font-medium mr-1 flex-shrink-0">바로가기</span>
+              <span className="text-[11px] text-gray-400 font-medium mr-1 flex-shrink-0">{t('archiveDetail.shortcut')}</span>
               {activePages.map(p => (
                 <button
                   key={p.pageNum}
@@ -800,12 +805,12 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                   <div className="flex items-center gap-2 mb-3">
                     <span className="w-7 h-7 rounded-md bg-gray-800 text-white text-xs font-bold flex items-center justify-center">P{page.pageNum}</span>
                     <span className="text-xs text-gray-500">
-                      {page.students.filter(s => s.strokeCount > 0).length}명 필기
+                      {t('archiveDetail.personWriting', { count: page.students.filter(s => s.strokeCount > 0).length })}
                     </span>
                     {pageAnnotations.length > 0 && (
                       <span className="text-[10px] text-brand-primary font-semibold flex items-center gap-1">
                         <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                        첨삭 {pageAnnotations.length}건 ({pageAnnotations.map(a => a.targetStudentName).join(', ')})
+                        {t('archiveDetail.annotationCount', { count: pageAnnotations.length })} ({pageAnnotations.map(a => a.targetStudentName).join(', ')})
                       </span>
                     )}
                   </div>
@@ -829,7 +834,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                                 <svg className="w-6 h-6 text-gray-300 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                 </svg>
-                                <span className="text-[10px] text-gray-300 font-medium">미필기</span>
+                                <span className="text-[10px] text-gray-300 font-medium">{t('archiveDetail.noWriting')}</span>
                               </div>
                             )}
                           </div>
@@ -849,8 +854,8 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
             {/* 상단 요약: 첨삭 현황 */}
             <div className="neo-card overflow-hidden">
               <div className="px-5 py-4 border-b border-app-border">
-                <h2 className="text-sm font-semibold text-gray-900">첨삭 현황</h2>
-                <span className="text-[11px] text-gray-400 mt-0.5 block">이름순 · 첨삭 횟수 및 반응 여부</span>
+                <h2 className="text-sm font-semibold text-gray-900">{t('archiveDetail.annotationStatus')}</h2>
+                <span className="text-[11px] text-gray-400 mt-0.5 block">{t('archiveDetail.annotationStatusDesc')}</span>
               </div>
               <div className="px-5 py-4 flex flex-col gap-2.5">
                 {[...activeStudents]
@@ -866,20 +871,20 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                         <span className="text-xs font-semibold text-gray-700 w-14 flex-shrink-0">{student.nickname}</span>
                         {annotations.length > 0 ? (
                           <div className="flex items-center gap-2 flex-1">
-                            <span className="text-xs text-brand-primary font-semibold">첨삭 {annotations.length}건</span>
+                            <span className="text-xs text-brand-primary font-semibold">{t('archiveDetail.annotationCount', { count: annotations.length })}</span>
                             <span className="text-gray-300">·</span>
                             <span className="text-xs text-gray-500">
                               {annotations.map(a => `P${a.pageNumber}`).join(', ')}
                             </span>
                             <span className="text-gray-300">·</span>
                             {responded > 0 ? (
-                              <span className="text-[11px] text-emerald-600 font-medium">반응 {responded}건</span>
+                              <span className="text-[11px] text-emerald-600 font-medium">{t('archiveDetail.responseCount', { count: responded })}</span>
                             ) : (
-                              <span className="text-[11px] text-gray-400">반응 없음</span>
+                              <span className="text-[11px] text-gray-400">{t('archiveDetail.noResponse')}</span>
                             )}
                           </div>
                         ) : (
-                          <span className="text-xs text-gray-300 flex-1">첨삭 없음</span>
+                          <span className="text-xs text-gray-300 flex-1">{t('archiveDetail.noAnnotation')}</span>
                         )}
                       </div>
                     );
@@ -889,7 +894,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
 
             {/* 학생 바로가기 */}
             <div className="flex items-center gap-2 py-2 overflow-x-auto">
-              <span className="text-[11px] text-gray-400 font-medium mr-1 flex-shrink-0">바로가기</span>
+              <span className="text-[11px] text-gray-400 font-medium mr-1 flex-shrink-0">{t('archiveDetail.shortcut')}</span>
               {[...activeStudents]
                 .sort((a, b) => a.nickname.localeCompare(b.nickname, 'ko'))
                 .map(student => {
@@ -941,10 +946,10 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                             level === 'low' ? 'bg-red-50 text-red-500' :
                             'bg-gray-100 text-gray-400'
                           }`}>
-                            {level === 'high' ? '양호' : level === 'mid' ? '주의' : level === 'low' ? '부진' : '미필기'}
+                            {level === 'high' ? t('archiveDetail.good') : level === 'mid' ? t('archiveDetail.caution') : level === 'low' ? t('archiveDetail.poor') : t('archiveDetail.noWriting')}
                           </span>
                           {feedbackEvents.length > 0 && (
-                            <span className="text-[10px] font-semibold text-brand-primary">첨삭 {feedbackEvents.length}건</span>
+                            <span className="text-[10px] font-semibold text-brand-primary">{t('archiveDetail.annotationCount', { count: feedbackEvents.length })}</span>
                           )}
                         </div>
                       </div>
@@ -964,7 +969,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                         <svg className="w-3.5 h-3.5 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                         </svg>
-                        <span className="text-[11px] font-semibold text-brand-primary">선생님 첨삭</span>
+                        <span className="text-[11px] font-semibold text-brand-primary">{t('archiveDetail.teacher')} {t('archiveDetail.annotations')}</span>
                       </div>
                       {feedbackEvents.map((e, i) => (
                         <div key={i} className="flex items-center gap-2 text-xs text-gray-600 mb-1.5 last:mb-0">
@@ -1004,7 +1009,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                                   </svg>
                                 )}
                               </div>
-                              <span className={`text-[10px] font-medium ${strokeCount === 0 ? 'text-gray-300' : 'text-gray-500'}`}>{strokeCount === 0 ? '미필기' : `${strokeCount}획`}</span>
+                              <span className={`text-[10px] font-medium ${strokeCount === 0 ? 'text-gray-300' : 'text-gray-500'}`}>{strokeCount === 0 ? t('archiveDetail.noWriting') : t('archiveDetail.strokes', { count: strokeCount })}</span>
                             </div>
                             <div className="w-full bg-gray-50 border border-gray-100 rounded overflow-hidden" style={{ aspectRatio: '210 / 297' }}>
                               {strokeCount > 0 ? (
@@ -1014,7 +1019,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                                   <svg className="w-5 h-5 text-gray-200 mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                   </svg>
-                                  <span className="text-[9px] text-gray-300">미필기</span>
+                                  <span className="text-[9px] text-gray-300">{t('archiveDetail.noWriting')}</span>
                                 </div>
                               )}
                             </div>
@@ -1046,7 +1051,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                                 </svg>
                               )}
-                              <span className="text-[10px] text-gray-400">{strokeCount === 0 ? '미필기' : `${strokeCount}획`}</span>
+                              <span className="text-[10px] text-gray-400">{strokeCount === 0 ? t('archiveDetail.noWriting') : t('archiveDetail.strokes', { count: strokeCount })}</span>
                             </button>
                           );
                         })}
@@ -1073,14 +1078,14 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                     </svg>
                   </div>
                   <div>
-                    <h2 className="text-lg font-bold text-gray-900 mb-1">참여 패턴 리포트</h2>
-                    <p className="text-sm text-gray-500 max-w-md">필기 데이터와 첨삭 기록을 기반으로<br />학생별 참여 패턴과 주의 포인트를 분석합니다</p>
+                    <h2 className="text-lg font-bold text-gray-900 mb-1">{t('archiveDetail.participationReport')}</h2>
+                    <p className="text-sm text-gray-500 max-w-md">{t('archiveDetail.classSummaryDesc')}</p>
                   </div>
                   <button
                     onClick={startSessionAnalysis}
                     className="px-8 py-3 bg-brand-primary text-white text-sm font-bold rounded-full hover:bg-brand-primary/90 shadow-lg shadow-brand-primary/20 transition-all hover:shadow-xl hover:shadow-brand-primary/30 hover:-translate-y-0.5"
                   >
-                    분석 시작하기
+                    {t('archiveDetail.startAnalysis')}
                   </button>
                 </div>
               </div>
@@ -1094,8 +1099,8 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                     <div className="absolute inset-0 w-12 h-12 border-3 border-transparent border-t-brand-primary rounded-full animate-spin" />
                   </div>
                   <div className="text-center">
-                    <span className="text-sm font-semibold text-gray-700 block">필기 데이터 분석 중</span>
-                    <span className="text-xs text-gray-400 mt-1 block">참여율, 첨삭 반응, 페이지별 필기 패턴을 종합하고 있습니다...</span>
+                    <span className="text-sm font-semibold text-gray-700 block">{t('archiveDetail.analyzing')}</span>
+                    <span className="text-xs text-gray-400 mt-1 block">{t('archiveDetail.analyzing')}</span>
                   </div>
                 </div>
               </div>
@@ -1113,7 +1118,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                         </svg>
                       </div>
                       <div>
-                        <h2 className="text-base font-bold text-gray-900">참여 패턴 리포트</h2>
+                        <h2 className="text-base font-bold text-gray-900">{t('archiveDetail.participationReport')}</h2>
                         <span className="text-[11px] text-gray-400">필기 데이터 기반 자동 생성</span>
                       </div>
                     </div>
@@ -1121,14 +1126,14 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                       onClick={resetSessionAnalysis}
                       className="px-3 py-1.5 text-[11px] font-medium text-gray-400 hover:text-brand-primary border border-gray-200 rounded-lg hover:border-brand-primary/30 transition-all"
                     >
-                      재분석
+                      {t('archiveDetail.resetAnalysis')}
                     </button>
                   </div>
 
                   <div className="px-5 sm:px-8 py-6 flex flex-col gap-5">
                     {/* 참여 현황 */}
                     <div className="p-5 bg-gray-50 rounded-xl border border-gray-100">
-                      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">참여 현황</h3>
+                      <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-3">{t('archiveDetail.participationSummary')}</h3>
                       <p className="text-sm text-gray-700 leading-relaxed">{sessionAnalysis.participationSummary}</p>
                     </div>
 
@@ -1140,7 +1145,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                         </svg>
                       </span>
                       <div>
-                        <h3 className="text-xs font-bold text-amber-700 mb-1">페이지별 이탈 패턴</h3>
+                        <h3 className="text-xs font-bold text-amber-700 mb-1">{t('archiveDetail.pageDropoff')}</h3>
                         <p className="text-xs text-gray-600 leading-relaxed">{sessionAnalysis.pageDropoff}</p>
                       </div>
                     </div>
@@ -1153,7 +1158,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                         </svg>
                       </span>
                       <div>
-                        <h3 className="text-xs font-bold text-brand-primary mb-1">첨삭 현황</h3>
+                        <h3 className="text-xs font-bold text-brand-primary mb-1">{t('archiveDetail.annotationStatus')}</h3>
                         <p className="text-xs text-gray-600 leading-relaxed">{sessionAnalysis.annotationSummary}</p>
                       </div>
                     </div>
@@ -1164,7 +1169,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                         <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                         </svg>
-                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">음성 대화 요약</h3>
+                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('archiveDetail.voiceSummary')}</h3>
                         <span className="text-[10px] text-gray-300 font-normal normal-case">(STT 참고)</span>
                       </div>
                       <p className="text-xs text-gray-500 leading-relaxed">{sessionAnalysis.voiceSummary}</p>
@@ -1175,7 +1180,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                 {/* ── 학생별 필기 패턴 분석 ── */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-base font-bold text-gray-900">학생별 필기 패턴</h3>
+                    <h3 className="text-base font-bold text-gray-900">{t('archiveDetail.studentAnalysis')}</h3>
                     <span className="text-[11px] text-gray-400">펼쳐서 상세 패턴을 확인하세요</span>
                   </div>
                   <div className="flex flex-col gap-3">
@@ -1212,14 +1217,14 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                                     level === 'low' ? 'bg-red-50 text-red-500' :
                                     'bg-gray-100 text-gray-400'
                                   }`}>
-                                    {level === 'high' ? '양호' : level === 'mid' ? '주의' : level === 'low' ? '부진' : '미필기'}
+                                    {level === 'high' ? t('archiveDetail.good') : level === 'mid' ? t('archiveDetail.caution') : level === 'low' ? t('archiveDetail.poor') : t('archiveDetail.noWriting')}
                                   </span>
                                   <span className="text-[11px] font-medium text-gray-400">{totalRate}%</span>
                                   {feedbackCount > 0 && (
-                                    <span className="text-[10px] font-semibold text-brand-primary">첨삭 {feedbackCount}</span>
+                                    <span className="text-[10px] font-semibold text-brand-primary">{t('archiveDetail.annotationCount', { count: feedbackCount })}</span>
                                   )}
                                   {analysis && (
-                                    <span className="text-[10px] font-medium text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded">분석 완료</span>
+                                    <span className="text-[10px] font-medium text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded">{t('archiveDetail.analysisComplete')}</span>
                                   )}
                                 </div>
                               </div>
@@ -1238,7 +1243,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                               {isAnalyzing && (
                                 <div className="flex items-center gap-3 py-4 justify-center">
                                   <div className="w-5 h-5 border-2 border-gray-200 border-t-brand-primary rounded-full animate-spin" />
-                                  <span className="text-xs text-gray-400">패턴 분석 중...</span>
+                                  <span className="text-xs text-gray-400">{t('archiveDetail.patternAnalyzing')}</span>
                                 </div>
                               )}
 
@@ -1248,7 +1253,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                                   <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
                                     <div className="flex items-center gap-1.5 mb-2">
                                       <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
-                                      <h4 className="text-xs font-bold text-gray-500">필기 패턴</h4>
+                                      <h4 className="text-xs font-bold text-gray-500">{t('archiveDetail.writingPattern')}</h4>
                                     </div>
                                     <p className="text-xs text-gray-600 leading-relaxed">{analysis.pattern}</p>
                                   </div>
@@ -1257,7 +1262,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                                   <div className="p-4 bg-brand-tint/10 rounded-xl border border-brand-primary/5">
                                     <div className="flex items-center gap-1.5 mb-2">
                                       <svg className="w-3.5 h-3.5 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" /></svg>
-                                      <h4 className="text-xs font-bold text-brand-primary">첨삭 반응</h4>
+                                      <h4 className="text-xs font-bold text-brand-primary">{t('archiveDetail.annotationReaction')}</h4>
                                     </div>
                                     <p className="text-xs text-gray-600 leading-relaxed">{analysis.annotationResponse}</p>
                                   </div>
@@ -1267,7 +1272,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                                     <div className="flex items-start gap-3 p-4 bg-amber-50/50 rounded-xl border border-amber-100/50">
                                       <svg className="w-3.5 h-3.5 text-amber-500 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
                                       <div>
-                                        <h4 className="text-xs font-bold text-amber-600 mb-1">주의 포인트</h4>
+                                        <h4 className="text-xs font-bold text-amber-600 mb-1">{t('archiveDetail.attentionPoint')}</h4>
                                         <p className="text-xs text-gray-600 leading-relaxed">{analysis.attention}</p>
                                       </div>
                                     </div>
@@ -1298,7 +1303,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                                       <div key={page.pageNum} className="flex items-center gap-1.5 text-xs">
                                         <div className={`w-3.5 h-3.5 rounded-full ${dot.color}`} />
                                         <span className="text-gray-400 font-medium">P{page.pageNum}</span>
-                                        <span className="text-gray-300">{strokeCount === 0 ? '—' : `${strokeCount}획`}</span>
+                                        <span className="text-gray-300">{strokeCount === 0 ? '—' : t('archiveDetail.strokes', { count: strokeCount })}</span>
                                       </div>
                                     );
                                   })}
@@ -1356,7 +1361,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                       <svg className="w-8 h-8 text-gray-300 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                       </svg>
-                      <span className="text-sm font-medium text-gray-400">미필기</span>
+                      <span className="text-sm font-medium text-gray-400">{t('archiveDetail.noWriting')}</span>
                     </div>
                   )}
                 </div>

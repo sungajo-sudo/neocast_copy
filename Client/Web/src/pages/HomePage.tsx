@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { getAnalysisCache } from '../utils/analysisCache';
 
 interface EndedSession {
@@ -61,6 +62,7 @@ function formatDateTime(iso: string) {
 
 export function HomePage() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [nickname, setNickname] = useState('선생님');
   const [endedSessions, setEndedSessions] = useState<EndedSession[]>([]);
   const [archives, setArchives] = useState<ArchiveItem[]>([]);
@@ -165,7 +167,7 @@ export function HomePage() {
       <div className="relative z-10 max-w-4xl mx-auto px-6 py-12 flex flex-col gap-10">
         {/* 인사말 */}
         <h1 className="text-2xl font-extrabold text-gray-800">
-          안녕하세요, {nickname}님!
+          {t('homePage.greeting', { name: nickname })}
         </h1>
 
         {/* 새 세션 시작 카드 */}
@@ -179,15 +181,15 @@ export function HomePage() {
             </svg>
           </div>
           <div>
-            <p className="font-bold text-gray-800 text-base">새 세션 시작</p>
-            <p className="text-sm text-gray-500 mt-0.5">지금 바로 수업을 시작하세요</p>
+            <p className="font-bold text-gray-800 text-base">{t('homePage.newSession')}</p>
+            <p className="text-sm text-gray-500 mt-0.5">{t('homePage.newSessionDesc')}</p>
           </div>
         </button>
 
         {/* 종료된 세션 (아카이브 저장 대기) */}
         {endedSessions.length > 0 && (
           <div className="flex flex-col gap-3">
-            <h2 className="text-base font-semibold text-gray-700">종료된 세션</h2>
+            <h2 className="text-base font-semibold text-gray-700">{t('homePage.endedSessions')}</h2>
             <div className="flex flex-col gap-2">
               {endedSessions.map((session) => (
                 <div
@@ -201,7 +203,7 @@ export function HomePage() {
                         {session.title}
                       </span>
                       <div className="flex items-center gap-3 text-xs text-gray-400">
-                        <span>{session.participantCount}명 참여</span>
+                        <span>{t('homePage.participantCount', { count: session.participantCount })}</span>
                         <span>{formatDateTime(session.endedAt)}</span>
                       </div>
                     </div>
@@ -211,13 +213,13 @@ export function HomePage() {
                       onClick={() => handleSaveToArchive(session)}
                       className="px-3 py-1.5 rounded-lg bg-brand-tint text-brand-primary text-xs font-medium hover:bg-brand-tint2 transition-colors"
                     >
-                      아카이브 저장
+                      {t('homePage.saveToArchive')}
                     </button>
                     <button
                       onClick={() => handleDismissEnded(session.sessionId)}
                       className="px-3 py-1.5 rounded-lg bg-gray-50 text-gray-400 text-xs font-medium hover:bg-gray-100 hover:text-gray-600 transition-colors"
                     >
-                      삭제
+                      {t('homePage.delete')}
                     </button>
                   </div>
                 </div>
@@ -228,15 +230,15 @@ export function HomePage() {
 
         {/* 아카이브 목록 */}
         <div className="flex flex-col gap-3">
-          <h2 className="text-base font-semibold text-gray-700">아카이브</h2>
+          <h2 className="text-base font-semibold text-gray-700">{t('homePage.archives')}</h2>
 
           {archives.length === 0 ? (
             <div className="neo-card p-10 text-center flex flex-col items-center gap-2">
               <svg className="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                 <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
               </svg>
-              <p className="text-gray-400 text-sm">저장된 아카이브가 없습니다</p>
-              <p className="text-gray-300 text-xs">종료된 세션을 아카이브로 저장해보세요</p>
+              <p className="text-gray-400 text-sm">{t('homePage.noArchives')}</p>
+              <p className="text-gray-300 text-xs">{t('homePage.noArchivesHint')}</p>
             </div>
           ) : (
             <div className="neo-card overflow-hidden">
@@ -282,8 +284,8 @@ export function HomePage() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
-                <p className="text-sm font-bold text-gray-900">저장 완료</p>
-                <p className="text-xs text-gray-400">아카이브에서 확인할 수 있습니다</p>
+                <p className="text-sm font-bold text-gray-900">{t('homePage.saveDone')}</p>
+                <p className="text-xs text-gray-400">{t('homePage.saveDoneDesc')}</p>
               </div>
             ) : savePopup.saving ? (
               /* 로딩 상태 */
@@ -292,7 +294,7 @@ export function HomePage() {
                   <div className="w-10 h-10 border-[3px] border-gray-200 rounded-full" />
                   <div className="absolute inset-0 w-10 h-10 border-[3px] border-transparent border-t-brand-primary rounded-full animate-spin" />
                 </div>
-                <p className="text-sm font-semibold text-gray-600">필기 데이터 저장 중...</p>
+                <p className="text-sm font-semibold text-gray-600">{t('homePage.saving')}</p>
               </div>
             ) : (
               /* 확인 상태 */
@@ -304,25 +306,25 @@ export function HomePage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-gray-900">아카이브 저장</p>
+                    <p className="text-sm font-bold text-gray-900">{t('homePage.saveArchiveTitle')}</p>
                     <p className="text-xs text-gray-400 mt-0.5">{savePopup.session?.title}</p>
                   </div>
                 </div>
                 <p className="text-sm text-gray-600 mb-5">
-                  이 세션의 필기 데이터를 아카이브에 저장하시겠습니까?
+                  {t('homePage.saveArchiveConfirm')}
                 </p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => setSavePopup({ open: false, session: null, saving: false, done: false })}
                     className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200 active:scale-[0.97] transition-all"
                   >
-                    취소
+                    {t('common.cancel')}
                   </button>
                   <button
                     onClick={confirmSaveArchive}
                     className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-brand-primary rounded-xl hover:bg-brand-primary/90 active:scale-[0.97] transition-all"
                   >
-                    확인
+                    {t('common.confirm')}
                   </button>
                 </div>
               </>
@@ -342,27 +344,27 @@ export function HomePage() {
                 </svg>
               </div>
               <div>
-                <p className="text-sm font-bold text-gray-900">세션 삭제</p>
+                <p className="text-sm font-bold text-gray-900">{t('homePage.deleteSessionTitle')}</p>
                 <p className="text-xs text-gray-400 mt-0.5">
                   {endedSessions.find(s => s.sessionId === deletePopup.sessionId)?.title}
                 </p>
               </div>
             </div>
             <p className="text-sm text-gray-600 mb-5">
-              이 세션을 삭제하시겠습니까? 삭제하면 아카이브로 저장할 수 없습니다.
+              {t('homePage.deleteSessionConfirm')}
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setDeletePopup({ open: false, sessionId: null })}
                 className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200 active:scale-[0.97] transition-all"
               >
-                취소
+                {t('common.cancel')}
               </button>
               <button
                 onClick={confirmDelete}
                 className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-red-500 rounded-xl hover:bg-red-600 active:scale-[0.97] transition-all"
               >
-                삭제
+                {t('homePage.delete')}
               </button>
             </div>
           </div>
