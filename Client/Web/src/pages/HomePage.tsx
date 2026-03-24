@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getAnalysisCache } from '../utils/analysisCache';
 
 interface EndedSession {
   sessionId: string;
@@ -21,44 +22,30 @@ const DUMMY_ENDED_SESSIONS: EndedSession[] = [
   {
     sessionId: 'test-001',
     title: '수학 월요일 오전반',
-    participantCount: 5,
+    participantCount: 3,
     endedAt: '2026-03-23T10:30:00',
   },
   {
     sessionId: 'test-002',
     title: '영어 화요일 저녁반',
-    participantCount: 8,
+    participantCount: 3,
     endedAt: '2026-03-22T18:00:00',
   },
   {
     sessionId: 'test-003',
     title: '국어 수요일 오후반',
-    participantCount: 12,
+    participantCount: 3,
     endedAt: '2026-03-21T14:00:00',
   },
 ];
 
 const DUMMY_ARCHIVES: ArchiveItem[] = [
   {
-    archiveId: 'archive_001',
-    sessionName: '중학교 수학 - 이차방정식',
-    participantCount: 12,
-    endedAt: '2026-03-10T15:30:00',
-    pages: 3,
-  },
-  {
-    archiveId: 'archive_002',
-    sessionName: '고등 국어 - 현대시 분석',
-    participantCount: 8,
-    endedAt: '2026-03-07T11:00:00',
-    pages: 2,
-  },
-  {
     archiveId: 'archive_003',
     sessionName: '이차방정식 문제풀이',
-    participantCount: 6,
+    participantCount: 5,
     endedAt: '2026-03-21T16:30:00',
-    pages: 3,
+    pages: 7,
   },
 ];
 
@@ -78,6 +65,11 @@ export function HomePage() {
   const [endedSessions, setEndedSessions] = useState<EndedSession[]>([]);
   const [archives, setArchives] = useState<ArchiveItem[]>([]);
 
+  // 아카이브 저장 팝업 상태
+  const [savePopup, setSavePopup] = useState<{ open: boolean; session: EndedSession | null; saving: boolean; done: boolean }>({ open: false, session: null, saving: false, done: false });
+  // 삭제 확인 팝업 상태
+  const [deletePopup, setDeletePopup] = useState<{ open: boolean; sessionId: string | null }>({ open: false, sessionId: null });
+
   useEffect(() => {
     // 인증 정보 로드
     try {
@@ -85,29 +77,19 @@ export function HomePage() {
       if (auth.nickname) setNickname(auth.nickname);
     } catch {}
 
-    // 종료된 세션 로드 (없으면 더미 데이터 사용)
-    try {
-      const saved = localStorage.getItem('nc_ended_sessions');
-      if (saved) {
-        setEndedSessions(JSON.parse(saved));
-      } else {
-        setEndedSessions(DUMMY_ENDED_SESSIONS);
-      }
-    } catch {}
+    // 종료 세션은 매번 더미로 리셋
+    localStorage.setItem('nc_ended_sessions', JSON.stringify(DUMMY_ENDED_SESSIONS));
+    setEndedSessions(DUMMY_ENDED_SESSIONS);
 
-    // 아카이브 초기화 (항상 더미 데이터를 기본값으로 병합)
+    // 아카이브는 저장된 것 유지 + 더미 병합
     try {
       const saved = localStorage.getItem('nc_archives');
       if (saved) {
         const existing = JSON.parse(saved) as ArchiveItem[];
-        // 더미 데이터의 세션명이 변경되었을 수 있으므로 병합
-        const merged = DUMMY_ARCHIVES.map(dummy => {
-          const found = existing.find(e => e.archiveId === dummy.archiveId);
-          return found ? { ...found, sessionName: dummy.sessionName } : dummy;
-        });
-        // 더미에 없는 사용자 추가 아카이브도 유지
-        const userAdded = existing.filter(e => !DUMMY_ARCHIVES.some(d => d.archiveId === e.archiveId));
-        const finalArchives = [...merged, ...userAdded];
+        // 더미가 없으면 추가, 사용자가 저장한 것도 유지
+        const dummyIds = DUMMY_ARCHIVES.map(d => d.archiveId);
+        const userAdded = existing.filter(e => !dummyIds.includes(e.archiveId));
+        const finalArchives = [...DUMMY_ARCHIVES, ...userAdded];
         localStorage.setItem('nc_archives', JSON.stringify(finalArchives));
         setArchives(finalArchives);
       } else {
@@ -119,31 +101,62 @@ export function HomePage() {
     }
   }, []);
 
-  // 종료된 세션 → 아카이브로 저장
+  // 종료된 세션 → 아카이브 저장 팝업 열기
   const handleSaveToArchive = (session: EndedSession) => {
-    const newArchive: ArchiveItem = {
-      archiveId: `archive_${session.sessionId}`,
-      sessionName: session.title,
-      participantCount: session.participantCount,
-      endedAt: session.endedAt,
-      pages: 0,
-    };
-
-    const updatedArchives = [newArchive, ...archives];
-    setArchives(updatedArchives);
-    localStorage.setItem('nc_archives', JSON.stringify(updatedArchives));
-
-    // 종료된 세션 목록에서 제거
-    const updatedEnded = endedSessions.filter(s => s.sessionId !== session.sessionId);
-    setEndedSessions(updatedEnded);
-    localStorage.setItem('nc_ended_sessions', JSON.stringify(updatedEnded));
+    setSavePopup({ open: true, session, saving: false, done: false });
   };
 
-  // 종료된 세션 삭제 (아카이브 저장 안 함)
+  // 팝업에서 "확인" 클릭 → 로딩 → 저장 완료
+  const confirmSaveArchive = useCallback(() => {
+    if (!savePopup.session) return;
+    const session = savePopup.session;
+    setSavePopup(prev => ({ ...prev, saving: true }));
+
+    // 로딩 시뮬레이션 (1.5초)
+    setTimeout(() => {
+      const newArchive: ArchiveItem = {
+        archiveId: `archive_${session.sessionId}`,
+        sessionName: session.title,
+        participantCount: session.participantCount,
+        endedAt: session.endedAt,
+        pages: 5,
+      };
+
+      setArchives(prev => {
+        const updated = [newArchive, ...prev];
+        localStorage.setItem('nc_archives', JSON.stringify(updated));
+        return updated;
+      });
+
+      setEndedSessions(prev => {
+        const updated = prev.filter(s => s.sessionId !== session.sessionId);
+        localStorage.setItem('nc_ended_sessions', JSON.stringify(updated));
+        return updated;
+      });
+
+      setSavePopup(prev => ({ ...prev, saving: false, done: true }));
+
+      // 1초 후 팝업 닫기
+      setTimeout(() => {
+        setSavePopup({ open: false, session: null, saving: false, done: false });
+      }, 1000);
+    }, 1500);
+  }, [savePopup.session]);
+
+  // 종료된 세션 삭제 팝업 열기
   const handleDismissEnded = (sessionId: string) => {
-    const updatedEnded = endedSessions.filter(s => s.sessionId !== sessionId);
-    setEndedSessions(updatedEnded);
-    localStorage.setItem('nc_ended_sessions', JSON.stringify(updatedEnded));
+    setDeletePopup({ open: true, sessionId });
+  };
+
+  // 삭제 확인
+  const confirmDelete = () => {
+    if (!deletePopup.sessionId) return;
+    setEndedSessions(prev => {
+      const updated = prev.filter(s => s.sessionId !== deletePopup.sessionId);
+      localStorage.setItem('nc_ended_sessions', JSON.stringify(updated));
+      return updated;
+    });
+    setDeletePopup({ open: false, sessionId: null });
   };
 
   return (
@@ -151,17 +164,19 @@ export function HomePage() {
       {/* 본문 */}
       <div className="relative z-10 max-w-4xl mx-auto px-6 py-12 flex flex-col gap-10">
         {/* 인사말 */}
-        <h1 className="text-2xl font-bold text-gray-800">
+        <h1 className="text-2xl font-extrabold text-gray-800">
           안녕하세요, {nickname}님!
         </h1>
 
         {/* 새 세션 시작 카드 */}
         <button
           onClick={() => navigate('/session/create')}
-          className="w-full neo-card p-6 flex items-center gap-4 hover:shadow-lg transition-all text-left group"
+          className="w-full neo-card p-6 flex items-center gap-4 hover:shadow-lg active:scale-[0.99] transition-all text-left group"
         >
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#6366f1] to-[#a855f7] flex items-center justify-center text-white text-2xl flex-shrink-0 group-hover:scale-105 transition-transform">
-            +
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center text-white flex-shrink-0 group-hover:scale-105 transition-transform">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
           </div>
           <div>
             <p className="font-bold text-gray-800 text-base">새 세션 시작</p>
@@ -179,19 +194,22 @@ export function HomePage() {
                   key={session.sessionId}
                   className="neo-card px-6 py-4 flex items-center justify-between"
                 >
-                  <div className="flex flex-col gap-0.5 min-w-0 flex-1">
-                    <span className="font-medium text-gray-800 text-sm truncate">
-                      {session.title}
-                    </span>
-                    <div className="flex items-center gap-3 text-xs text-gray-400">
-                      <span>{session.participantCount}명 참여</span>
-                      <span>{formatDateTime(session.endedAt)}</span>
+                  <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                    <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0" />
+                    <div className="flex flex-col gap-0.5 min-w-0">
+                      <span className="font-medium text-gray-800 text-sm truncate">
+                        {session.title}
+                      </span>
+                      <div className="flex items-center gap-3 text-xs text-gray-400">
+                        <span>{session.participantCount}명 참여</span>
+                        <span>{formatDateTime(session.endedAt)}</span>
+                      </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 flex-shrink-0 ml-4">
                     <button
                       onClick={() => handleSaveToArchive(session)}
-                      className="px-3 py-1.5 rounded-lg bg-blue-50 text-blue-600 text-xs font-medium hover:bg-blue-100 transition-colors"
+                      className="px-3 py-1.5 rounded-lg bg-brand-tint text-brand-primary text-xs font-medium hover:bg-brand-tint2 transition-colors"
                     >
                       아카이브 저장
                     </button>
@@ -213,8 +231,12 @@ export function HomePage() {
           <h2 className="text-base font-semibold text-gray-700">아카이브</h2>
 
           {archives.length === 0 ? (
-            <div className="neo-card p-8 text-center text-gray-400 text-sm">
-              저장된 아카이브가 없습니다
+            <div className="neo-card p-10 text-center flex flex-col items-center gap-2">
+              <svg className="w-10 h-10 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+              </svg>
+              <p className="text-gray-400 text-sm">저장된 아카이브가 없습니다</p>
+              <p className="text-gray-300 text-xs">종료된 세션을 아카이브로 저장해보세요</p>
             </div>
           ) : (
             <div className="neo-card overflow-hidden">
@@ -222,17 +244,22 @@ export function HomePage() {
                 <button
                   key={item.archiveId}
                   onClick={() => navigate(`/archive/${item.archiveId}`)}
-                  className={`w-full flex items-center justify-between px-6 py-4 hover:bg-blue-50/60 transition-colors text-left ${
+                  className={`group/row w-full flex items-center justify-between px-6 py-4 hover:bg-brand-tint/60 transition-all duration-200 text-left ${
                     idx !== archives.length - 1 ? 'border-b border-gray-100' : ''
                   }`}
                 >
                   <div className="flex flex-col gap-0.5">
-                    <span className="font-medium text-gray-800 text-sm">{item.sessionName}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-gray-800 text-sm">{item.sessionName}</span>
+                      {getAnalysisCache(item.archiveId)?.sessionResult && (
+                        <span className="text-[10px] font-semibold text-emerald-600 bg-emerald-50 px-1.5 py-0.5 rounded">AI 분석</span>
+                      )}
+                    </div>
                     <span className="text-xs text-gray-400">{formatDate(item.endedAt)}</span>
                   </div>
                   <div className="flex items-center gap-4">
                     <span className="text-sm text-gray-500">{item.participantCount}명</span>
-                    <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-4 h-4 text-gray-400 group-hover/row:text-brand-primary group-hover/row:translate-x-0.5 transition-all duration-200" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </div>
@@ -242,6 +269,105 @@ export function HomePage() {
           )}
         </div>
       </div>
+
+      {/* ── 아카이브 저장 팝업 ── */}
+      {savePopup.open && (
+        <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center" onClick={() => !savePopup.saving && setSavePopup({ open: false, session: null, saving: false, done: false })}>
+          <div className="bg-white rounded-2xl w-[90vw] max-w-[360px] p-6 shadow-2xl animate-in" onClick={e => e.stopPropagation()}>
+            {savePopup.done ? (
+              /* 완료 상태 */
+              <div className="flex flex-col items-center gap-3 py-4">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center">
+                  <svg className="w-6 h-6 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <p className="text-sm font-bold text-gray-900">저장 완료</p>
+                <p className="text-xs text-gray-400">아카이브에서 확인할 수 있습니다</p>
+              </div>
+            ) : savePopup.saving ? (
+              /* 로딩 상태 */
+              <div className="flex flex-col items-center gap-3 py-6">
+                <div className="relative">
+                  <div className="w-10 h-10 border-[3px] border-gray-200 rounded-full" />
+                  <div className="absolute inset-0 w-10 h-10 border-[3px] border-transparent border-t-brand-primary rounded-full animate-spin" />
+                </div>
+                <p className="text-sm font-semibold text-gray-600">필기 데이터 저장 중...</p>
+              </div>
+            ) : (
+              /* 확인 상태 */
+              <>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-xl bg-brand-tint flex items-center justify-center flex-shrink-0">
+                    <svg className="w-5 h-5 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-gray-900">아카이브 저장</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{savePopup.session?.title}</p>
+                  </div>
+                </div>
+                <p className="text-sm text-gray-600 mb-5">
+                  이 세션의 필기 데이터를 아카이브에 저장하시겠습니까?
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setSavePopup({ open: false, session: null, saving: false, done: false })}
+                    className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200 active:scale-[0.97] transition-all"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={confirmSaveArchive}
+                    className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-brand-primary rounded-xl hover:bg-brand-primary/90 active:scale-[0.97] transition-all"
+                  >
+                    확인
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ── 삭제 확인 팝업 ── */}
+      {deletePopup.open && (
+        <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center" onClick={() => setDeletePopup({ open: false, sessionId: null })}>
+          <div className="bg-white rounded-2xl w-[90vw] max-w-[360px] p-6 shadow-2xl animate-in" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-red-50 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-gray-900">세션 삭제</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {endedSessions.find(s => s.sessionId === deletePopup.sessionId)?.title}
+                </p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 mb-5">
+              이 세션을 삭제하시겠습니까? 삭제하면 아카이브로 저장할 수 없습니다.
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setDeletePopup({ open: false, sessionId: null })}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200 active:scale-[0.97] transition-all"
+              >
+                취소
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-red-500 rounded-xl hover:bg-red-600 active:scale-[0.97] transition-all"
+              >
+                삭제
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

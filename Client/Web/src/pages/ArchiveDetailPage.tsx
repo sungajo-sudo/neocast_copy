@@ -68,14 +68,19 @@ export function ArchiveDetailPage() {
   if (!archive) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-app-bg">
-        <p className="text-slate-400 font-bold">아카이브를 찾을 수 없습니다.</p>
+        <p className="text-slate-400 font-semibold">아카이브를 찾을 수 없습니다.</p>
       </div>
     );
   }
 
-  // archive_003 (이차 방정식 문제풀이)만 새 시안으로 렌더링
+  // archive_003 (이차방정식 문제풀이) → 시안A (전체 기능)
   if (archiveId === 'archive_003') {
     return <ArchiveDetailV2 archive={archive} />;
+  }
+
+  // 종료 세션에서 저장된 아카이브 → 시안B (간소화: 3명, 5P, 썸네일뷰, AI분석 없음)
+  if (archiveId?.startsWith('archive_test-')) {
+    return <ArchiveDetailV2 archive={archive} variant="simple" />;
   }
 
   const pdfLabel = `${selectedPdf.filename} · ${selectedPdf.pages}P · ${selectedPdf.date} · SOBP: ${selectedPdf.sobp}`;

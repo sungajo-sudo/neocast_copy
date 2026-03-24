@@ -4,15 +4,7 @@
 
 /* UI/UX Source: /docs/DESIGN_SYSTEM.md */
 
-:root {
-  /* Default font - will be overridden by JavaScript based on language */
-  --font-family: 'Noto Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-}
-
-/* Override Tailwind's font-sans with language-specific font */
-*, *::before, *::after {
-  font-family: var(--font-family) !important;
-}
+/* Font is set via @layer base body rule below */
 
 body {
   margin: 0;
@@ -39,6 +31,7 @@ body {
     border: 2px solid var(--color-app-border);
     border-radius: var(--radius-modern);
     box-shadow: var(--shadow-modern);
+    transition: box-shadow 0.2s ease-out, transform 0.2s ease-out;
   }
 
   /* 프라이머리 버튼 (pill + gradient) */
@@ -75,6 +68,16 @@ body {
   .neo-btn-ghost:hover {
     background: var(--color-brand-tint);
     border-color: #c4b5fd;
+  }
+  .neo-btn-ghost:active {
+    transform: scale(0.97);
+  }
+
+  /* Focus-visible ring for keyboard accessibility */
+  .neo-btn-primary:focus-visible,
+  .neo-btn-ghost:focus-visible {
+    outline: 2px solid var(--color-brand-primary);
+    outline-offset: 2px;
   }
 
   /* 섹션 태그 (small label) */
@@ -223,4 +226,13 @@ body {
 }
 .animate-cursor-move {
   animation: cursor-move 4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+}
+
+/* 팝업 등장 애니메이션 */
+@keyframes animate-in {
+  0% { opacity: 0; transform: scale(0.95) translateY(8px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.animate-in {
+  animation: animate-in 0.2s ease-out;
 }

@@ -13,9 +13,9 @@ const CYCLE_STEPS = [
     subtitle: '데이터 기반 수업 준비',
     desc: '이전 학습 기록을 분석해 학생의 취약점을 미리 파악하고, 수업 난이도와 방향을 설계합니다.',
     tags: ['성적 예측', '데이터 기반'],
-    color: 'from-violet-500 to-violet-500',
-    bgColor: 'bg-blue-50',
-    textColor: 'text-blue-700',
+    color: 'from-violet-500 to-indigo-500',
+    bgColor: 'bg-indigo-50',
+    textColor: 'text-indigo-700',
   },
   {
     step: 'STEP 2',
@@ -123,85 +123,6 @@ const CORE_VALUES = [
   },
 ];
 
-// ── AS-IS vs TO-BE 비교 ──
-const COMPARISON_DATA = [
-  {
-    category: '교사 업무',
-    asIs: '채점, 기록 관리 등 반복적인 사무 작업',
-    toBe: '학습 기록이 자동 생성되어 수업 본연에 집중',
-  },
-  {
-    category: '평가 기준',
-    asIs: '결과(점수) 중심 평가',
-    toBe: '0.5초 단위로 기록되는 학습 데이터, 풀이 과정 리플레이 가능',
-  },
-  {
-    category: '개별 지도',
-    asIs: '학생이 질문할 때까지 기다리는 수동적 지도',
-    toBe: '필기 과정을 실시간 모니터링하여 먼저 다가가는 지도',
-  },
-  {
-    category: '원격 모니터링',
-    asIs: '얼굴 중심 화면 공유로 필기 확인이 어려움',
-    toBe: '1:N 필기 동시 모니터링 + 음성 가이드',
-  },
-  {
-    category: '인프라 비용',
-    asIs: '고가의 전자칠판, 네트워크 설정 등 부담',
-    toBe: '프린터만 있으면 익숙한 종이와 펜으로 바로 시작',
-  },
-  {
-    category: '학습 몰입도',
-    asIs: '태블릿 알림, 게임 등 집중을 방해하는 요소가 많음',
-    toBe: '종이 필기의 집중력 + 디지털의 편리함을 결합',
-  },
-];
-
-// ── 이용 방법 스텝 ──
-const USAGE_STEPS = [
-  {
-    num: '1',
-    title: '손쉬운 수업 준비와 접속',
-    desc: 'PC, 태블릿, 스마트폰 어디서든 URL로 바로 접속. 별도 프로그램 설치가 필요 없습니다.',
-    icon: (
-      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
-      </svg>
-    ),
-  },
-  {
-    num: '2',
-    title: '종이 교재에 그대로 필기',
-    desc: 'Ncode 전용 교재는 물론, 직접 만든 학습지를 인쇄해서 바로 활용할 수 있습니다. 종이 위 손글씨로 학습 몰입도를 유지합니다.',
-    icon: (
-      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-      </svg>
-    ),
-  },
-  {
-    num: '3',
-    title: '필기 데이터 실시간 전송',
-    desc: '필기가 바로 데이터로 변환되어 전송됩니다. 펜이 멈춘 시간까지 정밀 기록되고, 음성 채팅으로 실시간 안내도 가능합니다.',
-    icon: (
-      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5" />
-      </svg>
-    ),
-  },
-  {
-    num: '4',
-    title: '결과 확인 및 개별 학습 관리',
-    desc: '선생님 화면에서 모든 학생의 풀이 과정을 동시에 확인. 수업 후에는 데이터 기반 리포트로 개별 관리까지.',
-    icon: (
-      <svg className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-        <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
-        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
-      </svg>
-    ),
-  },
-];
-
 export function LandingPage() {
   const navigate = useNavigate();
 
@@ -212,14 +133,14 @@ export function LandingPage() {
   return (
     <div className="min-h-screen bg-app-bg font-sans">
       {/* ═══ HERO 섹션 ═══ */}
-      <section className="relative overflow-hidden pt-12 sm:pt-20 pb-20 sm:pb-32">
+      <section className="relative overflow-hidden py-20 sm:py-32">
         <div className="absolute inset-0 bg-gradient-to-br from-violet-50/60 via-white to-purple-50/40 -z-10" />
-        
+
         <div className="max-w-6xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-16 sm:mb-20">
             <div className="inline-flex items-center px-4 py-2 rounded-full bg-violet-50 border border-violet-100 mb-6 group cursor-default shadow-sm">
               <span className="w-2 h-2 rounded-full bg-violet-500 mr-2 animate-pulse"></span>
-              <span className="text-xs font-bold text-violet-600 tracking-wider uppercase">Next Gen Education</span>
+              <span className="text-xs font-semibold text-violet-600 tracking-wider uppercase">Next Gen Education</span>
             </div>
 
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-slate-900 leading-[1.15] tracking-tight">
@@ -228,17 +149,17 @@ export function LandingPage() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600">실시간 교육의 혁신</span>
             </h1>
 
-            <p className="mt-8 text-lg sm:text-xl text-slate-500 leading-relaxed font-medium">
+            <p className="mt-8 text-lg sm:text-xl text-slate-500 leading-relaxed">
               멀리 떨어져 있어도 종이 위의 펜 끝이 실시간으로 연결됩니다.
               <br />
-              <span className="text-slate-800">지연 시간 걱정 없는 실시간 필기 공유, NeoCAST와 함께라면 가능합니다.</span>
+              <span className="text-slate-700">지연 시간 걱정 없는 실시간 필기 공유, NeoCAST와 함께라면 가능합니다.</span>
             </p>
 
             <div className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4">
-              <button onClick={handleStart} className="w-full sm:w-auto px-8 py-4 bg-violet-600 hover:bg-violet-700 text-white rounded-2xl font-bold text-lg shadow-xl shadow-violet-200 transition-all hover:scale-105 active:scale-95">
+              <button onClick={handleStart} className="neo-btn-primary w-full sm:w-auto px-8 py-4 text-lg shadow-xl shadow-violet-200 hover:scale-105 active:scale-95">
                 지금 무료로 시작하기
               </button>
-              <button onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })} className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-50 text-slate-700 border border-slate-200 rounded-2xl font-bold text-lg transition-all">
+              <button onClick={() => document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' })} className="neo-btn-ghost w-full sm:w-auto px-8 py-4 text-lg">
                 서비스 가이드 보기
               </button>
             </div>
@@ -248,22 +169,29 @@ export function LandingPage() {
             <div className="absolute -inset-4 bg-gradient-to-r from-violet-500/10 to-purple-500/10 rounded-[48px] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity"></div>
 
             <div className="relative grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-              {/* 왼쪽: 학생의 필기 (실시간 싱크의 마법 강조) */}
-              {/* 왼쪽: 학생의 필기 (노트북을 숨기고 펜 끝에만 집중) */}
+              {/* 왼쪽: 학생의 필기 */}
               <div className="lg:col-span-5 relative group/hand">
-                <div className="h-full min-h-[460px] rounded-[40px] overflow-hidden shadow-2xl border border-white/50 relative bg-[#f8fafc]">
+                <div className="h-full min-h-[460px] rounded-[40px] overflow-hidden shadow-2xl border border-white/50 relative bg-violet-50/30">
                   <div className="w-full h-full overflow-hidden">
-                    <img 
-                      src="/images/student-hero.png" 
-                      alt="종이 위 필기에 집중하는 펜 끝" 
-                      className="w-full h-full object-cover scale-[1.7] origin-bottom translate-y-[2%] transition-transform duration-700 group-hover/hand:scale-[1.8]"
+                    <img
+                      src="/images/student-hero.png"
+                      alt="종이 위 필기에 집중하는 펜 끝"
+                      className="w-full h-full object-cover scale-[1.5] sm:scale-[1.7] origin-bottom translate-y-[2%] transition-transform duration-700 group-hover/hand:scale-[1.6] sm:group-hover/hand:scale-[1.8]"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
                     />
+                    {/* 이미지 로드 실패 시 fallback */}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center bg-violet-50/80 text-violet-400">
+                      <svg className="w-16 h-16 mb-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                      <span className="text-sm font-semibold">Real-Ink Sync</span>
+                    </div>
                   </div>
                   <div className="absolute inset-0 bg-violet-900/5 mix-blend-multiply"></div>
 
                   <div className="absolute top-8 left-8 flex items-center gap-2.5 px-5 py-2.5 bg-white/95 backdrop-blur-md rounded-[20px] shadow-xl border border-white">
                     <span className="w-2.5 h-2.5 rounded-full bg-violet-600 animate-pulse"></span>
-                    <span className="text-[11px] font-black text-slate-800 tracking-widest uppercase">Real-Ink Sync</span>
+                    <span className="text-[11px] font-bold text-slate-800 tracking-widest uppercase">Real-Ink Sync</span>
                   </div>
                 </div>
               </div>
@@ -283,10 +211,10 @@ export function LandingPage() {
                 <div className="h-full bg-slate-50/50 p-2 rounded-[36px] shadow-2xl border border-white overflow-hidden">
                   <div className="h-full bg-white rounded-[30px] overflow-hidden flex flex-col">
                     <div className="h-10 bg-slate-50/80 px-5 flex items-center border-b border-slate-100 justify-between">
-                      <span className="text-[10px] font-black text-slate-400 tracking-widest uppercase">NeoCAST Monitor Console</span>
-                      <div className="flex gap-1.5">
+                      <span className="text-[10px] font-bold text-slate-400 tracking-widest uppercase">NeoCAST Monitor Console</span>
+                      <div className="flex items-center gap-1.5">
                         <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></div>
-                        <span className="text-[8px] font-bold text-slate-400 tracking-wider">SYNCED AT 0.5s LATENCY</span>
+                        <span className="text-[10px] font-medium text-slate-400 tracking-wider">SYNCED AT 0.5s</span>
                       </div>
                     </div>
                     
@@ -297,10 +225,10 @@ export function LandingPage() {
                       
                       <div className="relative w-full max-w-lg aspect-[4/3] bg-white rounded-3xl shadow-[0_20px_50px_rgba(124,58,237,0.12)] border border-violet-100 p-12 flex flex-col items-center justify-center gap-10 group/screen">
                          <div className="absolute top-6 left-6 flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-black text-xs">SM</div>
+                            <div className="w-10 h-10 rounded-full bg-violet-100 flex items-center justify-center text-violet-600 font-bold text-xs">SM</div>
                             <div className="flex flex-col">
-                               <span className="text-[11px] font-black text-slate-800 leading-none">최민준 학생</span>
-                               <span className="text-[9px] font-bold text-violet-500 mt-1 uppercase">Math Session Active</span>
+                               <span className="text-[11px] font-bold text-slate-800 leading-none">최민준 학생</span>
+                               <span className="text-[10px] font-medium text-violet-500 mt-1 uppercase">Math Session Active</span>
                             </div>
                          </div>
 
@@ -319,7 +247,7 @@ export function LandingPage() {
                          </div>
 
                          <div className="absolute bottom-6 right-6 px-4 py-2 bg-slate-50 rounded-xl border border-slate-100">
-                             <span className="text-[10px] font-bold text-slate-400">SESSION RECORDING...</span>
+                             <span className="text-[10px] font-medium text-slate-400">SESSION RECORDING...</span>
                          </div>
                       </div>
                     </div>
@@ -328,19 +256,19 @@ export function LandingPage() {
               </div>
             </div>
 
-            {/* 3개 통계 배지로 롤백 */}
-            <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-xl border border-slate-200 rounded-[32px] px-12 py-6 shadow-2xl flex items-center gap-12 whitespace-nowrap">
-              <div className="text-center border-r border-slate-100 pr-12">
-                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Status</p>
-                <p className="text-2xl font-black text-violet-600 tracking-tighter">REAL-TIME</p>
+            {/* 3개 통계 배지 */}
+            <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 w-[calc(100%-2rem)] sm:w-auto bg-white/95 backdrop-blur-xl border border-slate-200 rounded-[24px] sm:rounded-[32px] px-4 sm:px-12 py-4 sm:py-6 shadow-2xl flex items-center justify-center gap-4 sm:gap-12">
+              <div className="text-center border-r border-slate-100 pr-4 sm:pr-12">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1.5">Status</p>
+                <p className="text-lg sm:text-2xl font-extrabold text-violet-600 tracking-tighter">REAL-TIME</p>
               </div>
-              <div className="text-center border-r border-slate-100 pr-12">
-                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Stability</p>
-                <p className="text-2xl font-black text-emerald-600 tracking-tighter">99.9%</p>
+              <div className="text-center border-r border-slate-100 pr-4 sm:pr-12">
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1.5">Stability</p>
+                <p className="text-lg sm:text-2xl font-extrabold text-emerald-600 tracking-tighter">99.9%</p>
               </div>
               <div className="text-center">
-                <p className="text-[11px] font-black text-slate-400 uppercase tracking-widest mb-1.5">Classes</p>
-                <p className="text-2xl font-black text-slate-900 tracking-tighter">1:N 30+</p>
+                <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mb-1.5">Classes</p>
+                <p className="text-lg sm:text-2xl font-extrabold text-slate-900 tracking-tighter">1:N 30+</p>
               </div>
             </div>
           </div>
@@ -348,18 +276,23 @@ export function LandingPage() {
       </section>
 
       {/* ── 학습 사이클 ── */}
-      <section className="max-w-6xl mx-auto px-4 sm:px-6 py-24 sm:py-32">
+      <section id="how-it-works" className="max-w-6xl mx-auto px-4 sm:px-6 pt-32 sm:pt-40 pb-24 sm:pb-32">
         <div className="text-center mb-16">
           <span className="neo-tag">Holistic Learning Loop</span>
-          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mt-4 tracking-tight">사고의 흐름을 데이터로 잇는 배움의 사이클</h2>
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-4 tracking-tight">사고의 흐름을 데이터로 잇는 배움의 사이클</h2>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {CYCLE_STEPS.map((step, idx) => (
-            <div key={idx} className="bg-white border border-slate-100 rounded-[32px] p-8 hover:shadow-2xl transition-all">
+            <div key={idx} className="bg-white border border-slate-100 rounded-[32px] p-8 hover:shadow-2xl hover:-translate-y-1 transition-all duration-200 ease-out">
               <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${step.color} flex items-center justify-center text-white mb-6`}>{step.icon}</div>
-              <span className="text-[10px] font-black text-violet-600 uppercase tracking-widest block mb-1">{step.step}</span>
-              <h3 className="text-xl font-black text-slate-900 mb-4">{step.title}</h3>
-              <p className="text-sm text-slate-500 leading-relaxed mb-6">{step.desc}</p>
+              <span className="text-[10px] font-semibold text-violet-600 uppercase tracking-widest block mb-1">{step.step}</span>
+              <h3 className="text-xl font-bold text-slate-900 mb-4">{step.title}</h3>
+              <p className="text-sm text-slate-500 leading-relaxed mb-5">{step.desc}</p>
+              <div className="flex flex-wrap gap-1.5">
+                {step.tags.map(tag => (
+                  <span key={tag} className={`text-[10px] font-semibold ${step.bgColor} ${step.textColor} px-2.5 py-1 rounded-full`}>{tag}</span>
+                ))}
+              </div>
             </div>
           ))}
         </div>
@@ -371,16 +304,16 @@ export function LandingPage() {
           <div className="flex flex-col lg:flex-row gap-16 items-center">
             <div className="lg:w-1/3">
               <span className="neo-tag">Core Value</span>
-              <h2 className="text-3xl sm:text-4xl font-black text-slate-900 mt-4 leading-tight tracking-tight">준비물은 오직 익숙한 종이와 펜</h2>
-              <p className="mt-6 text-slate-500 leading-relaxed font-medium">값비싼 장비나 교실 환경에 구애받지 마세요. 익숙한 종이의 집중력을 디지털로 연결합니다.</p>
+              <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 mt-4 leading-tight tracking-tight">준비물은 오직 익숙한 종이와 펜</h2>
+              <p className="mt-6 text-slate-500 leading-relaxed">값비싼 장비나 교실 환경에 구애받지 마세요. 익숙한 종이의 집중력을 디지털로 연결합니다.</p>
             </div>
             <div className="lg:w-2/3 grid grid-cols-1 sm:grid-cols-2 gap-4">
               {CORE_VALUES.map((v, i) => (
-                <div key={i} className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm flex items-start gap-4">
-                  <div className="text-violet-600 p-2 bg-violet-50 rounded-xl">{v.icon}</div>
+                <div key={i} className="bg-white p-6 rounded-[24px] border border-slate-100 shadow-sm flex items-start gap-3 hover:border-violet-200 hover:shadow-md transition-all duration-200 ease-out">
+                  <div className="text-violet-600 p-2 bg-violet-50 rounded-xl shrink-0">{v.icon}</div>
                   <div>
-                    <h4 className="font-black text-slate-900 text-sm mb-1">{v.title}</h4>
-                    <p className="text-xs text-slate-400 leading-relaxed">{v.desc}</p>
+                    <h4 className="font-semibold text-slate-900 text-sm mb-1">{v.title}</h4>
+                    <p className="text-sm text-slate-500 leading-relaxed">{v.desc}</p>
                   </div>
                 </div>
               ))}
@@ -392,21 +325,21 @@ export function LandingPage() {
       {/* ── CTA ── */}
       <section className="max-w-4xl mx-auto px-4 py-24 sm:py-32">
         <div className="bg-gradient-to-br from-violet-600 to-violet-700 rounded-[48px] p-12 sm:p-20 text-center shadow-2xl relative overflow-hidden">
-          <h2 className="text-3xl sm:text-5xl font-black text-white mb-6 tracking-tight">사고의 궤적을 실시간 데이터로</h2>
-          <p className="text-violet-100 text-lg sm:text-xl mb-12 font-medium opacity-90">필기 속에 숨겨진 성장의 실마리를 NeoCAST로 찾아보세요.</p>
-          <button onClick={handleStart} className="bg-white text-violet-600 px-12 py-5 rounded-2xl font-black text-xl hover:scale-105 transition-transform active:scale-95">지금 시작하기</button>
+          <h2 className="text-3xl sm:text-5xl font-extrabold text-white mb-6 tracking-tight">사고의 궤적을 실시간 데이터로</h2>
+          <p className="text-violet-100 text-lg sm:text-xl mb-12 opacity-90">필기 속에 숨겨진 성장의 실마리를 NeoCAST로 찾아보세요.</p>
+          <button onClick={handleStart} className="bg-white text-violet-600 px-12 py-5 rounded-[var(--radius-pill)] font-bold text-xl hover:bg-violet-50 hover:scale-105 active:scale-95 transition-all shadow-lg">지금 시작하기</button>
         </div>
       </section>
 
       {/* ── 푸터 ── */}
-      <footer className="border-t border-slate-100 py-12">
+      <footer className="border-t border-slate-100 py-8">
         <div className="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row justify-between items-center gap-6">
-          <div className="flex items-center gap-1.5 grayscale opacity-60">
-            <span className="text-2xl font-black tracking-tighter text-slate-800">Neo</span>
-            <span className="text-2xl font-black tracking-tighter text-violet-600">CAST</span>
+          <div className="flex items-center gap-1.5 grayscale opacity-40 hover:grayscale-0 hover:opacity-100 transition-all duration-300">
+            <span className="text-2xl font-bold tracking-tighter text-slate-800">Neo</span>
+            <span className="text-2xl font-bold tracking-tighter text-violet-600">CAST</span>
           </div>
           <div className="text-right text-slate-400">
-            <p className="text-[10px] font-bold tracking-widest">NEO.LAB CONVERGENCE INC.</p>
+            <p className="text-[10px] font-semibold tracking-widest">NEO.LAB CONVERGENCE INC.</p>
             <p className="text-[10px] tracking-tight mt-1">info@neolab.co.jp</p>
           </div>
         </div>
