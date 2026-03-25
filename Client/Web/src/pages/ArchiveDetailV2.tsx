@@ -3,8 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { HandwritingThumbnail } from '../components/HandwritingThumbnail';
 import { ANNOTATION_EVENTS } from '../data/voiceScenario';
-import { getParticipationLevel } from '../types/archive';
-import type { ParticipationLevel } from '../types/archive';
 import { getAnalysisCache, setAnalysisCache, clearAnalysisCache } from '../utils/analysisCache';
 
 interface ArchiveItem {
@@ -193,19 +191,6 @@ function formatDate(iso: string) {
 function getRate(strokeCount: number, maxStroke: number): number {
   if (maxStroke === 0) return 0;
   return Math.round((strokeCount / maxStroke) * 100);
-}
-
-function getLevelBarColor(level: ParticipationLevel): string {
-  switch (level) {
-    case 'none': return 'bg-gray-200';
-    case 'low': return 'bg-brand-primary/30';
-    case 'mid': return 'bg-brand-primary/60';
-    case 'high': return 'bg-brand-primary';
-  }
-}
-
-function getRateBarColor(rate: number, hasWriting: boolean): string {
-  return getLevelBarColor(getParticipationLevel(rate, hasWriting));
 }
 
 // ── 필기 상태 도트맵 ──
@@ -610,19 +595,6 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
     return () => { delete (window as any).__HANDWRITING_SETS; };
   }, []);
 
-  const getStudentTotalRate = (userId: string) => {
-    let totalStroke = 0;
-    let totalMax = 0;
-    activePages.forEach(page => {
-      const s = page.students.find(st => st.userId === userId);
-      if (s) {
-        totalStroke += s.strokeCount;
-        totalMax += s.maxStroke;
-      }
-    });
-    return totalMax === 0 ? 0 : Math.round((totalStroke / totalMax) * 100);
-  };
-
   // 전 페이지 필기 학생 수
   const allPageWriters = activeStudents.filter(s => getStudentSummary(s.userId, activePages).writtenPages === activePages.length).length;
   const totalAnnotations = activeAnnotations.length;
@@ -759,20 +731,9 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                           })}
                         </div>
 
-                        {/* 요약 */}
+                        {/* 페이지 요약 */}
                         <span className="text-[11px] font-medium text-gray-500 flex-shrink-0 w-20 text-right">
                           {summary.writtenPages}/{summary.totalPages}P
-                        </span>
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded flex-shrink-0 w-20 text-center ${
-                          summary.status === 'stable' ? 'bg-emerald-50 text-emerald-600' :
-                          summary.status === 'noParticipation' ? 'bg-gray-100 text-gray-400' :
-                          summary.status === 'noWritingN' ? 'bg-red-50 text-red-500' :
-                          'bg-amber-50 text-amber-600'
-                        }`}>
-                          {summary.status === 'stable' ? t('archiveDetail.stable') :
-                           summary.status === 'noParticipation' ? t('archiveDetail.noParticipation') :
-                           summary.status === 'noWritingN' ? t('archiveDetail.noWritingN', { count: summary.count }) :
-                           t('archiveDetail.poorN', { count: summary.count })}
                         </span>
                       </div>
                     );
@@ -897,28 +858,18 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
               <span className="text-[11px] text-gray-400 font-medium mr-1 flex-shrink-0">{t('archiveDetail.shortcut')}</span>
               {[...activeStudents]
                 .sort((a, b) => a.nickname.localeCompare(b.nickname, 'ko'))
-                .map(student => {
-                  const totalRate = getStudentTotalRate(student.userId);
-                  const level = getParticipationLevel(totalRate, totalRate > 0);
-                  return (
+                .map(student => (
                     <button
                       key={student.userId}
                       onClick={() => {
                         const el = document.getElementById(`student-card-${student.userId}`);
                         el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                       }}
-                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-app-border text-gray-600 hover:bg-brand-tint hover:text-brand-primary hover:border-brand-primary/30 transition-all flex-shrink-0 flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-lg text-xs font-bold bg-white border border-app-border text-gray-600 hover:bg-brand-tint hover:text-brand-primary hover:border-brand-primary/30 transition-all flex-shrink-0"
                     >
                       {student.nickname}
-                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                        level === 'high' ? 'bg-emerald-400' :
-                        level === 'mid' ? 'bg-amber-400' :
-                        level === 'low' ? 'bg-red-400' :
-                        'bg-gray-300'
-                      }`} />
                     </button>
-                  );
-                })}
+                  ))}
             </div>
 
             {/* 학생별 상세 카드 (이름 가나다순) */}
@@ -926,8 +877,6 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
               .sort((a, b) => a.nickname.localeCompare(b.nickname, 'ko'))
               .map(student => {
               const idx = activeStudents.findIndex(s => s.userId === student.userId);
-              const totalRate = getStudentTotalRate(student.userId);
-              const level = getParticipationLevel(totalRate, totalRate > 0);
               const feedbackEvents = activeAnnotations.filter(e => e.targetStudentName === student.nickname);
               return (
                 <div key={student.userId} id={`student-card-${student.userId}`} className="neo-card overflow-hidden scroll-mt-4">
@@ -939,26 +888,12 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                       </div>
                       <div>
                         <div className="text-sm font-semibold text-gray-800">{student.nickname}</div>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
-                            level === 'high' ? 'bg-emerald-50 text-emerald-600' :
-                            level === 'mid' ? 'bg-amber-50 text-amber-600' :
-                            level === 'low' ? 'bg-red-50 text-red-500' :
-                            'bg-gray-100 text-gray-400'
-                          }`}>
-                            {level === 'high' ? t('archiveDetail.good') : level === 'mid' ? t('archiveDetail.caution') : level === 'low' ? t('archiveDetail.poor') : t('archiveDetail.noWriting')}
-                          </span>
-                          {feedbackEvents.length > 0 && (
+                        {feedbackEvents.length > 0 && (
+                          <div className="flex items-center gap-2 mt-0.5">
                             <span className="text-[10px] font-semibold text-brand-primary">{t('archiveDetail.annotationCount', { count: feedbackEvents.length })}</span>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-20 h-2 bg-brand-tint/30 rounded-full overflow-hidden">
-                        <div className={`h-full rounded-full ${getLevelBarColor(level)}`} style={{ width: `${totalRate}%` }} />
-                      </div>
-                      <span className="text-sm font-bold text-gray-600">{totalRate}%</span>
                     </div>
                   </div>
 
@@ -1186,8 +1121,6 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                   <div className="flex flex-col gap-3">
                     {[...activeStudents].sort((a, b) => a.nickname.localeCompare(b.nickname, 'ko')).map(student => {
                       const isExpanded = expandedStudents.has(student.userId);
-                      const totalRate = getStudentTotalRate(student.userId);
-                      const level = getParticipationLevel(totalRate, totalRate > 0);
                       const analysis = studentAnalyses[student.userId];
                       const isAnalyzing = studentAnalyzing.has(student.userId);
                       const feedbackCount = activeAnnotations.filter(e => e.targetStudentName === student.nickname).length;
@@ -1211,15 +1144,6 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                               <div>
                                 <span className="text-sm font-semibold text-gray-800">{student.nickname}</span>
                                 <div className="flex items-center gap-2 mt-0.5">
-                                  <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
-                                    level === 'high' ? 'bg-emerald-50 text-emerald-600' :
-                                    level === 'mid' ? 'bg-amber-50 text-amber-600' :
-                                    level === 'low' ? 'bg-red-50 text-red-500' :
-                                    'bg-gray-100 text-gray-400'
-                                  }`}>
-                                    {level === 'high' ? t('archiveDetail.good') : level === 'mid' ? t('archiveDetail.caution') : level === 'low' ? t('archiveDetail.poor') : t('archiveDetail.noWriting')}
-                                  </span>
-                                  <span className="text-[11px] font-medium text-gray-400">{totalRate}%</span>
                                   {feedbackCount > 0 && (
                                     <span className="text-[10px] font-semibold text-brand-primary">{t('archiveDetail.annotationCount', { count: feedbackCount })}</span>
                                   )}

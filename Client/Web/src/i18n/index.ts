@@ -89,7 +89,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    fallbackLng: 'ko',
+    fallbackLng: 'en-US',
     supportedLngs: SUPPORTED_LANGUAGES.map(l => l.code),
 
     detection: {
