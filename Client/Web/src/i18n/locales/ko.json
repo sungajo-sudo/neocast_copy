@@ -581,6 +581,8 @@
     "archives": "아카이브",
     "noArchives": "저장된 아카이브가 없습니다",
     "noArchivesHint": "종료된 세션을 아카이브로 저장해보세요",
+    "noEndedSessions": "종료된 세션이 없습니다",
+    "noEndedSessionsHint": "세션이 종료되면 여기에 표시됩니다",
     "participantCount": "{{count}}명 참여",
     "saveArchiveTitle": "아카이브 저장",
     "saveArchiveConfirm": "이 세션의 필기 데이터를 아카이브에 저장하시겠습니까?",

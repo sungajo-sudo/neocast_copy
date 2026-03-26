@@ -81,15 +81,9 @@ class StrokeService {
     penType: PenType,
     flags: StrokeFlags = StrokeFlags.None
   ): void {
-    if (!this.worker) {
-      console.error('[StrokeService] Not connected');
-      return;
-    }
-
     const timestamp = Date.now();
-    const message = createStrokeStart(strokeId, ownerUserId, pageAddress, color, thickness, penType, flags, timestamp);
 
-    // 로컬 스토어에 추가
+    // 로컬 스토어에 추가 (worker 유무와 무관하게 항상 실행)
     const currentUserId = useSessionStore.getState().currentUserId;
     if (currentUserId) {
       useStrokeStore.getState().startStroke(
@@ -106,7 +100,10 @@ class StrokeService {
     }
 
     // Worker를 통해 서버로 전송
-    this.workerEmit(message);
+    if (this.worker) {
+      const message = createStrokeStart(strokeId, ownerUserId, pageAddress, color, thickness, penType, flags, timestamp);
+      this.workerEmit(message);
+    }
     console.log('[StrokeService] Stroke started:', strokeId, 'page:', formatPageAddress(pageAddress), 'on canvas of:', ownerUserId);
   }
 
@@ -114,29 +111,30 @@ class StrokeService {
    * 스트로크 포인트 추가
    */
   addPoint(strokeId: string, x: number, y: number, pressure: number): void {
-    if (!this.worker) return;
-
     const timestamp = Date.now();
     const point: StrokePoint = { x, y, pressure, timestamp };
 
-    // 로컬 스토어에 추가
+    // 로컬 스토어에 추가 (worker 유무와 무관하게 항상 실행)
     useStrokeStore.getState().addPoint(strokeId, point);
 
-    // 즉시 전송
-    const message = createStrokePoint(strokeId, x, y, pressure, timestamp);
-    this.workerEmit(message);
+    // Worker를 통해 서버로 전송
+    if (this.worker) {
+      const message = createStrokePoint(strokeId, x, y, pressure, timestamp);
+      this.workerEmit(message);
+    }
   }
 
   /**
    * 스트로크 종료
    */
   endStroke(strokeId: string): void {
-    if (!this.worker) return;
+    // Worker를 통해 서버로 전송
+    if (this.worker) {
+      const message = createStrokeEnd(strokeId);
+      this.workerEmit(message);
+    }
 
-    const message = createStrokeEnd(strokeId);
-    this.workerEmit(message);
-
-    // 로컬 스토어 업데이트
+    // 로컬 스토어 업데이트 (worker 유무와 무관하게 항상 실행)
     const store = useStrokeStore.getState();
     const activeStroke = store.getActiveStroke(strokeId);
     if (activeStroke?.penType === PenType.Eraser) {
@@ -153,11 +151,13 @@ class StrokeService {
    * 스트로크 취소
    */
   cancelStroke(strokeId: string): void {
-    if (!this.worker) return;
+    // Worker를 통해 서버로 전송
+    if (this.worker) {
+      const message = createStrokeCancel(strokeId);
+      this.workerEmit(message);
+    }
 
-    const message = createStrokeCancel(strokeId);
-    this.workerEmit(message);
-
+    // 로컬 스토어 업데이트 (worker 유무와 무관하게 항상 실행)
     useStrokeStore.getState().cancelStroke(strokeId);
     console.log('[StrokeService] Stroke cancelled:', strokeId);
   }
@@ -174,11 +174,13 @@ class StrokeService {
    * 페이지 변경 (페이지 주소로)
    */
   changePageByAddress(pageAddress: NcodePageAddress): void {
-    if (!this.worker) return;
+    // Worker를 통해 서버로 전송
+    if (this.worker) {
+      const message = createPageChange(pageAddress);
+      this.workerEmit(message);
+    }
 
-    const message = createPageChange(pageAddress);
-    this.workerEmit(message);
-
+    // 로컬 스토어 업데이트 (worker 유무와 무관하게 항상 실행)
     const sessionStore = useSessionStore.getState();
     const ownerUserId = sessionStore.selectedViewUserId ?? sessionStore.currentUserId;
 
@@ -193,10 +195,11 @@ class StrokeService {
    * 페이지 추가
    */
   addPage(ownerUserId: string, pageAddress: NcodePageAddress, width: number = 210, height: number = 297): void {
-    if (!this.worker) return;
-
-    const message = createPageAdd(ownerUserId, pageAddress, width, height, PageType.Blank);
-    this.workerEmit(message);
+    // Worker를 통해 서버로 전송
+    if (this.worker) {
+      const message = createPageAdd(ownerUserId, pageAddress, width, height, PageType.Blank);
+      this.workerEmit(message);
+    }
     console.log('[StrokeService] Page added for user:', ownerUserId, 'page:', formatPageAddress(pageAddress));
   }
 
@@ -204,11 +207,13 @@ class StrokeService {
    * 페이지 삭제
    */
   deletePage(pageAddress: NcodePageAddress): void {
-    if (!this.worker) return;
+    // Worker를 통해 서버로 전송
+    if (this.worker) {
+      const message = createPageDelete(pageAddress);
+      this.workerEmit(message);
+    }
 
-    const message = createPageDelete(pageAddress);
-    this.workerEmit(message);
-
+    // 로컬 스토어 업데이트 (worker 유무와 무관하게 항상 실행)
     const sessionStore = useSessionStore.getState();
     const ownerUserId = sessionStore.selectedViewUserId ?? sessionStore.currentUserId;
     if (ownerUserId) {
@@ -230,8 +235,6 @@ class StrokeService {
    * 페이지 클리어 (페이지 주소로)
    */
   clearPageByAddress(pageAddress: NcodePageAddress): void {
-    if (!this.worker) return;
-
     const sessionStore = useSessionStore.getState();
     const ownerUserId = sessionStore.getActiveCanvasUserId() ?? sessionStore.currentUserId;
 
@@ -240,9 +243,13 @@ class StrokeService {
       return;
     }
 
-    const message = createClearPage(pageAddress);
-    this.workerEmit(message);
+    // Worker를 통해 서버로 전송
+    if (this.worker) {
+      const message = createClearPage(pageAddress);
+      this.workerEmit(message);
+    }
 
+    // 로컬 스토어 업데이트 (worker 유무와 무관하게 항상 실행)
     useStrokeStore.getState().clearPageByOwner(pageAddress, ownerUserId);
     console.log('[StrokeService] Page cleared for user:', ownerUserId, 'page:', formatPageAddress(pageAddress));
   }
@@ -251,8 +258,6 @@ class StrokeService {
    * Undo
    */
   undo(count: number = 1): void {
-    if (!this.worker) return;
-
     const pageAddress = useStrokeStore.getState().currentPageAddress;
     const sessionStore = useSessionStore.getState();
     const ownerUserId = sessionStore.getActiveCanvasUserId() ?? sessionStore.currentUserId;
@@ -262,9 +267,13 @@ class StrokeService {
       return;
     }
 
-    const message = createUndo(pageAddress, count);
-    this.workerEmit(message);
+    // Worker를 통해 서버로 전송
+    if (this.worker) {
+      const message = createUndo(pageAddress, count);
+      this.workerEmit(message);
+    }
 
+    // 로컬 스토어 업데이트 (worker 유무와 무관하게 항상 실행)
     for (let i = 0; i < count; i++) {
       useStrokeStore.getState().undo(pageAddress, ownerUserId);
     }
@@ -276,8 +285,6 @@ class StrokeService {
    * Redo
    */
   redo(count: number = 1): void {
-    if (!this.worker) return;
-
     const pageAddress = useStrokeStore.getState().currentPageAddress;
     const sessionStore = useSessionStore.getState();
     const ownerUserId = sessionStore.getActiveCanvasUserId() ?? sessionStore.currentUserId;
@@ -287,9 +294,13 @@ class StrokeService {
       return;
     }
 
-    const message = createRedo(pageAddress, count);
-    this.workerEmit(message);
+    // Worker를 통해 서버로 전송
+    if (this.worker) {
+      const message = createRedo(pageAddress, count);
+      this.workerEmit(message);
+    }
 
+    // 로컬 스토어 업데이트 (worker 유무와 무관하게 항상 실행)
     for (let i = 0; i < count; i++) {
       useStrokeStore.getState().redo(pageAddress, ownerUserId);
     }

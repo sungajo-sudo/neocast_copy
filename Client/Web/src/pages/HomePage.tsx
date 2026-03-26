@@ -186,7 +186,7 @@ export function HomePage() {
           </div>
         </button>
 
-        {/* 종료된 세션 (아카이브 저장 대기) */}
+        {/* 종료된 세션 (아카이브 저장 대기) — 없으면 영역 숨김 */}
         {endedSessions.length > 0 && (
           <div className="flex flex-col gap-3">
             <h2 className="text-base font-semibold text-gray-700">{t('homePage.endedSessions')}</h2>

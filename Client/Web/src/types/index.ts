@@ -295,6 +295,9 @@ export interface Participant {
   isOnline?: boolean; // 연결 상태 (기본값: true, HOST_DISCONNECTED 시 false)
 }
 
+// 참가자 활동 상태
+export type ParticipantActivityStatus = 'writing' | 'idle' | 'inactive';
+
 // 세션 상태
 export const SessionStatus = {
   Active: 'active',

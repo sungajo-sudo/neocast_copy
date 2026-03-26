@@ -306,6 +306,10 @@ interface StrokeStore {
   undo: (pageAddress: NcodePageAddress, ownerUserId: string) => string | null;
   redo: (pageAddress: NcodePageAddress, ownerUserId: string) => string | null;
 
+  // 참가자 활동 추적
+  lastActivityByUser: Map<string, number>;
+  writingUsers: Set<string>;
+
   // 히스토리 동기화
   addHistoryStroke: (stroke: Stroke) => void;
   clearAllStrokes: () => void;
@@ -347,6 +351,8 @@ export const useStrokeStore = create<StrokeStore>((set, get) => ({
   currentPageAddress: initialMousePageAddress,
   strokesByPage: new Map(),
   pageNavigationLocked: false, // 기본값: 해제 (자동 페이지 이동)
+  lastActivityByUser: new Map(), // 참가자별 마지막 필기 시각
+  writingUsers: new Set(), // 현재 필기 중인 사용자 (DEV 모드 크로스탭용)
 
   // 스마트펜 기본 설정
   smartpenSettings: {
@@ -613,12 +619,17 @@ export const useStrokeStore = create<StrokeStore>((set, get) => ({
     const newRedoStack = new Map(get().redoStack);
     newRedoStack.set(ownerKey, []);
 
+    // 참가자 활동 시각 갱신
+    const newLastActivity = new Map(get().lastActivityByUser);
+    newLastActivity.set(stroke.ownerUserId, Date.now());
+
     set({
       activeStrokes: newActiveStrokes,
       strokes: newStrokes,
       strokesByPage: newStrokesByPage,
       undoStack: newUndoStack,
       redoStack: newRedoStack,
+      lastActivityByUser: newLastActivity,
     });
   },
 
@@ -828,9 +839,14 @@ export const useStrokeStore = create<StrokeStore>((set, get) => ({
       pageStrokes.add(stroke.id);
       newStrokesByPage.set(pageKey, pageStrokes);
 
+      // 참가자 활동 시각 갱신
+      const newLastActivity = new Map(state.lastActivityByUser);
+      newLastActivity.set(stroke.ownerUserId, Date.now());
+
       return {
         strokes: newStrokes,
         strokesByPage: newStrokesByPage,
+        lastActivityByUser: newLastActivity,
       };
     });
   },

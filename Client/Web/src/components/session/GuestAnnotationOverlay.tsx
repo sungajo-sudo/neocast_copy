@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useAnnotationStore } from '../../stores/annotation-store';
 import { AnnotationCanvas } from '../canvas/AnnotationCanvas';
 
@@ -12,7 +12,9 @@ interface Props {
  * Phase 3-1: 첨삭 수신 뷰
  */
 export function GuestAnnotationOverlay({ userId }: Props) {
-  const annotations = useAnnotationStore((state) => state.getAnnotations(userId));
+  // 안정적 셀렉터: Map 참조만 구독하고 컴포넌트에서 파생 (무한루프 방지)
+  const annotationsMap = useAnnotationStore((state) => state.annotations);
+  const annotations = useMemo(() => annotationsMap.get(userId) ?? [], [annotationsMap, userId]);
   const [size, setSize] = useState({ w: window.innerWidth, h: window.innerHeight });
 
   useEffect(() => {

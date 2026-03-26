@@ -101,6 +101,43 @@ export function CreateSessionPage() {
     setPasswordError(null);
 
     try {
+      // DEV 모드: 서버 없이 로컬에서 세션 생성
+      if (import.meta.env.DEV) {
+        const sessionId = 'dev-' + Math.random().toString(36).slice(2, 10);
+        const sessionCode = generateCode(user.name);
+
+        // devBridge에 세션 등록 (다른 탭에서 참가 가능)
+        devBridge.announceSession({
+          id: sessionId,
+          code: sessionCode,
+          title: sessionTitle,
+          hostId: user.id,
+          hostName: user.name,
+          createdAt: Date.now(),
+        });
+
+        setCurrentUserId(user.id);
+        setSession({
+          id: sessionId,
+          code: sessionCode,
+          title: sessionTitle,
+          status: SessionStatus.Active,
+          hostId: user.id,
+          participants: [{
+            userId: user.id,
+            userName: user.name,
+            role: ParticipantRole.Host,
+            joinedAt: Date.now(),
+            isMuted: false,
+            isSpeaking: false,
+          }],
+          createdAt: Date.now(),
+          hasPassword: !!sessionPassword,
+        });
+        setIsCreating(false);
+        return;
+      }
+
       const response = await sessionService.createSession(tokens.accessToken, {
         title: sessionTitle,
         password: sessionPassword || undefined,

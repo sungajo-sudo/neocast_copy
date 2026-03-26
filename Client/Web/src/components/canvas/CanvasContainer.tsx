@@ -4,7 +4,11 @@ import { BackgroundCanvas } from './BackgroundCanvas';
 import { StrokeCanvas } from './StrokeCanvas';
 import { InputCanvas } from './InputCanvas';
 import { CanvasContextMenu } from './CanvasContextMenu';
+import { AnnotationCanvas } from './AnnotationCanvas';
 import { useStrokeStore } from '../../stores/stroke-store';
+import { useAnnotationStore } from '../../stores/annotation-store';
+import { useAnnotationStatusStore } from '../../stores/annotation-status-store';
+import { devBridge } from '../../services/dev-bridge';
 import { useSessionStore } from '../../stores/session-store';
 import { usePageStore } from '../../stores/page-store';
 import { usePanelStore } from '../../stores/panel-store';
@@ -31,6 +35,8 @@ interface CanvasContainerProps {
   pageAddress?: NcodePageAddress;
   className?: string;
   inputEnabled?: boolean;
+  /** true이면 그리드 뷰 전환을 막고 단일 캔버스만 표시 */
+  forceSingleView?: boolean;
 }
 
 /**
@@ -41,6 +47,7 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
   pageAddress: propPageAddress,
   className = '',
   inputEnabled = true,
+  forceSingleView = false,
 }) => {
   const { t } = useTranslation();
   const { tokens } = useAuthStore();
@@ -74,9 +81,10 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
 
   // Stylus 상태 (터치 입력 활성화/비활성화)
   const isStylusOn = usePanelStore((state) => state.isStylusOn);
+  const isPenStreamOn = usePanelStore((state) => state.isPenStreamOn);
   const isModifierKeyPressed = usePanelStore((state) => state.isModifierKeyPressed);
-  // 실제 Stylus 활성 상태: 사용자 설정 ON && modifier 키 미눌림
-  const effectivelyStylusOn = isStylusOn && !isModifierKeyPressed;
+  // 실제 Stylus 활성 상태: 사용자 설정 ON && PenStream ON && modifier 키 미눌림
+  const effectivelyStylusOn = isStylusOn && isPenStreamOn && !isModifierKeyPressed;
 
   // 패널 상태 (패널 열림/닫힘에 따른 크기 재계산 트리거용)
   const activeRightPanel = usePanelStore((state) => state.activeRightPanel);
@@ -131,6 +139,13 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
   const pages = usePageStore((state) => state.pages);
   const addPage = usePageStore((state) => state.addPage);
 
+  // 첨삭 모드 상태 (스포트라이트 뷰에서 사용)
+  const [spotAnnotationMode, setSpotAnnotationMode] = useState(false);
+  const annotationsMap = useAnnotationStore((state) => state.annotations);
+  const addAnnotation = useAnnotationStore((state) => state.addAnnotation);
+  const clearAnnotations = useAnnotationStore((state) => state.clearAnnotations);
+  const setAnnotating = useAnnotationStatusStore((state) => state.setAnnotating);
+
   // 그리드 선택 팝업 상태
   const [isGridSelectorOpen, setIsGridSelectorOpen] = useState(false);
 
@@ -147,13 +162,16 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
   const gridUsers = useMemo(() => {
     if (!session) return [];
 
-    // 게스트: 호스트 + 자신 + 주목공유 대상 (중복 제거)
+    // 게스트: 기본은 자신만, 주목공유 시 호스트 캔버스 추가
     if (!isHost) {
       if (!currentUserId) return [];
       const userIds = new Set<string>();
-      if (session.hostId) userIds.add(session.hostId);
       userIds.add(currentUserId);
+      // 주목공유가 활성화된 경우에만 대상 추가
       if (spotlightShareUserId) userIds.add(spotlightShareUserId);
+
+      // 자신만 보는 경우(1명)는 빈 배열 반환 → 스포트라이트(단일) 뷰
+      if (userIds.size <= 1) return [];
 
       return [...userIds]
         .map((uid) => {
@@ -193,7 +211,7 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
   }, [isHost, session, currentUserId, selectedViewUserIds, getUserColor, spotlightShareUserId]);
 
   // 그리드 뷰 모드 여부
-  const isGridView = gridUsers.length > 1;
+  const isGridView = !forceSingleView && gridUsers.length > 1;
 
   // 실제 활성 캔버스 사용자 ID (단일 뷰면 자동 설정)
   const effectiveActiveUserId = useMemo(() => {
@@ -446,17 +464,19 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
    * isZoomLocked가 true일 때만 실제 스케일 적용
    */
   useEffect(() => {
-    const padding = 48; // 양쪽 24px 패딩
+    const padding = isGridView ? 48 : 16; // 그리드: 양쪽 24px, 단일 뷰: 양쪽 8px
     // 스포트라이트 모드에서 사이드바가 차지하는 공간 차감
     const sidebarOffset = (isGridView && viewMode === 'spotlight') ? (isSidebarCollapsed ? 24 : sidebarSize) : 0;
     const availableWidth = containerSize.width - padding - (sidebarDock !== 'bottom' ? sidebarOffset : 0);
     const availableHeight = containerSize.height - padding - (sidebarDock === 'bottom' ? sidebarOffset : 0);
 
-    // 가로/세로 비율에 맞춰 fit 스케일 계산
+    // 가로/세로 비율에 맞춰 fit 스케일 계산 (fit-contain)
     const scaleX = availableWidth / canvasWidth;
     const scaleY = availableHeight / canvasHeight;
-    const newFitScale = Math.min(scaleX, scaleY, 1); // 최대 100%
-    const clampedFitScale = Math.max(newFitScale, 0.25); // 최소 25%
+    const maxScale = isGridView ? 1 : 2;
+    const newFitScale = Math.min(scaleX, scaleY, maxScale);
+    const minScale = isGridView ? 0.25 : 0.4;
+    const clampedFitScale = Math.max(newFitScale, minScale);
 
     setFitScale(clampedFitScale);
 
@@ -858,6 +878,40 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
       (p) => isSamePageAddress(p.address, pageAddress) && p.ownerUserId === spotlightUser.userId
     ) : false;
     const canDrawSpotlight = isHost || spotlightUser?.userId === currentUserId;
+    // 스포트라이트 첨삭: 호스트가 다른 학생 캔버스를 볼 때만 활성 가능
+    const canAnnotateSpotlight = isHost && spotlightUser && spotlightUser.userId !== session?.hostId;
+    const spotAnnotations = useMemo(
+      () => (effectiveSpotlightUserId ? annotationsMap.get(effectiveSpotlightUserId) ?? [] : []),
+      [annotationsMap, effectiveSpotlightUserId]
+    );
+    const handleSpotAnnotationDrawStart = () => {
+      if (!effectiveSpotlightUserId) return;
+      setAnnotating(effectiveSpotlightUserId);
+      if (import.meta.env.DEV) {
+        devBridge.send({
+          type: 'ANNOTATION_ADDED',
+          targetUserId: effectiveSpotlightUserId,
+          annotation: { points: [], color: '#FF3B30', lineWidth: 3 },
+          code: session?.code ?? '',
+        });
+      }
+    };
+    const handleSpotAnnotationStroke = (points: { x: number; y: number }[]) => {
+      if (!effectiveSpotlightUserId) return;
+      const stroke = { points, color: '#FF3B30', lineWidth: 3 };
+      addAnnotation(effectiveSpotlightUserId, stroke);
+      setAnnotating(effectiveSpotlightUserId);
+      if (controlSocket) {
+        controlSocket.emit('annotation:stroke', { targetUserId: effectiveSpotlightUserId, points });
+      } else if (import.meta.env.DEV) {
+        devBridge.send({
+          type: 'ANNOTATION_ADDED',
+          targetUserId: effectiveSpotlightUserId,
+          annotation: stroke,
+          code: session?.code ?? '',
+        });
+      }
+    };
 
     const isBottomDock = sidebarDock === 'bottom';
     const flexDir = isBottomDock ? 'flex-col' : (sidebarDock === 'left' ? 'flex-row-reverse' : 'flex-row');
@@ -896,60 +950,113 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
             onMouseLeave={handleMouseLeave}
           >
             {spotlightUser && spotlightHasPage ? (
-              <div
-                className="absolute inset-0 overflow-auto"
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  padding: '24px',
-                }}
-              >
+              <>
                 <div
+                  className="absolute inset-0 overflow-auto"
                   style={{
-                    width: `${canvasWidth * scale}px`,
-                    height: `${canvasHeight * scale}px`,
-                    transform: `translate(${offset.x}px, ${offset.y}px)`,
-                    flexShrink: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '24px',
                   }}
                 >
                   <div
-                    className="relative"
                     style={{
-                      transform: `scale(${scale})`,
-                      transformOrigin: 'top left',
-                      boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0,0,0,0.05)',
-                      borderRadius: '2px',
-                      backgroundColor: '#ffffff',
-                      width: `${canvasWidth}px`,
-                      height: `${canvasHeight}px`,
+                      width: `${canvasWidth * scale}px`,
+                      height: `${canvasHeight * scale}px`,
+                      transform: `translate(${offset.x}px, ${offset.y}px)`,
+                      flexShrink: 0,
                     }}
                   >
-                    <BackgroundCanvas
-                      pageAddress={pageAddress}
-                      width={canvasWidth}
-                      height={canvasHeight}
-                      scale={1}
-                    />
-                    <StrokeCanvas
-                      pageAddress={pageAddress}
-                      width={canvasWidth}
-                      height={canvasHeight}
-                      scale={1}
-                      userId={spotlightUser.userId}
-                      className="absolute inset-0"
-                    />
-                    <InputCanvas
-                      pageAddress={pageAddress}
-                      width={canvasWidth}
-                      height={canvasHeight}
-                      scale={scale}
-                      userId={spotlightUser.userId}
-                      disabled={!inputEnabled || !canDrawSpotlight || !effectivelyStylusOn}
-                    />
+                    <div
+                      className="relative"
+                      style={{
+                        transform: `scale(${scale})`,
+                        transformOrigin: 'top left',
+                        boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0,0,0,0.05)',
+                        borderRadius: '2px',
+                        backgroundColor: '#ffffff',
+                        width: `${canvasWidth}px`,
+                        height: `${canvasHeight}px`,
+                      }}
+                    >
+                      <BackgroundCanvas
+                        pageAddress={pageAddress}
+                        width={canvasWidth}
+                        height={canvasHeight}
+                        scale={1}
+                      />
+                      <StrokeCanvas
+                        pageAddress={pageAddress}
+                        width={canvasWidth}
+                        height={canvasHeight}
+                        scale={1}
+                        userId={spotlightUser.userId}
+                        className="absolute inset-0"
+                      />
+                      <InputCanvas
+                        pageAddress={pageAddress}
+                        width={canvasWidth}
+                        height={canvasHeight}
+                        scale={scale}
+                        userId={spotlightUser.userId}
+                        disabled={!inputEnabled || !canDrawSpotlight || !effectivelyStylusOn || spotAnnotationMode}
+                      />
+                      {/* 첨삭 오버레이 (호스트가 학생 캔버스를 볼 때) */}
+                      {canAnnotateSpotlight && (
+                        <AnnotationCanvas
+                          width={canvasWidth}
+                          height={canvasHeight}
+                          strokes={spotAnnotations}
+                          drawingMode={spotAnnotationMode}
+                          onStroke={handleSpotAnnotationStroke}
+                          onDrawStart={handleSpotAnnotationDrawStart}
+                          className="absolute inset-0 z-10"
+                        />
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
+                {/* 첨삭 토글 버튼 (호스트가 학생 캔버스를 볼 때) */}
+                {canAnnotateSpotlight && (
+                  <div className="absolute top-4 right-4 flex items-center gap-2 z-20">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const next = !spotAnnotationMode;
+                        setSpotAnnotationMode(next);
+                        if (!next && effectiveSpotlightUserId) {
+                          clearAnnotations(effectiveSpotlightUserId);
+                        }
+                      }}
+                      className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-200 shadow-lg ${
+                        spotAnnotationMode
+                          ? 'bg-gradient-to-r from-red-500 to-rose-500 text-white'
+                          : 'bg-white/90 backdrop-blur border-2 border-app-border text-brand-primary hover:bg-brand-tint'
+                      }`}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                      {spotAnnotationMode ? '첨삭 중' : '첨삭'}
+                    </button>
+                    {spotAnnotationMode && (
+                      <button
+                        type="button"
+                        onClick={() => effectiveSpotlightUserId && clearAnnotations(effectiveSpotlightUserId)}
+                        className="flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold bg-white/90 backdrop-blur border-2 border-app-border text-slate-500 hover:text-brand-primary hover:bg-brand-tint transition-all duration-200 shadow-lg"
+                      >
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                        지우기
+                      </button>
+                    )}
+                  </div>
+                )}
+              </>
             ) : spotlightUser ? (
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="flex flex-col items-center gap-4">
@@ -1394,7 +1501,7 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          padding: '24px',
+          padding: '8px',
         }}
       >
         {/* 센터링용 외부 래퍼 - 스케일된 시각적 크기 사용 */}

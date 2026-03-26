@@ -553,6 +553,8 @@
     "archives": "アーカイブ",
     "noArchives": "保存されたアーカイブがありません",
     "noArchivesHint": "終了したセッションをアーカイブに保存してみましょう",
+    "noEndedSessions": "終了したセッションがありません",
+    "noEndedSessionsHint": "セッションが終了するとここに表示されます",
     "participantCount": "{{count}}名参加",
     "saveArchiveTitle": "アーカイブ保存",
     "saveArchiveConfirm": "このセッションの筆記データをアーカイブに保存しますか？",

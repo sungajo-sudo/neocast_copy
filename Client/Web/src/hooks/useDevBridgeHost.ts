@@ -13,6 +13,9 @@ import { ParticipantRole } from '../types';
 import { devBridge } from '../services/dev-bridge';
 import type { BridgeEvent } from '../services/dev-bridge';
 
+// 게스트별 writing 타이머 (2초 후 자동 해제)
+const writingTimers = new Map<string, ReturnType<typeof setTimeout>>();
+
 export function useDevBridgeHost(sessionCode: string | null): void {
   useEffect(() => {
     if (!import.meta.env.DEV || !sessionCode) return;
@@ -34,12 +37,43 @@ export function useDevBridgeHost(sessionCode: string | null): void {
       useStrokeStore.getState().addHistoryStroke(event.stroke);
     };
 
+    // 게스트 필기 중 상태 → writingUsers + lastActivityByUser 동시 갱신
+    const handleGuestWriting = (event: BridgeEvent) => {
+      if (event.type !== 'GUEST_WRITING' || event.code !== sessionCode) return;
+
+      // 1회 setState로 writingUsers + lastActivityByUser 동시 갱신
+      useStrokeStore.setState((state) => {
+        const nextWriting = new Set(state.writingUsers);
+        nextWriting.add(event.userId);
+        const nextActivity = new Map(state.lastActivityByUser);
+        nextActivity.set(event.userId, Date.now());
+        return { writingUsers: nextWriting, lastActivityByUser: nextActivity };
+      });
+
+      // 2초 후 writing 해제
+      const existing = writingTimers.get(event.userId);
+      if (existing) clearTimeout(existing);
+      writingTimers.set(event.userId, setTimeout(() => {
+        useStrokeStore.setState((state) => {
+          const nextWriting = new Set(state.writingUsers);
+          nextWriting.delete(event.userId);
+          return { writingUsers: nextWriting };
+        });
+        writingTimers.delete(event.userId);
+      }, 2000));
+    };
+
     devBridge.on('GUEST_JOIN', handleGuestJoin);
     devBridge.on('STROKE_ADDED', handleStrokeAdded);
+    devBridge.on('GUEST_WRITING', handleGuestWriting);
 
     return () => {
       devBridge.off('GUEST_JOIN', handleGuestJoin);
       devBridge.off('STROKE_ADDED', handleStrokeAdded);
+      devBridge.off('GUEST_WRITING', handleGuestWriting);
+      // 타이머 정리
+      writingTimers.forEach((t) => clearTimeout(t));
+      writingTimers.clear();
     };
   }, [sessionCode]);
 }

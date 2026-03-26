@@ -29,6 +29,7 @@ export type BridgeEvent =
   | { type: 'GUEST_JOIN'; userId: string; userName: string; code: string }
   | { type: 'GUEST_LEAVE'; userId: string; code: string }
   | { type: 'STROKE_ADDED'; stroke: Stroke; code: string }
+  | { type: 'GUEST_WRITING'; userId: string; code: string }
   | { type: 'ANNOTATION_ADDED'; targetUserId: string; annotation: AnnotationStroke; code: string };
 
 type EventListener = (event: BridgeEvent) => void;
@@ -75,6 +76,7 @@ class DevBridgeService {
 
   /** 이벤트 구독 */
   on(type: BridgeEvent['type'], fn: EventListener): void {
+    this.ensureChannel(); // 구독 시 채널 생성 보장 (수신 가능하도록)
     const existing = this.listeners.get(type) ?? [];
     this.listeners.set(type, [...existing, fn]);
   }

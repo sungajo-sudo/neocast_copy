@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { CanvasContainer } from '../canvas';
-import { ParticipantModeView } from './ParticipantModeView';
+import { ParticipantMonitorView } from './ParticipantMonitorView';
 
 type ViewTab = 'canvas' | 'participants';
 
@@ -55,9 +55,9 @@ export function HostSessionView({ canInput }: Props) {
 
       {/* ── 탭 콘텐츠 ── */}
       {activeTab === 'canvas' ? (
-        <CanvasContainer className="flex-1" inputEnabled={canInput} />
+        <CanvasContainer className="flex-1" inputEnabled={canInput} forceSingleView />
       ) : (
-        <ParticipantModeView />
+        <ParticipantMonitorView />
       )}
     </div>
   );

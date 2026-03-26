@@ -1,8 +1,9 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Routes, Route, Navigate, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { Agentation } from 'agentation';
 import { CanvasContainer } from './components/canvas';
-import { SessionLobby, HostSessionView, GuestAnnotationOverlay } from './components/session';
+import { SessionLobby, HostSessionView, GuestSessionView } from './components/session';
 import { useDevBridgeHost } from './hooks/useDevBridgeHost';
 import { useDevBridgeGuest } from './hooks/useDevBridgeGuest';
 import { devBridge } from './services/dev-bridge';
@@ -515,7 +516,7 @@ function JoinPage() {
   const setCurrentUserId = useSessionStore((state) => state.setCurrentUserId);
   const navigate = useNavigate();
   const location = useLocation();
-  const { user } = useAuthStore();
+  const { user, loginAsGuest: loginAsGuestAuth } = useAuthStore();
   const autoJoinAttempted = useRef(false);
 
   // 초대 데이터 파싱 (state에서 전달된 것 우선, 없으면 경로에서 파싱)
@@ -524,7 +525,7 @@ function JoinPage() {
   const inviteDataFromPath = parseInviteFromPath(location.pathname);
   const inviteData: InviteData | undefined = inviteDataFromState || inviteDataFromPath || undefined;
 
-  // DEV 모드: devBridge에 세션이 있으면 스토어 직접 세팅해 자동 참가
+  // DEV 모드: devBridge에 세션이 있으면 게스트로 전환 후 자동 참가
   useEffect(() => {
     if (!import.meta.env.DEV) return;
     if (!inviteData?.code || !user || session || autoJoinAttempted.current) return;
@@ -532,8 +533,14 @@ function JoinPage() {
     const devSession = devBridge.getSession(inviteData.code);
     if (!devSession) return;
 
+    // 현재 사용자가 세션의 호스트와 같으면 게스트로 전환
     autoJoinAttempted.current = true;
-    const guestId = `guest-${user.id}-${Date.now()}`;
+    const guestId = `guest-${Math.random().toString(36).slice(2, 9)}`;
+    const guestName = user.name === devSession.hostName ? '학생 (Guest)' : user.name;
+
+    // 게스트로 인증 전환 (persist에 의해 호스트 인증이 유지되므로 전환 필요)
+    loginAsGuestAuth(guestId, 'dev-token', guestName);
+
     setCurrentUserId(guestId);
     setSession({
       id: devSession.id,
@@ -551,7 +558,7 @@ function JoinPage() {
         },
         {
           userId: guestId,
-          userName: user.name,
+          userName: guestName,
           role: ParticipantRole.Guest,
           joinedAt: Date.now(),
           isMuted: false,
@@ -561,7 +568,15 @@ function JoinPage() {
       createdAt: devSession.createdAt,
       hasPassword: false,
     });
-  }, [inviteData, user, session, setSession, setCurrentUserId]);
+
+    // 호스트 탭에 게스트 참가 알림 (BroadcastChannel)
+    devBridge.send({
+      type: 'GUEST_JOIN',
+      userId: guestId,
+      userName: guestName,
+      code: devSession.code,
+    });
+  }, [inviteData, user, session, setSession, setCurrentUserId, loginAsGuestAuth]);
 
   // 세션이 활성화되면 세션 페이지로 이동
   useEffect(() => {
@@ -667,13 +682,8 @@ function SessionPage() {
     return <HostSessionView canInput={canInput} />;
   }
 
-  // 게스트: 캔버스 + 첨삭 오버레이
-  return (
-    <>
-      <CanvasContainer className="flex-1" inputEnabled={canInput} />
-      { /* TODO: GuestAnnotationOverlay 무한루프 수정 후 복원 */ }
-    </>
-  );
+  // 게스트: 캔버스 + 첨삭 오버레이 + 첨삭 배너
+  return <GuestSessionView canInput={canInput} />;
 }
 
 /**
@@ -1122,6 +1132,7 @@ function App() {
             <Route path="/archive/:archiveId/student/:userId" element={<StudentReportDetail />} />
             <Route path="/archive/:archiveId/replay" element={<ReplayPage />} />
             <Route path="/replay/guest/:sessionId/:participantId" element={<ReplayGuestPage />} />
+            <Route path="/guest-join" element={<GuestJoinPage />} />
 
             <Route
               path="/lobby"
@@ -1235,6 +1246,8 @@ function App() {
           </div>
         </footer>
       )}
+      {/* Agentation — AI 시각적 피드백 도구 (dev only) */}
+      {import.meta.env.DEV && <Agentation endpoint="http://localhost:4747" />}
     </div>
   );
 }

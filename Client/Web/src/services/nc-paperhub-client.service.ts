@@ -292,35 +292,79 @@ class NcPaperHubClientService {
   /**
    * PDF 업로드 및 Local PaperHub에 저장
    * - 서버에 등록 후 Local PaperHub에도 저장
+   * - DEV 모드: 서버 없이 로컬에서 SOBP 할당 및 저장
    */
   async registerAndSaveLocally(
     pdfFile: File,
     hostId: string,
     title?: string
   ): Promise<LocalPaper> {
-    // 1. 서버에 등록
-    const result = await this.registerPaper(pdfFile, title);
+    const documentTitle = title || pdfFile.name.replace(/\.pdf$/i, '');
+    const pdfBuffer = await pdfFile.arrayBuffer();
+    const pdfBlob = new Blob([pdfBuffer], { type: 'application/pdf' });
 
-    // 2. Local PaperHub에 저장
-    const pdfBlob = new Blob([await pdfFile.arrayBuffer()], { type: 'application/pdf' });
+    let sobKey: SOBKey;
+    let paperGroupId: string;
+    let section: number;
+    let owner: number;
+    let book: number;
+    let pageStart: number;
+    let pageEnd: number;
+    let pageCount: number;
+    let nprojXml: string;
 
+    if (import.meta.env.DEV) {
+      // DEV 모드: 서버 없이 로컬에서 SOBP 할당
+      pageCount = getPdfPageCount(pdfBuffer);
+      section = 3;
+      owner = 1013;
+      book = Math.floor(Math.random() * 4000) + 1;
+      pageStart = 1;
+      pageEnd = pageCount;
+      sobKey = createSOBKey(section, owner, book);
+      paperGroupId = `dev-paper-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+      console.log('[NcPaperHubClient] DEV mode - Local SOBP allocated:', { section, owner, book, pageStart, pageEnd, sobKey });
+
+      // NPROJ 생성
+      nprojXml = generateNprojFromPdf(
+        { section, owner, book, pageStart, pageEnd },
+        documentTitle,
+        pdfBuffer
+      );
+      console.log('[NcPaperHubClient] DEV mode - NPROJ generated');
+    } else {
+      // 프로덕션: 서버에 등록
+      const result = await this.registerPaper(pdfFile, title);
+      sobKey = result.sobKey;
+      paperGroupId = result.paperGroupId;
+      section = result.ncode.section;
+      owner = result.ncode.owner;
+      book = result.ncode.book;
+      pageStart = result.ncode.pageStart;
+      pageEnd = result.ncode.pageEnd;
+      pageCount = result.pageCount;
+      nprojXml = result.nprojXml;
+    }
+
+    // Local PaperHub에 저장
     await localPaperHubService.savePaper({
       hostId,
-      paperGroupId: result.paperGroupId,
-      sobKey: result.sobKey,
-      title: result.title,
-      section: result.ncode.section,
-      owner: result.ncode.owner,
-      book: result.ncode.book,
-      pageStart: result.ncode.pageStart,
-      pageEnd: result.ncode.pageEnd,
-      pageCount: result.pageCount,
-      nprojXml: result.nprojXml,
+      paperGroupId,
+      sobKey,
+      title: documentTitle,
+      section,
+      owner,
+      book,
+      pageStart,
+      pageEnd,
+      pageCount,
+      nprojXml,
       pdfBlob,
     });
 
-    // 3. 저장된 Paper 반환
-    const paper = await localPaperHubService.getPaper(hostId, result.paperGroupId);
+    // 저장된 Paper 반환
+    const paper = await localPaperHubService.getPaper(hostId, paperGroupId);
     if (!paper) {
       throw new Error('Failed to save paper locally');
     }

@@ -13,6 +13,8 @@ interface Props {
   drawingMode?: boolean;
   /** 스트로크 완료 시 콜백 — normalized (0-1) 좌표 */
   onStroke?: (points: { x: number; y: number }[]) => void;
+  /** 그리기 시작 시 콜백 (첨삭 상태 알림용) */
+  onDrawStart?: () => void;
   className?: string;
 }
 
@@ -22,7 +24,7 @@ interface Props {
  * - drawingMode=true 시 마우스/터치로 빨간펜 그리기
  * - 좌표는 normalized (0~1) 범위로 관리
  */
-export function AnnotationCanvas({ width, height, strokes, drawingMode = false, onStroke, className = '' }: Props) {
+export function AnnotationCanvas({ width, height, strokes, drawingMode = false, onStroke, onDrawStart, className = '' }: Props) {
   const displayRef = useRef<HTMLCanvasElement>(null);
   const drawRef = useRef<HTMLCanvasElement>(null);
   const isDrawingRef = useRef(false);
@@ -128,7 +130,8 @@ export function AnnotationCanvas({ width, height, strokes, drawingMode = false, 
     isDrawingRef.current = true;
     const pt = getCanvasCoords(e.nativeEvent, drawRef.current);
     currentPointsRef.current = [pt];
-  }, [drawingMode, getCanvasCoords]);
+    onDrawStart?.();
+  }, [drawingMode, getCanvasCoords, onDrawStart]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent<HTMLCanvasElement>) => {
     if (!isDrawingRef.current || !drawRef.current) return;
@@ -160,7 +163,8 @@ export function AnnotationCanvas({ width, height, strokes, drawingMode = false, 
     const pt = getCanvasCoords(touch, drawRef.current);
     isDrawingRef.current = true;
     currentPointsRef.current = [pt];
-  }, [drawingMode, getCanvasCoords]);
+    onDrawStart?.();
+  }, [drawingMode, getCanvasCoords, onDrawStart]);
 
   const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
     if (!isDrawingRef.current || !drawRef.current) return;
