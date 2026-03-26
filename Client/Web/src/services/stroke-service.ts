@@ -361,6 +361,8 @@ class StrokeService {
 
       case 'STROKE_START':
         if (senderId && senderId !== currentUserId) {
+          // 참가자 현재 페이지 추적
+          store.setParticipantCurrentPage(senderId, message.pageAddress);
           store.startStroke(
             message.strokeId,
             senderId,
@@ -488,6 +490,8 @@ class StrokeService {
 
       case 'PAGE_CHANGE':
         if (senderId && senderId !== currentUserId) {
+          // 참가자 현재 페이지 추적
+          store.setParticipantCurrentPage(senderId, message.pageAddress);
           const selectedViewUserIds = sessionStore.selectedViewUserIds;
           const selectedViewUserId = sessionStore.selectedViewUserId;
           let shouldAutoNavigate = false;

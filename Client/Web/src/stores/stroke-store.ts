@@ -310,6 +310,10 @@ interface StrokeStore {
   lastActivityByUser: Map<string, number>;
   writingUsers: Set<string>;
 
+  // 참가자 현재 페이지 추적 (PAGE_CHANGE / STROKE_START 수신 시 업데이트)
+  participantCurrentPages: Map<string, NcodePageAddress>;
+  setParticipantCurrentPage: (userId: string, pageAddress: NcodePageAddress) => void;
+
   // 히스토리 동기화
   addHistoryStroke: (stroke: Stroke) => void;
   clearAllStrokes: () => void;
@@ -353,6 +357,7 @@ export const useStrokeStore = create<StrokeStore>((set, get) => ({
   pageNavigationLocked: false, // 기본값: 해제 (자동 페이지 이동)
   lastActivityByUser: new Map(), // 참가자별 마지막 필기 시각
   writingUsers: new Set(), // 현재 필기 중인 사용자 (DEV 모드 크로스탭용)
+  participantCurrentPages: new Map(), // 참가자별 현재 페이지 (실시간 추적)
 
   // 스마트펜 기본 설정
   smartpenSettings: {
@@ -851,6 +856,14 @@ export const useStrokeStore = create<StrokeStore>((set, get) => ({
     });
   },
 
+  setParticipantCurrentPage: (userId, pageAddress) => {
+    const current = get().participantCurrentPages.get(userId);
+    if (current && isSamePageAddress(current, pageAddress)) return;
+    const newMap = new Map(get().participantCurrentPages);
+    newMap.set(userId, pageAddress);
+    set({ participantCurrentPages: newMap });
+  },
+
   clearAllStrokes: () => {
     set({
       strokes: new Map(),
@@ -859,6 +872,7 @@ export const useStrokeStore = create<StrokeStore>((set, get) => ({
       undoStack: new Map(),
       redoStack: new Map(),
       currentPageAddress: initialMousePageAddress,
+      participantCurrentPages: new Map(),
     });
   },
 

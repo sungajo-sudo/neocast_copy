@@ -24,7 +24,7 @@ export function useParticipantActivity(): {
   );
 
   const [tick, setTick] = useState(0);
-  const intervalRef = useRef<ReturnType<typeof setInterval>>();
+  const intervalRef = useRef<ReturnType<typeof setInterval>>(undefined);
 
   // 10초마다 idle/inactive 재평가
   useEffect(() => {

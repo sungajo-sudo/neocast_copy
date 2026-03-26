@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeoCast — Session v4 (실시간 페이지 추적)</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* Header */
+.header { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 8px 20px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; z-index: 10; }
+.header .logo { font-size: 14px; font-weight: 800; color: #3b82f6; }
+.header .session-name { font-size: 13px; font-weight: 600; color: #334155; margin-left: 8px; }
+.header .code-badge { font-size: 10px; background: #f1f5f9; color: #64748b; padding: 2px 8px; border-radius: 4px; font-family: monospace; }
+.header .spacer { flex: 1; }
+.header .user-pill { font-size: 11px; color: #64748b; display: flex; align-items: center; gap: 4px; }
+.header .avatar { width: 24px; height: 24px; border-radius: 50%; background: #3b82f6; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+
+/* Sim banner */
+.sim-banner {
+  background: linear-gradient(90deg, #fef3c7, #fde68a); padding: 4px 20px;
+  font-size: 10px; font-weight: 600; color: #92400e;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.sim-banner button {
+  padding: 3px 10px; border-radius: 6px; font-size: 10px; font-weight: 700;
+  border: 1px solid #d97706; cursor: pointer; margin-left: 8px; transition: all 0.15s;
+}
+.sim-btn-on { background: #f59e0b; color: #fff; }
+.sim-btn-off { background: #fff; color: #92400e; }
+
+/* Main */
+.main-layout { flex: 1; display: flex; overflow: hidden; }
+
+/* Left Panel */
+.left-panel {
+  width: 220px; flex-shrink: 0; background: #fff; border-right: 1px solid #e2e8f0;
+  display: flex; flex-direction: column; transition: width 0.3s ease; overflow: hidden;
+}
+.left-panel.collapsed { width: 0; border: none; }
+.left-panel .panel-header {
+  padding: 10px 14px; border-bottom: 1px solid #f1f5f9;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.left-panel .panel-header h3 { font-size: 12px; font-weight: 700; color: #334155; }
+.lp-mode-tabs { display: flex; border-bottom: 1px solid #f1f5f9; flex-shrink: 0; }
+.lp-mode-tab {
+  flex: 1; padding: 6px; font-size: 10px; font-weight: 600;
+  text-align: center; cursor: pointer; border: none; background: none;
+  color: #94a3b8; transition: all 0.2s; position: relative;
+}
+.lp-mode-tab.active { color: #3b82f6; background: #eff6ff; }
+.pages-list { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.page-thumb {
+  border-radius: 8px; border: 2px solid #e2e8f0; overflow: hidden; cursor: pointer;
+  transition: all 0.2s; flex-shrink: 0; position: relative;
+}
+.page-thumb:hover { border-color: #93c5fd; }
+.page-thumb.active { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+.page-thumb .thumb-canvas { height: 80px; background: #fff; display: flex; align-items: center; justify-content: center; position: relative; }
+.page-thumb .thumb-label {
+  padding: 4px 8px; font-size: 10px; color: #64748b; background: #f8fafc;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.student-dots { display: flex; gap: 2px; flex-wrap: wrap; }
+.student-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 7px; font-weight: 700; color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  transition: all 0.3s;
+}
+.student-dot.pulse { animation: dotPulse 0.6s ease; }
+@keyframes dotPulse { 0%{transform:scale(1)} 50%{transform:scale(1.4)} 100%{transform:scale(1)} }
+
+/* Canvas Area */
+.canvas-area { flex: 1; position: relative; overflow: hidden; background: #e2e8f0; }
+.grid-container {
+  position: absolute; inset: 0; padding: 12px; display: grid; gap: 8px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.grid-container.grid-mode {
+  grid-template-columns: repeat(var(--cols, 3), 1fr);
+  grid-template-rows: repeat(var(--rows, 2), 1fr);
+}
+.grid-container.spotlight-mode {
+  grid-template-columns: 1fr var(--sidebar-w, 130px);
+  grid-template-rows: 1fr;
+}
+
+.cell {
+  border-radius: 10px; overflow: hidden; display: flex; flex-direction: column;
+  cursor: pointer; position: relative; min-width: 0; min-height: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.grid-mode .cell { background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.grid-mode .cell:hover { box-shadow: 0 0 0 2px rgba(59,130,246,0.3); }
+.grid-mode .cell.being-annotated { box-shadow: 0 0 0 2px #ef4444, 0 0 12px rgba(239,68,68,0.2); }
+
+/* Page change flash */
+.grid-mode .cell.page-changed { animation: pageFlash 0.8s ease; }
+@keyframes pageFlash {
+  0% { box-shadow: 0 0 0 3px #f59e0b; }
+  100% { box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+}
+
+.spotlight-mode .cell.expanded {
+  grid-row: 1; grid-column: 1; background: #fff;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1); cursor: default; border-radius: 12px;
+}
+.sidebar-scroll {
+  grid-row: 1; grid-column: 2; display: flex; flex-direction: column;
+  gap: 6px; overflow-y: auto; padding: 2px;
+}
+.sidebar-scroll .cell { flex-shrink: 0; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,0.06); height: auto; }
+.grid-mode .sidebar-scroll { display: none; }
+.spotlight-mode .cell:not(.expanded) { display: none; }
+.spotlight-mode .sidebar-scroll .cell { display: flex !important; }
+
+.cell-label {
+  padding: 5px 8px; font-size: 11px; font-weight: 600; color: #fff;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+.cell-page-badge {
+  font-size: 8px; background: rgba(255,255,255,0.3); padding: 1px 5px;
+  border-radius: 4px; font-weight: 700; transition: all 0.3s;
+}
+.cell-page-badge.changed { background: rgba(255,255,255,0.7); animation: badgePop 0.5s ease; }
+@keyframes badgePop { 0%{transform:scale(1)} 50%{transform:scale(1.3)} 100%{transform:scale(1)} }
+
+.status {
+  font-size: 8px; padding: 1px 5px; border-radius: 99px;
+  font-weight: 700; display: inline-flex; align-items: center; gap: 3px;
+}
+.status.writing { background: #dcfce7; color: #16a34a; }
+.status.writing::before { content:''; width:4px; height:4px; border-radius:50%; background:#16a34a; animation:pulse 1.2s infinite; }
+.status.idle { background: #f1f5f9; color: #94a3b8; }
+.status.annotating { background: #fee2e2; color: #ef4444; }
+.status.annotating::before { content:''; width:4px; height:4px; border-radius:50%; background:#ef4444; animation:pulse 0.8s infinite; }
+.status.pen-connected { background: #dbeafe; color: #2563eb; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+.canvas-mock { flex: 1; position: relative; overflow: hidden; background: #fff; min-height: 0; }
+.canvas-mock svg { width: 100%; height: 100%; }
+.stroke { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Page change notification overlay on canvas */
+.page-change-toast {
+  position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+  background: rgba(245,158,11,0.9); color: #fff; padding: 3px 10px;
+  border-radius: 99px; font-size: 8px; font-weight: 700;
+  opacity: 0; transition: opacity 0.3s; pointer-events: none; white-space: nowrap;
+}
+.page-change-toast.visible { opacity: 1; }
+
+/* Annotation bar */
+.annotation-bar {
+  position: absolute; top: 10px; right: 10px;
+  display: flex; gap: 5px; opacity: 0; transform: translateY(-6px);
+  transition: all 0.3s ease; pointer-events: none; z-index: 10;
+}
+.expanded .annotation-bar { opacity: 1; transform: translateY(0); pointer-events: auto; transition-delay: 0.25s; }
+.annotation-bar button {
+  padding: 5px 12px; border-radius: 99px; font-size: 10px; font-weight: 700;
+  border: none; cursor: pointer; display: flex; align-items: center; gap: 3px; transition: all 0.2s;
+}
+.btn-annotate { background: #fff; border: 2px solid #e2e8f0 !important; color: #3b82f6; }
+.btn-annotate:hover { background: #eff6ff; }
+.btn-annotate.active { background: linear-gradient(135deg, #ef4444, #f43f5e); color: #fff; border-color: transparent !important; }
+.btn-clear { background: #fff; border: 2px solid #e2e8f0 !important; color: #64748b; }
+
+.spotlight-header {
+  position: absolute; top: 10px; left: 10px;
+  display: flex; align-items: center; gap: 6px;
+  opacity: 0; transition: all 0.3s ease; pointer-events: none; z-index: 10;
+}
+.expanded .spotlight-header { opacity: 1; pointer-events: auto; transition-delay: 0.25s; }
+.name-pill { padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 600; color: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+.page-nav-pill {
+  display: flex; align-items: center; gap: 2px;
+  background: rgba(255,255,255,0.92); border-radius: 99px; padding: 2px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08); backdrop-filter: blur(8px);
+}
+.page-nav-btn {
+  width: 22px; height: 22px; border: none; border-radius: 50%;
+  background: none; cursor: pointer; color: #64748b;
+  display: flex; align-items: center; justify-content: center; transition: all 0.15s;
+}
+.page-nav-btn:hover { background: #f1f5f9; color: #334155; }
+.page-nav-btn:disabled { opacity: 0.3; cursor: default; }
+.page-nav-label { font-size: 10px; font-weight: 600; color: #475569; padding: 0 4px; min-width: 50px; text-align: center; }
+
+/* Follow / browse toggle in spotlight */
+.follow-pill {
+  display: flex; align-items: center; gap: 0;
+  background: rgba(255,255,255,0.92); border-radius: 99px; padding: 2px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08); backdrop-filter: blur(8px);
+}
+.follow-btn {
+  padding: 3px 10px; border-radius: 99px; font-size: 9px; font-weight: 700;
+  border: none; cursor: pointer; transition: all 0.15s;
+}
+.follow-btn.active { background: #3b82f6; color: #fff; }
+.follow-btn:not(.active) { background: none; color: #64748b; }
+.follow-btn:not(.active):hover { background: #f1f5f9; }
+
+.view-toggle-btn {
+  position: absolute; bottom: 10px; right: 10px;
+  padding: 5px 12px; border-radius: 99px; font-size: 10px; font-weight: 600;
+  background: rgba(255,255,255,0.92); border: none; color: #475569;
+  cursor: pointer; display: flex; align-items: center; gap: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08); backdrop-filter: blur(8px); z-index: 10;
+}
+.view-toggle-btn:hover { background: #fff; }
+.hint {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.55); color: #fff; padding: 5px 14px; border-radius: 99px;
+  font-size: 10px; font-weight: 500; pointer-events: none; z-index: 20; transition: opacity 0.3s;
+}
+.anno-overlay { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+.anno-overlay.visible { opacity: 1; }
+
+/* Right Panel */
+.right-panel {
+  width: 280px; flex-shrink: 0; background: #fff; border-left: 1px solid #e2e8f0;
+  display: flex; flex-direction: column; transition: width 0.3s ease; overflow: hidden;
+}
+.right-panel.collapsed { width: 0; border: none; }
+.rp-tabs { display: flex; border-bottom: 1px solid #f1f5f9; flex-shrink: 0; }
+.rp-tab {
+  flex: 1; padding: 8px; font-size: 11px; font-weight: 600;
+  text-align: center; cursor: pointer; border: none; background: none;
+  color: #94a3b8; transition: all 0.2s; position: relative;
+}
+.rp-tab.active { color: #3b82f6; }
+.rp-tab.active::after { content:''; position:absolute; bottom:-1px; left:20%; right:20%; height:2px; background:#3b82f6; border-radius:1px; }
+.rp-tab .tab-badge { display:inline-block; min-width:16px; padding:0 4px; margin-left:4px; font-size:9px; font-weight:700; border-radius:99px; line-height:16px; }
+.rp-tab.active .tab-badge { background:#eff6ff; color:#3b82f6; }
+.rp-tab:not(.active) .tab-badge { background:#f1f5f9; color:#94a3b8; }
+.participant-list { flex: 1; overflow-y: auto; padding: 8px; }
+.participant-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: 10px; cursor: pointer;
+  transition: all 0.15s; margin-bottom: 2px;
+}
+.participant-item:hover { background: #f8fafc; }
+.participant-item.highlight { background: #fef2f2; }
+.participant-item.viewing { background: #eff6ff; }
+.participant-item.page-flash { animation: itemFlash 0.8s ease; }
+@keyframes itemFlash { 0%{background:#fef3c7} 100%{background:transparent} }
+.p-avatar { width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#fff; flex-shrink:0; }
+.p-info { flex: 1; min-width: 0; }
+.p-name { font-size: 12px; font-weight: 600; color: #334155; }
+.p-meta { font-size: 10px; color: #94a3b8; margin-top: 1px; display: flex; align-items: center; gap: 4px; }
+.p-page-badge { font-size:9px; font-weight:700; padding:1px 6px; border-radius:4px; background:#f1f5f9; color:#475569; transition: all 0.3s; }
+.p-page-badge.changed { background: #fef3c7; color: #92400e; }
+.p-status { flex-shrink: 0; }
+.p-progress-bar { height:3px; background:#f1f5f9; border-radius:2px; margin-top:3px; overflow:hidden; }
+.p-progress-fill { height:100%; border-radius:2px; transition:width 0.3s; }
+
+.chat-area { flex:1; display:flex; flex-direction:column; }
+.chat-messages { flex:1; overflow-y:auto; padding:12px; }
+.chat-msg { margin-bottom:10px; }
+.chat-msg .msg-name { font-size:10px; font-weight:600; color:#64748b; margin-bottom:2px; }
+.chat-msg .msg-bubble { font-size:12px; color:#334155; background:#f1f5f9; padding:6px 10px; border-radius:8px; display:inline-block; max-width:90%; }
+.chat-input-bar { border-top:1px solid #f1f5f9; padding:8px; display:flex; gap:6px; }
+.chat-input-bar input { flex:1; border:1px solid #e2e8f0; border-radius:8px; padding:6px 10px; font-size:12px; outline:none; }
+.chat-input-bar button { padding:6px 12px; border-radius:8px; background:#3b82f6; color:#fff; border:none; font-size:11px; font-weight:600; cursor:pointer; }
+
+/* Control Bar */
+.control-bar {
+  background: #fff; border-top: 1px solid #e2e8f0;
+  padding: 6px 16px; display: flex; align-items: center; gap: 4px; flex-shrink: 0; z-index: 30;
+}
+.cb-group { display: flex; align-items: center; gap: 2px; }
+.cb-divider { width:1px; height:24px; background:#e2e8f0; margin:0 6px; }
+.cb-btn {
+  width:40px; height:36px; border:none; border-radius:8px; cursor:pointer;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:1px; background:none; color:#64748b; transition:all 0.15s; position:relative;
+}
+.cb-btn:hover { background:#f1f5f9; color:#334155; }
+.cb-btn.active { background:#eff6ff; color:#3b82f6; }
+.cb-btn svg { width:16px; height:16px; }
+.cb-btn .cb-label { font-size:8px; font-weight:600; }
+.cb-btn .cb-dot { position:absolute; top:4px; right:6px; width:6px; height:6px; border-radius:50%; background:#ef4444; }
+.spacer { flex: 1; }
+.leave-btn { padding:6px 14px; border-radius:8px; font-size:11px; font-weight:700; background:#fef2f2; color:#ef4444; border:none; cursor:pointer; }
+.leave-btn:hover { background:#fee2e2; }
+
+/* Event log */
+.event-log {
+  position: absolute; bottom: 40px; left: 10px; z-index: 25;
+  display: flex; flex-direction: column-reverse; gap: 3px;
+  pointer-events: none; max-height: 120px; overflow: hidden;
+}
+.event-item {
+  background: rgba(0,0,0,0.7); color: #fff; padding: 3px 10px;
+  border-radius: 6px; font-size: 9px; font-weight: 500;
+  opacity: 1; transition: opacity 0.5s; white-space: nowrap;
+}
+.event-item.fading { opacity: 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="logo">NeoCast</span>
+  <span class="session-name">수학 워크시트 — 이차함수</span>
+  <span class="code-badge">ABC-123</span>
+  <span class="spacer"></span>
+  <span class="user-pill"><span class="avatar">김</span> 김선생님 (호스트)</span>
+</div>
+
+<!-- Simulation controls -->
+<div class="sim-banner">
+  <span>⚡ 시뮬레이션: 학생들이 실시간으로 페이지를 넘기는 상황</span>
+  <span>
+    <button class="sim-btn-on" id="simBtn" onclick="toggleSim()">시뮬 ON</button>
+    <button class="sim-btn-off" onclick="simOnePageChange()">수동 1회</button>
+  </span>
+</div>
+
+<div class="main-layout">
+  <div class="left-panel" id="leftPanel">
+    <div class="panel-header"><h3>📄 페이지</h3></div>
+    <div class="lp-mode-tabs">
+      <button class="lp-mode-tab active" id="lpTabMine" onclick="switchLeftTab('mine')">내 페이지</button>
+      <button class="lp-mode-tab" id="lpTabProgress" onclick="switchLeftTab('progress')">진도 현황</button>
+    </div>
+    <div id="leftPanelContent" class="pages-list"></div>
+  </div>
+
+  <div class="canvas-area" id="canvasArea">
+    <div class="grid-container grid-mode" id="gridContainer" style="--cols:3; --rows:2; --sidebar-w:130px;"></div>
+    <div class="hint" id="hint">학생 캔버스를 클릭하면 확대됩니다</div>
+    <button class="view-toggle-btn" id="viewToggle" onclick="handleViewToggle()"></button>
+    <div class="event-log" id="eventLog"></div>
+  </div>
+
+  <div class="right-panel" id="rightPanel">
+    <div class="rp-tabs">
+      <button class="rp-tab active" id="tabParticipants" onclick="switchRightTab('participants')">👥 참가자 <span class="tab-badge">6</span></button>
+      <button class="rp-tab" id="tabChat" onclick="switchRightTab('chat')">💬 채팅 <span class="tab-badge">3</span></button>
+    </div>
+    <div id="rpContent"></div>
+  </div>
+</div>
+
+<div class="control-bar">
+  <div class="cb-group">
+    <button class="cb-btn"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg><span class="cb-label">펜</span></button>
+    <button class="cb-btn active"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg><span class="cb-label">터치</span></button>
+  </div>
+  <div class="cb-divider"></div>
+  <div class="cb-group">
+    <button class="cb-btn active" id="cbPages" onclick="toggleLeftPanel()"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg><span class="cb-label">페이지</span></button>
+  </div>
+  <div class="cb-divider"></div>
+  <div class="cb-group">
+    <button class="cb-btn active" id="cbParticipants" onclick="toggleRightPanel('participants')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg><span class="cb-label">참가자</span></button>
+    <button class="cb-btn" id="cbChat" onclick="toggleRightPanel('chat')"><svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg><span class="cb-label">채팅</span><span class="cb-dot"></span></button>
+  </div>
+  <span class="spacer"></span>
+  <button class="leave-btn">나가기</button>
+</div>
+
+<script>
+// ─── Data ───
+const TOTAL_PAGES = 5;
+const formulas = ['y = ax² + bx + c', '∫f(x)dx = F(x)+C', 'lim sin(x)/x = 1', 'Σ 1/n² = π²/6', 'dy/dx = f\'(x)'];
+const strokePaths = [
+  ['M20,60 Q50,20 80,55 T140,45 T200,65','M30,40 Q60,30 90,50 T150,55','M20,55 Q50,35 85,50 T140,60','M25,45 Q55,25 90,50','M30,55 Q60,30 100,50 T160,45'],
+  ['M25,50 Q60,25 95,60 T155,40','M35,65 Q55,30 80,55 T120,48','','',''],
+  ['M30,70 Q55,35 85,60','','','',''],
+  ['M20,55 Q45,30 75,55','M25,45 Q55,25 85,55 T130,50','M30,60 Q50,35 80,50','M20,50 Q60,30 95,55 T150,45',''],
+  ['M25,65 Q50,40 80,65','M30,55 Q60,30 90,60','','',''],
+  ['M30,50 Q65,25 100,55','M25,60 Q50,30 80,50','M20,45 Q55,25 90,55 T130,45','M35,55 Q60,35 85,50','M25,50 Q55,30 85,55 T140,48'],
+];
+
+const students = [
+  { name: '김민준', color: '#3b82f6', status: 'writing', pen: true,  currentPage: 3, maxPage: 3 },
+  { name: '이서연', color: '#8b5cf6', status: 'writing', pen: true,  currentPage: 2, maxPage: 2 },
+  { name: '박지호', color: '#06b6d4', status: 'idle',    pen: false, currentPage: 1, maxPage: 1 },
+  { name: '최수아', color: '#f59e0b', status: 'writing', pen: true,  currentPage: 4, maxPage: 4 },
+  { name: '정예은', color: '#ec4899', status: 'idle',    pen: false, currentPage: 2, maxPage: 2 },
+  { name: '한도윤', color: '#10b981', status: 'writing', pen: true,  currentPage: 5, maxPage: 5 },
+];
+
+// ─── participantCurrentPages (핵심 추가 상태) ───
+// 이것이 stroke-service에서 PAGE_CHANGE/STROKE 수신 시 업데이트되는 맵
+const participantCurrentPages = new Map();
+students.forEach((s, i) => participantCurrentPages.set(i, s.currentPage));
+
+// Track recently changed for animation
+const recentlyChanged = new Set();
+
+const statusLabel = { writing: '필기중', idle: '대기', annotating: '첨삭중' };
+
+// ─── State ───
+let viewMode = 'grid';
+let expandedIdx = null;
+let annotationActive = false;
+let annotationTarget = null;
+let rightTab = 'participants';
+let leftTab = 'mine';
+let leftOpen = true;
+let rightOpen = true;
+let spotlightPage = null;
+let spotlightFollow = true; // true = 학생의 현재 페이지 따라감
+let hostCurrentPage = 1;
+let simRunning = true;
+let simTimer = null;
+
+// ─── Simulation: PAGE_CHANGE events ───
+function simulatePageChange() {
+  // Pick a random writing student
+  const writingIdx = [];
+  students.forEach((s, i) => { if (s.status === 'writing') writingIdx.push(i); });
+  if (writingIdx.length === 0) return;
+  const idx = writingIdx[Math.floor(Math.random() * writingIdx.length)];
+  const s = students[idx];
+
+  // Move to next page (or stay if already at max)
+  const oldPage = participantCurrentPages.get(idx);
+  let newPage = oldPage;
+
+  // 70% chance next page, 30% chance revisit previous
+  if (Math.random() < 0.7) {
+    newPage = Math.min(oldPage + 1, TOTAL_PAGES);
+  } else {
+    newPage = Math.max(oldPage - 1, 1);
+  }
+
+  if (newPage === oldPage) return;
+
+  applyPageChange(idx, newPage);
+}
+
+function simOnePageChange() {
+  simulatePageChange();
+}
+
+function applyPageChange(idx, newPage) {
+  const s = students[idx];
+  const oldPage = participantCurrentPages.get(idx);
+
+  // Update participantCurrentPages (이것이 핵심!)
+  participantCurrentPages.set(idx, newPage);
+  s.currentPage = newPage;
+  s.maxPage = Math.max(s.maxPage, newPage);
+
+  // Add stroke data if new page
+  if (!strokePaths[idx][newPage - 1]) {
+    const x1 = 20 + Math.random()*10, y1 = 45 + Math.random()*20;
+    const cx = 50 + Math.random()*20, cy = 25 + Math.random()*15;
+    const x2 = 80 + Math.random()*30, y2 = 50 + Math.random()*15;
+    strokePaths[idx][newPage - 1] = `M${x1},${y1} Q${cx},${cy} ${x2},${y2}`;
+  }
+
+  // Mark as recently changed for animation
+  recentlyChanged.add(idx);
+  setTimeout(() => { recentlyChanged.delete(idx); renderAll(); }, 1200);
+
+  // Log event
+  addEventLog(`📄 ${s.name}: P.${oldPage} → P.${newPage}`);
+
+  // Spotlight follow mode
+  if (viewMode === 'spotlight' && expandedIdx === idx && spotlightFollow) {
+    spotlightPage = newPage;
+  }
+
+  renderAll();
+}
+
+function addEventLog(text) {
+  const log = document.getElementById('eventLog');
+  const item = document.createElement('div');
+  item.className = 'event-item';
+  item.textContent = text;
+  log.prepend(item);
+  setTimeout(() => { item.className = 'event-item fading'; }, 2500);
+  setTimeout(() => { item.remove(); }, 3000);
+  // Keep max 5
+  while (log.children.length > 5) log.lastChild.remove();
+}
+
+function toggleSim() {
+  simRunning = !simRunning;
+  document.getElementById('simBtn').className = simRunning ? 'sim-btn-on' : 'sim-btn-off';
+  document.getElementById('simBtn').textContent = simRunning ? '시뮬 ON' : '시뮬 OFF';
+  if (simRunning) startSim();
+  else if (simTimer) { clearInterval(simTimer); simTimer = null; }
+}
+
+function startSim() {
+  if (simTimer) clearInterval(simTimer);
+  simTimer = setInterval(simulatePageChange, 3000 + Math.random() * 2000);
+}
+
+// ─── SVG ───
+function makeSVG(sIdx, pageNum, expanded) {
+  const path = strokePaths[sIdx]?.[pageNum - 1] || '';
+  const color = students[sIdx].color;
+  if (!path) {
+    return `<svg viewBox="0 0 220 100" preserveAspectRatio="none"><text x="110" y="55" font-size="8" fill="#cbd5e1" text-anchor="middle">빈 페이지</text></svg>`;
+  }
+  const sw = expanded ? 2.5 : 1.5;
+  const grid = expanded
+    ? `<line x1="0" y1="33%" x2="100%" y2="33%" stroke="#e2e8f0" stroke-width="0.5"/><line x1="0" y1="66%" x2="100%" y2="66%" stroke="#e2e8f0" stroke-width="0.5"/><line x1="33%" y1="0" x2="33%" y2="100%" stroke="#e2e8f0" stroke-width="0.5"/><line x1="66%" y1="0" x2="66%" y2="100%" stroke="#e2e8f0" stroke-width="0.5"/>`
+    : `<line x1="0" y1="50%" x2="100%" y2="50%" stroke="#f1f5f9" stroke-width="0.5"/>`;
+  return `<svg viewBox="0 0 220 100" preserveAspectRatio="none">${grid}<path class="stroke" d="${path}" stroke="${color}" stroke-width="${sw}" opacity="0.7"/><text x="15" y="25" font-size="${expanded?9:7}" fill="#94a3b8" font-family="serif" opacity="0.5">${formulas[(pageNum-1)%5]}</text></svg>`;
+}
+
+// ─── Render Left Panel ───
+function renderLeftPanel() {
+  const content = document.getElementById('leftPanelContent');
+  document.getElementById('lpTabMine').className = 'lp-mode-tab' + (leftTab === 'mine' ? ' active' : '');
+  document.getElementById('lpTabProgress').className = 'lp-mode-tab' + (leftTab === 'progress' ? ' active' : '');
+
+  if (leftTab === 'mine') {
+    let html = '';
+    for (let p = 1; p <= TOTAL_PAGES; p++) {
+      const isActive = hostCurrentPage === p;
+      const onThisPage = students.filter((s, i) => participantCurrentPages.get(i) === p);
+      html += `
+        <div class="page-thumb${isActive ? ' active' : ''}" onclick="selectHostPage(${p})">
+          <div class="thumb-canvas">
+            <svg viewBox="0 0 120 80" width="100%"><line x1="10" y1="50%" x2="110" y2="50%" stroke="#e2e8f0" stroke-width="0.5"/><text x="60" y="35" font-size="7" fill="#94a3b8" text-anchor="middle">${formulas[(p-1)%5]}</text></svg>
+            ${onThisPage.length > 0 ? `<div style="position:absolute;top:4px;right:4px;display:flex;gap:2px;flex-wrap:wrap;max-width:60px;justify-content:flex-end">
+              ${onThisPage.map(s => {
+                const sIdx = students.indexOf(s);
+                const isChanged = recentlyChanged.has(sIdx);
+                return `<div class="student-dot${isChanged ? ' pulse' : ''}" style="background:${s.color}" title="${s.name}: 현재 이 페이지">${s.name[0]}</div>`;
+              }).join('')}
+            </div>` : ''}
+          </div>
+          <div class="thumb-label">
+            <span>Page ${p}</span>
+            <span style="font-size:9px;color:#94a3b8">${onThisPage.length > 0 ? onThisPage.length + '명 활동중' : ''}</span>
+          </div>
+        </div>`;
+    }
+    content.innerHTML = html;
+  } else {
+    let html = '<div style="padding:10px">';
+    html += `<div style="font-size:10px;color:#94a3b8;margin-bottom:8px;display:flex;justify-content:space-between"><span>학생 (클릭→확대)</span><span>P.1 → ${TOTAL_PAGES}</span></div>`;
+    students.forEach((s, i) => {
+      const cp = participantCurrentPages.get(i);
+      const changed = recentlyChanged.has(i);
+      html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:6px;cursor:pointer;padding:3px;border-radius:6px;${changed?'background:#fef3c7':''};transition:background 0.5s" onclick="toSpotlight(${i})">`;
+      html += `<div style="width:50px;font-size:10px;font-weight:600;color:${s.color};overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.name}</div>`;
+      html += '<div style="flex:1;display:flex;gap:2px">';
+      for (let p = 1; p <= TOTAL_PAGES; p++) {
+        const done = p <= s.maxPage;
+        const isCurrent = cp === p;
+        const bg = isCurrent ? s.color : (done ? s.color + '30' : '#f1f5f9');
+        const border = isCurrent ? `2px solid ${s.color}` : (done ? `1px solid ${s.color}40` : '1px solid #e2e8f0');
+        const fontColor = isCurrent ? '#fff' : (done ? s.color : '#cbd5e1');
+        html += `<div style="flex:1;height:18px;border-radius:3px;background:${bg};border:${border};display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:700;color:${fontColor};transition:all 0.3s">${p}</div>`;
+      }
+      html += '</div></div>';
+    });
+    html += '<div style="margin-top:16px;padding-top:12px;border-top:1px solid #f1f5f9">';
+    html += '<div style="font-size:10px;font-weight:700;color:#64748b;margin-bottom:8px">페이지별 완료율</div>';
+    for (let p = 1; p <= TOTAL_PAGES; p++) {
+      const count = students.filter(s => s.maxPage >= p).length;
+      const pct = Math.round(count / students.length * 100);
+      html += `<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span style="font-size:9px;color:#64748b;width:24px">P.${p}</span><div style="flex:1;height:6px;background:#f1f5f9;border-radius:3px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${pct===100?'#10b981':'#3b82f6'};border-radius:3px;transition:width 0.3s"></div></div><span style="font-size:9px;color:#94a3b8;width:28px;text-align:right">${count}/${students.length}</span></div>`;
+    }
+    html += '</div></div>';
+    content.innerHTML = html;
+  }
+}
+
+// ─── Render Canvas ───
+function renderCanvas() {
+  const container = document.getElementById('gridContainer');
+  const hint = document.getElementById('hint');
+  const toggle = document.getElementById('viewToggle');
+  container.innerHTML = '';
+
+  if (viewMode === 'grid') {
+    container.className = 'grid-container grid-mode';
+    hint.style.opacity = '1';
+    hint.textContent = '학생별 현재 페이지가 실시간 반영됩니다';
+    toggle.innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><rect x="2" y="2" width="10" height="16" rx="1"/><rect x="14" y="2" width="4" height="7" rx="1"/><rect x="14" y="11" width="4" height="7" rx="1"/></svg> 스포트라이트`;
+
+    students.forEach((s, i) => {
+      const isAnno = annotationTarget === i;
+      const cp = participantCurrentPages.get(i);
+      const changed = recentlyChanged.has(i);
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (isAnno ? ' being-annotated' : '') + (changed ? ' page-changed' : '');
+      cell.innerHTML = `
+        <div class="cell-label" style="background:${s.color}">
+          <span style="display:flex;align-items:center;gap:4px">
+            ${s.name}
+            <span class="cell-page-badge${changed ? ' changed' : ''}">P.${cp}</span>
+          </span>
+          <span class="status ${isAnno ? 'annotating' : s.status}">${isAnno ? '첨삭중' : statusLabel[s.status]}</span>
+        </div>
+        <div class="canvas-mock">
+          ${makeSVG(i, cp, false)}
+          ${changed ? '<div class="page-change-toast visible">페이지 이동됨</div>' : ''}
+        </div>`;
+      cell.onclick = () => toSpotlight(i);
+      container.appendChild(cell);
+    });
+  } else {
+    container.className = 'grid-container spotlight-mode';
+    hint.style.opacity = '0';
+    toggle.innerHTML = `<svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg> 그리드 (ESC)`;
+
+    const s = students[expandedIdx];
+    const cp = participantCurrentPages.get(expandedIdx);
+    const viewingPage = spotlightFollow ? cp : (spotlightPage ?? cp);
+
+    const expanded = document.createElement('div');
+    expanded.className = 'cell expanded';
+    expanded.innerHTML = `
+      <div class="spotlight-header">
+        <span class="name-pill" style="background:${s.color}">${s.name}</span>
+        <div class="page-nav-pill">
+          <button class="page-nav-btn" onclick="spotlightPageNav(-1,event)" ${viewingPage<=1?'disabled':''}>
+            <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <span class="page-nav-label">P.${viewingPage} / ${s.maxPage}</span>
+          <button class="page-nav-btn" onclick="spotlightPageNav(1,event)" ${viewingPage>=s.maxPage?'disabled':''}>
+            <svg width="10" height="10" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+        <div class="follow-pill">
+          <button class="follow-btn ${spotlightFollow ? 'active' : ''}" onclick="setFollow(true, event)">실시간</button>
+          <button class="follow-btn ${!spotlightFollow ? 'active' : ''}" onclick="setFollow(false, event)">수동</button>
+        </div>
+        <span class="status ${annotationActive?'annotating':s.status}">${annotationActive?'첨삭중':statusLabel[s.status]}</span>
+        ${s.pen ? '<span class="status pen-connected">🖊</span>' : ''}
+      </div>
+      <div class="annotation-bar">
+        <button class="btn-annotate ${annotationActive?'active':''}" onclick="toggleAnnotation(event)">✏️ ${annotationActive?'첨삭 중':'첨삭'}</button>
+        ${annotationActive ? '<button class="btn-clear" onclick="event.stopPropagation()">🗑 지우기</button>' : ''}
+      </div>
+      <div class="canvas-mock">
+        ${makeSVG(expandedIdx, viewingPage, true)}
+        <div class="anno-overlay ${annotationActive?'visible':''}">
+          <svg viewBox="0 0 220 100" preserveAspectRatio="none">
+            <path class="stroke" d="M40,40 Q80,20 120,50 T190,35" stroke="#ef4444" stroke-width="2.5" opacity="0.6">
+              ${annotationActive?'<animate attributeName="stroke-dashoffset" from="300" to="0" dur="1s" fill="freeze"/>':''}
+            </path>
+          </svg>
+        </div>
+        ${spotlightFollow && recentlyChanged.has(expandedIdx) ? '<div class="page-change-toast visible">P.'+cp+'으로 이동됨 (실시간)</div>' : ''}
+      </div>`;
+    container.appendChild(expanded);
+
+    const sidebar = document.createElement('div');
+    sidebar.className = 'sidebar-scroll';
+    students.forEach((st, i) => {
+      if (i === expandedIdx) return;
+      const scp = participantCurrentPages.get(i);
+      const changed = recentlyChanged.has(i);
+      const isAnno = annotationTarget === i;
+      const thumb = document.createElement('div');
+      thumb.className = 'cell' + (changed ? ' page-changed' : '');
+      thumb.innerHTML = `
+        <div class="cell-label" style="background:${st.color};padding:4px 8px;">
+          <span style="font-size:10px;display:flex;align-items:center;gap:3px">${st.name} <span class="cell-page-badge${changed?' changed':''}">P.${scp}</span></span>
+          <span class="status ${isAnno?'annotating':st.status}" style="font-size:7px">${isAnno?'첨삭중':statusLabel[st.status]}</span>
+        </div>
+        <div class="canvas-mock" style="height:70px">${makeSVG(i, scp, false)}</div>`;
+      thumb.onclick = () => toSpotlight(i);
+      sidebar.appendChild(thumb);
+    });
+    container.appendChild(sidebar);
+  }
+}
+
+// ─── Render Right Panel ───
+function renderRightPanel() {
+  const content = document.getElementById('rpContent');
+  document.getElementById('tabParticipants').className = 'rp-tab' + (rightTab === 'participants' ? ' active' : '');
+  document.getElementById('tabChat').className = 'rp-tab' + (rightTab === 'chat' ? ' active' : '');
+
+  if (rightTab === 'participants') {
+    let html = '<div class="participant-list">';
+    html += `<div class="participant-item"><div class="p-avatar" style="background:#334155">김</div><div class="p-info"><div class="p-name">김선생님 <span style="font-size:9px;color:#94a3b8">(호스트)</span></div><div class="p-meta">P.${hostCurrentPage} · 온라인</div></div></div>`;
+    students.forEach((s, i) => {
+      const isAnno = annotationTarget === i;
+      const isViewing = viewMode === 'spotlight' && expandedIdx === i;
+      const cp = participantCurrentPages.get(i);
+      const pct = Math.round(s.maxPage / TOTAL_PAGES * 100);
+      const changed = recentlyChanged.has(i);
+      html += `
+        <div class="participant-item${isAnno?' highlight':(isViewing?' viewing':'')}${changed?' page-flash':''}" onclick="toSpotlight(${i})">
+          <div class="p-avatar" style="background:${s.color}">${s.name[0]}</div>
+          <div class="p-info">
+            <div class="p-name">${s.name}${isViewing?' <span style="font-size:9px;color:#3b82f6">👁</span>':''}</div>
+            <div class="p-meta">
+              <span class="p-page-badge${changed?' changed':''}">P.${cp}</span>
+              ${s.pen?'🖊':''}
+              ${isAnno?'<span style="color:#ef4444">첨삭중</span>':statusLabel[s.status]}
+              <span style="color:#94a3b8">· ${s.maxPage}/${TOTAL_PAGES}</span>
+            </div>
+            <div class="p-progress-bar"><div class="p-progress-fill" style="width:${pct}%;background:${s.color}"></div></div>
+          </div>
+          <div class="p-status"><span class="status ${isAnno?'annotating':s.status}">${isAnno?'첨삭중':statusLabel[s.status]}</span></div>
+        </div>`;
+    });
+    html += '</div>';
+    content.innerHTML = html;
+  } else {
+    content.innerHTML = `<div class="chat-area" style="height:100%;display:flex;flex-direction:column"><div class="chat-messages" style="flex:1"><div class="chat-msg"><div class="msg-name">이서연</div><div class="msg-bubble">선생님 3번 문제 모르겠어요 😢</div></div><div class="chat-msg"><div class="msg-name">김선생님</div><div class="msg-bubble">이차함수 꼭짓점 공식 기억나?</div></div><div class="chat-msg"><div class="msg-name">한도윤</div><div class="msg-bubble">저도 3번 헷갈립니다</div></div></div><div class="chat-input-bar"><input placeholder="메시지 입력..." /><button>전송</button></div></div>`;
+  }
+}
+
+// ─── Actions ───
+function toSpotlight(idx) {
+  expandedIdx = idx;
+  viewMode = 'spotlight';
+  annotationActive = false;
+  annotationTarget = null;
+  spotlightFollow = true;
+  spotlightPage = null;
+  renderAll();
+}
+function toGridMode() {
+  viewMode = 'grid'; expandedIdx = null; annotationActive = false; spotlightPage = null;
+  renderAll();
+}
+function handleViewToggle() {
+  if (viewMode === 'spotlight') toGridMode();
+  else toSpotlight(0);
+}
+function toggleAnnotation(e) {
+  e.stopPropagation();
+  annotationActive = !annotationActive;
+  annotationTarget = annotationActive ? expandedIdx : null;
+  renderAll();
+}
+function spotlightPageNav(delta, e) {
+  e.stopPropagation();
+  const s = students[expandedIdx];
+  const cp = participantCurrentPages.get(expandedIdx);
+  const current = spotlightFollow ? cp : (spotlightPage ?? cp);
+  const next = current + delta;
+  if (next >= 1 && next <= s.maxPage) {
+    spotlightPage = next;
+    spotlightFollow = false; // 수동으로 페이지 넘기면 follow 해제
+    renderAll();
+  }
+}
+function setFollow(val, e) {
+  e.stopPropagation();
+  spotlightFollow = val;
+  if (val) spotlightPage = null;
+  renderAll();
+}
+function switchRightTab(tab) { rightTab = tab; renderRightPanel(); }
+function switchLeftTab(tab) { leftTab = tab; renderLeftPanel(); }
+function toggleLeftPanel() {
+  leftOpen = !leftOpen;
+  document.getElementById('leftPanel').className = 'left-panel' + (leftOpen ? '' : ' collapsed');
+  document.getElementById('cbPages').className = 'cb-btn' + (leftOpen ? ' active' : '');
+}
+function toggleRightPanel(tab) {
+  if (rightOpen && rightTab === tab) rightOpen = false;
+  else { rightOpen = true; rightTab = tab; }
+  document.getElementById('rightPanel').className = 'right-panel' + (rightOpen ? '' : ' collapsed');
+  document.getElementById('cbParticipants').className = 'cb-btn' + (rightOpen && rightTab === 'participants' ? ' active' : '');
+  document.getElementById('cbChat').className = 'cb-btn' + (rightOpen && rightTab === 'chat' ? ' active' : '');
+  renderRightPanel();
+}
+function selectHostPage(p) { hostCurrentPage = p; renderLeftPanel(); }
+function renderAll() { renderCanvas(); renderRightPanel(); renderLeftPanel(); }
+
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && viewMode === 'spotlight') toGridMode(); });
+renderAll();
+startSim();
+</script>
+</body>
+</html>

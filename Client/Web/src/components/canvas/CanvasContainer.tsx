@@ -21,6 +21,7 @@ import { useAuthStore } from '../../stores/auth-store';
 import { useConnectionStore } from '../../stores/connection-store';
 import { useAlert } from '../../contexts/AlertContext';
 import { sessionService } from '../../services/session-service';
+import { mockPenConnected } from '../../utils/dev-mock';
 
 // 컨텍스트 메뉴 상태 타입
 interface ContextMenuState {
@@ -104,6 +105,7 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
 
   const currentPageAddress = useStrokeStore((state) => state.currentPageAddress);
   const paperSize = useStrokeStore((state) => state.paperSize);
+  const participantCurrentPages = useStrokeStore((state) => state.participantCurrentPages);
   const pageAddress = propPageAddress ?? currentPageAddress;
 
   // 세션 상태 (그리드 뷰용)
@@ -790,8 +792,12 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
 
   // 썸네일 카드 렌더링 헬퍼
   const renderThumbnailCard = (user: { userId: string; userName: string; color: string }) => {
+    // 이 사용자의 현재 페이지
+    const thumbPageAddress = user.userId === currentUserId
+      ? pageAddress
+      : participantCurrentPages.get(user.userId) ?? pageAddress;
     const userHasPage = pages.some(
-      (p) => isSamePageAddress(p.address, pageAddress) && p.ownerUserId === user.userId
+      (p) => isSamePageAddress(p.address, thumbPageAddress) && p.ownerUserId === user.userId
     );
     const isVerticalLabel = sidebarDock === 'left' || sidebarDock === 'right';
 
@@ -803,8 +809,8 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
             className="relative bg-white shadow-sm"
             style={{ width: `${thumbnailCellSize.width}px`, height: `${thumbnailCellSize.height}px` }}
           >
-            <BackgroundCanvas pageAddress={pageAddress} width={thumbnailCellSize.width} height={thumbnailCellSize.height} scale={1} />
-            <StrokeCanvas pageAddress={pageAddress} width={thumbnailCellSize.width} height={thumbnailCellSize.height} scale={1} userId={user.userId} className="absolute inset-0" />
+            <BackgroundCanvas pageAddress={thumbPageAddress} width={thumbnailCellSize.width} height={thumbnailCellSize.height} scale={1} />
+            <StrokeCanvas pageAddress={thumbPageAddress} width={thumbnailCellSize.width} height={thumbnailCellSize.height} scale={1} userId={user.userId} className="absolute inset-0" />
           </div>
         ) : (
           <div
@@ -874,8 +880,14 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
 
     // 스포트라이트 대상 사용자 정보
     const spotlightUser = gridUsers.find((u) => u.userId === effectiveSpotlightUserId);
+    // 스포트라이트 대상의 현재 페이지
+    const spotlightPageAddress = spotlightUser
+      ? (spotlightUser.userId === currentUserId
+          ? pageAddress
+          : participantCurrentPages.get(spotlightUser.userId) ?? pageAddress)
+      : pageAddress;
     const spotlightHasPage = spotlightUser ? pages.some(
-      (p) => isSamePageAddress(p.address, pageAddress) && p.ownerUserId === spotlightUser.userId
+      (p) => isSamePageAddress(p.address, spotlightPageAddress) && p.ownerUserId === spotlightUser.userId
     ) : false;
     const canDrawSpotlight = isHost || spotlightUser?.userId === currentUserId;
     // 스포트라이트 첨삭: 호스트가 다른 학생 캔버스를 볼 때만 활성 가능
@@ -981,13 +993,13 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
                       }}
                     >
                       <BackgroundCanvas
-                        pageAddress={pageAddress}
+                        pageAddress={spotlightPageAddress}
                         width={canvasWidth}
                         height={canvasHeight}
                         scale={1}
                       />
                       <StrokeCanvas
-                        pageAddress={pageAddress}
+                        pageAddress={spotlightPageAddress}
                         width={canvasWidth}
                         height={canvasHeight}
                         scale={1}
@@ -995,7 +1007,7 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
                         className="absolute inset-0"
                       />
                       <InputCanvas
-                        pageAddress={pageAddress}
+                        pageAddress={spotlightPageAddress}
                         width={canvasWidth}
                         height={canvasHeight}
                         scale={scale}
@@ -1083,7 +1095,7 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
                   <span>{spotlightUser.userName}</span>
                 </div>
                 <div className="bg-white/90 px-3 py-1 rounded-full text-sm text-gray-600 shadow-sm">
-                  {formatPageAddress(pageAddress)}
+                  {formatPageAddress(spotlightPageAddress)}
                 </div>
               </div>
             )}
@@ -1266,10 +1278,13 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
           {gridUsers.slice(0, gridLayout.cols * gridLayout.rows).map((user) => {
             const isActive = isCanvasActive(user.userId);
             const canDraw = isHost || user.userId === currentUserId;
-            // 현재 페이지를 이 사용자가 소유하고 있는지 확인
-            // pages 배열을 직접 사용하여 변경 시 리렌더링 보장
+            // 이 사용자가 현재 보고 있는 페이지 (자신이면 글로벌, 타인이면 추적된 페이지)
+            const userPageAddress = user.userId === currentUserId
+              ? pageAddress
+              : participantCurrentPages.get(user.userId) ?? pageAddress;
+            // 해당 페이지를 이 사용자가 소유하고 있는지 확인
             const userHasPage = pages.some(
-              (p) => isSamePageAddress(p.address, pageAddress) && p.ownerUserId === user.userId
+              (p) => isSamePageAddress(p.address, userPageAddress) && p.ownerUserId === user.userId
             );
             // 스마트펜 타겟 여부
             const isSmartpenTarget = isSmartpenTargetCanvas(user.userId);
@@ -1298,8 +1313,13 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span className="truncate">{user.userName}</span>
                     <span className="text-xs opacity-75 flex-shrink-0">
-                      {formatPageAddress(pageAddress)}
+                      {formatPageAddress(userPageAddress)}
                     </span>
+                    {mockPenConnected(user.userId) && (
+                      <svg className="w-3 h-3 opacity-75 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    )}
                   </div>
                   {isSmartpenTarget && (
                     <span
@@ -1337,14 +1357,14 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
                     >
                       {/* PDF 배경 캔버스 */}
                       <BackgroundCanvas
-                        pageAddress={pageAddress}
+                        pageAddress={userPageAddress}
                         width={gridCellSize.width}
                         height={gridCellSize.height}
                         scale={1}
                       />
 
                       <StrokeCanvas
-                        pageAddress={pageAddress}
+                        pageAddress={userPageAddress}
                         width={gridCellSize.width}
                         height={gridCellSize.height}
                         scale={1}
@@ -1354,7 +1374,7 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
 
                       {/* 입력 캔버스 (활성 캔버스에서만 입력 가능) */}
                       <InputCanvas
-                        pageAddress={pageAddress}
+                        pageAddress={userPageAddress}
                         width={gridCellSize.width}
                         height={gridCellSize.height}
                         scale={1}

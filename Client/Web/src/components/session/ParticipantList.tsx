@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { useSessionStore } from '../../stores/session-store';
 import { useAuthStore } from '../../stores/auth-store';
 import { useStrokeStore } from '../../stores/stroke-store';
-import { ParticipantRole } from '../../types';
+import { ParticipantRole, formatPageAddress } from '../../types';
 import { GridSelector } from './GridSelector';
 import { sessionService } from '../../services/session-service';
 import { useAlert } from '../../contexts/AlertContext';
+import { mockPenConnected } from '../../utils/dev-mock';
 import type { GridLayout } from '../../stores/session-store';
 
 // 색상 팔레트 (ARGB 형식)
@@ -55,6 +56,7 @@ export const ParticipantList: React.FC<ParticipantListProps> = ({
   const resetSmartpenTarget = useSessionStore((state) => state.resetSmartpenTarget);
   const guestInputSettings = useStrokeStore((state) => state.guestInputSettings);
   const setGuestInputColor = useStrokeStore((state) => state.setGuestInputColor);
+  const participantCurrentPages = useStrokeStore((state) => state.participantCurrentPages);
   const { tokens } = useAuthStore();
   const { showConfirm } = useAlert();
 
@@ -470,6 +472,18 @@ export const ParticipantList: React.FC<ParticipantListProps> = ({
                   <svg className="w-3 h-3 ml-1 text-yellow-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <title>{t('participant.host')}</title>
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                )}
+                {/* 참가자 현재 페이지 */}
+                {participant.role !== ParticipantRole.Host && participantCurrentPages.get(participant.userId) && (
+                  <span className="ml-1 text-[10px] font-medium text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded flex-shrink-0">
+                    {formatPageAddress(participantCurrentPages.get(participant.userId)!)}
+                  </span>
+                )}
+                {/* 펜 연결 DEV mock */}
+                {participant.role !== ParticipantRole.Host && mockPenConnected(participant.userId) && (
+                  <svg className="w-3 h-3 ml-0.5 text-blue-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
                 )}
                 {/* 스마트펜 타겟 색상 팔레트 버튼 (호스트, 타겟이 자신이 아닐 때) */}

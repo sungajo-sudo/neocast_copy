@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeoCast — Grid ↔ Spotlight Transition (Option A)</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f1f5f9; height: 100vh; display: flex; flex-direction: column; }
+
+  /* Top bar */
+  .topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+  .topbar h1 { font-size: 15px; font-weight: 700; color: #334155; }
+  .topbar .badge { font-size: 11px; background: #eff6ff; color: #3b82f6; padding: 2px 10px; border-radius: 99px; font-weight: 600; }
+
+  /* Main area */
+  .main { flex: 1; display: flex; overflow: hidden; }
+
+  /* Canvas area */
+  .canvas-area { flex: 1; position: relative; overflow: hidden; background: #e2e8f0; }
+
+  /* Grid container */
+  .grid-container {
+    position: absolute; inset: 0;
+    padding: 16px;
+    display: grid;
+    gap: 10px;
+    transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .grid-container.grid-mode {
+    grid-template-columns: repeat(var(--cols, 3), 1fr);
+    grid-template-rows: repeat(var(--rows, 2), 1fr);
+  }
+  .grid-container.spotlight-mode {
+    grid-template-columns: 1fr var(--sidebar-w, 140px);
+    grid-template-rows: 1fr;
+    gap: 8px;
+  }
+
+  /* Grid cell */
+  .cell {
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    min-width: 0; min-height: 0;
+  }
+  .cell:hover { box-shadow: 0 0 0 3px rgba(59,130,246,0.3); }
+
+  /* Grid mode cells */
+  .grid-mode .cell {
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+  }
+  .grid-mode .cell.selected {
+    box-shadow: 0 0 0 3px #3b82f6;
+  }
+
+  /* Spotlight mode: expanded cell */
+  .spotlight-mode .cell.expanded {
+    grid-row: 1;
+    grid-column: 1;
+    background: #fff;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    cursor: default;
+  }
+
+  /* Spotlight mode: sidebar area */
+  .sidebar-scroll {
+    grid-row: 1;
+    grid-column: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    overflow-y: auto;
+    padding: 4px;
+    transition: all 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  .sidebar-scroll .cell {
+    flex-shrink: 0;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    height: auto;
+  }
+
+  /* Cell label */
+  .cell-label {
+    padding: 6px 10px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  /* Status badge */
+  .status {
+    font-size: 9px;
+    padding: 1px 6px;
+    border-radius: 99px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+  }
+  .status.writing { background: #dcfce7; color: #16a34a; }
+  .status.writing::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #16a34a; animation: pulse 1.2s infinite; }
+  .status.idle { background: #f1f5f9; color: #94a3b8; }
+  .status.annotating { background: #fee2e2; color: #ef4444; }
+  .status.annotating::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: #ef4444; animation: pulse 0.8s infinite; }
+
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+  /* Canvas mock */
+  .canvas-mock {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #fff;
+    min-height: 0;
+  }
+  .canvas-mock svg { width: 100%; height: 100%; }
+
+  /* Annotation toolbar (spotlight) */
+  .annotation-bar {
+    position: absolute;
+    top: 12px; right: 12px;
+    display: flex; gap: 6px;
+    opacity: 0;
+    transform: translateY(-8px);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .expanded .annotation-bar {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+    transition-delay: 0.3s;
+  }
+  .annotation-bar button {
+    padding: 6px 14px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+  }
+  .btn-annotate { background: #fff; border: 2px solid #e2e8f0 !important; color: #3b82f6; }
+  .btn-annotate:hover { background: #eff6ff; border-color: #93c5fd !important; }
+  .btn-annotate.active { background: linear-gradient(135deg, #ef4444, #f43f5e); color: #fff; border-color: transparent !important; }
+  .btn-clear { background: #fff; border: 2px solid #e2e8f0 !important; color: #64748b; }
+  .btn-clear:hover { background: #f8fafc; }
+
+  /* Back button (spotlight) */
+  .back-btn {
+    position: absolute;
+    bottom: 12px; right: 12px;
+    padding: 6px 14px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(255,255,255,0.9);
+    border: none;
+    color: #475569;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+    backdrop-filter: blur(8px);
+    z-index: 10;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+  .spotlight-mode .back-btn {
+    opacity: 1;
+    pointer-events: auto;
+    transition-delay: 0.35s;
+  }
+  .back-btn:hover { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+
+  /* Spotlight user name */
+  .spotlight-name {
+    position: absolute;
+    top: 12px; left: 12px;
+    display: flex; align-items: center; gap: 8px;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+    z-index: 10;
+  }
+  .expanded .spotlight-name {
+    opacity: 1;
+    transition-delay: 0.3s;
+  }
+  .spotlight-name .name-pill {
+    padding: 5px 14px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
+
+  /* Instruction hint */
+  .hint {
+    position: absolute;
+    bottom: 12px; left: 50%; transform: translateX(-50%);
+    background: rgba(0,0,0,0.6);
+    color: #fff;
+    padding: 6px 16px;
+    border-radius: 99px;
+    font-size: 11px;
+    font-weight: 500;
+    pointer-events: none;
+    z-index: 20;
+    transition: opacity 0.3s;
+  }
+  .spotlight-mode .hint { opacity: 0; }
+
+  /* Pen strokes mock */
+  .stroke { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* Hidden in modes */
+  .grid-mode .sidebar-scroll { display: none; }
+  .spotlight-mode .cell:not(.expanded) { display: none; }
+  .spotlight-mode .sidebar-scroll .cell { display: flex !important; }
+
+  /* Annotation red strokes overlay */
+  .anno-overlay {
+    position: absolute; inset: 0;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .anno-overlay.visible { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>📐 NeoCast 세션 — 수학 워크시트</h1>
+  <span class="badge">6명 참가</span>
+</div>
+
+<div class="main">
+  <div class="canvas-area" id="canvasArea">
+    <div class="grid-container grid-mode" id="gridContainer" style="--cols:3; --rows:2; --sidebar-w:140px;">
+      <!-- Cells generated by JS -->
+    </div>
+    <div class="hint" id="hint">클릭하면 확대됩니다</div>
+    <button class="back-btn" id="backBtn" onclick="toGridMode()">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      그리드 뷰로 복귀
+    </button>
+  </div>
+</div>
+
+<script>
+const students = [
+  { name: '김민준', color: '#3b82f6', status: 'writing', strokes: 'M20,60 Q50,20 80,55 T140,45 T200,65' },
+  { name: '이서연', color: '#8b5cf6', status: 'writing', strokes: 'M25,50 Q60,25 95,60 T155,40' },
+  { name: '박지호', color: '#06b6d4', status: 'idle',    strokes: 'M30,70 Q55,35 85,60' },
+  { name: '최수아', color: '#f59e0b', status: 'writing', strokes: 'M20,55 Q45,30 75,55 T130,50 T180,60' },
+  { name: '정예은', color: '#ec4899', status: 'idle',    strokes: 'M25,65 Q50,40 80,65' },
+  { name: '한도윤', color: '#10b981', status: 'writing', strokes: 'M30,50 Q65,25 100,55 T160,45' },
+];
+
+const statusLabel = { writing: '필기중', idle: '대기', annotating: '첨삭중' };
+const container = document.getElementById('gridContainer');
+let currentMode = 'grid';
+let expandedIdx = null;
+let annotationActive = false;
+
+function makeSVG(strokes, color, expanded) {
+  const sw = expanded ? 2.5 : 1.5;
+  // Grid lines
+  const gridLines = expanded
+    ? `<line x1="0" y1="33%" x2="100%" y2="33%" stroke="#e2e8f0" stroke-width="0.5"/>
+       <line x1="0" y1="66%" x2="100%" y2="66%" stroke="#e2e8f0" stroke-width="0.5"/>
+       <line x1="33%" y1="0" x2="33%" y2="100%" stroke="#e2e8f0" stroke-width="0.5"/>
+       <line x1="66%" y1="0" x2="66%" y2="100%" stroke="#e2e8f0" stroke-width="0.5"/>`
+    : `<line x1="0" y1="50%" x2="100%" y2="50%" stroke="#f1f5f9" stroke-width="0.5"/>`;
+  return `<svg viewBox="0 0 220 100" preserveAspectRatio="none">
+    ${gridLines}
+    <path class="stroke" d="${strokes}" stroke="${color}" stroke-width="${sw}" opacity="0.7"/>
+    <text x="15" y="25" font-size="${expanded ? 9 : 7}" fill="#94a3b8" font-family="serif" opacity="0.5">y = ax² + bx + c</text>
+    <text x="15" y="${expanded ? 85 : 88}" font-size="${expanded ? 8 : 6}" fill="#cbd5e1" font-family="serif" opacity="0.4">∫f(x)dx</text>
+  </svg>`;
+}
+
+function render() {
+  container.innerHTML = '';
+
+  if (currentMode === 'grid') {
+    container.className = 'grid-container grid-mode';
+    students.forEach((s, i) => {
+      const cell = document.createElement('div');
+      cell.className = 'cell' + (expandedIdx === i ? ' selected' : '');
+      cell.innerHTML = `
+        <div class="cell-label" style="background:${s.color}">
+          <span>${s.name}</span>
+          <span class="status ${s.status}">${statusLabel[s.status]}</span>
+        </div>
+        <div class="canvas-mock">${makeSVG(s.strokes, s.color, false)}</div>
+      `;
+      cell.onclick = () => toSpotlight(i);
+      container.appendChild(cell);
+    });
+  } else {
+    container.className = 'grid-container spotlight-mode';
+    const s = students[expandedIdx];
+
+    // Expanded cell
+    const expanded = document.createElement('div');
+    expanded.className = 'cell expanded';
+    expanded.innerHTML = `
+      <div class="spotlight-name">
+        <span class="name-pill" style="background:${s.color}">${s.name}</span>
+        <span class="status ${annotationActive ? 'annotating' : s.status}">${annotationActive ? '첨삭중' : statusLabel[s.status]}</span>
+      </div>
+      <div class="annotation-bar">
+        <button class="btn-annotate ${annotationActive ? 'active' : ''}" onclick="toggleAnnotation(event)">
+          ✏️ ${annotationActive ? '첨삭 중' : '첨삭 모드'}
+        </button>
+        ${annotationActive ? '<button class="btn-clear" onclick="event.stopPropagation()">🗑 지우기</button>' : ''}
+      </div>
+      <div class="canvas-mock">
+        ${makeSVG(s.strokes, s.color, true)}
+        <div class="anno-overlay ${annotationActive ? 'visible' : ''}">
+          <svg viewBox="0 0 220 100" preserveAspectRatio="none">
+            <path class="stroke" d="M40,40 Q80,20 120,50 T190,35" stroke="#ef4444" stroke-width="2.5" opacity="0.6" stroke-dasharray="${annotationActive ? '0' : '300'}" stroke-dashoffset="0">
+              ${annotationActive ? '<animate attributeName="stroke-dashoffset" from="300" to="0" dur="1s" fill="freeze"/>' : ''}
+            </path>
+            <path class="stroke" d="M60,55 L90,45 L75,70" stroke="#ef4444" stroke-width="2" opacity="0.5">
+              ${annotationActive ? '<animate attributeName="opacity" from="0" to="0.5" dur="0.5s" begin="0.8s" fill="freeze"/>' : ''}
+            </path>
+          </svg>
+        </div>
+      </div>
+    `;
+    container.appendChild(expanded);
+
+    // Sidebar
+    const sidebar = document.createElement('div');
+    sidebar.className = 'sidebar-scroll';
+    students.forEach((st, i) => {
+      if (i === expandedIdx) return;
+      const thumb = document.createElement('div');
+      thumb.className = 'cell';
+      const isAnnoTarget = annotationActive && i === expandedIdx;
+      thumb.innerHTML = `
+        <div class="cell-label" style="background:${st.color}; padding: 4px 8px;">
+          <span style="font-size:11px">${st.name}</span>
+          <span class="status ${i === expandedIdx && annotationActive ? 'annotating' : st.status}" style="font-size:8px">${i === expandedIdx && annotationActive ? '첨삭중' : statusLabel[st.status]}</span>
+        </div>
+        <div class="canvas-mock" style="height:80px">${makeSVG(st.strokes, st.color, false)}</div>
+      `;
+      thumb.onclick = () => toSpotlight(i);
+      sidebar.appendChild(thumb);
+    });
+    container.appendChild(sidebar);
+  }
+}
+
+function toSpotlight(idx) {
+  expandedIdx = idx;
+  currentMode = 'spotlight';
+  annotationActive = false;
+  render();
+}
+
+function toGridMode() {
+  currentMode = 'grid';
+  expandedIdx = null;
+  annotationActive = false;
+  render();
+}
+
+function toggleAnnotation(e) {
+  e.stopPropagation();
+  annotationActive = !annotationActive;
+  render();
+}
+
+// ESC to go back
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && currentMode === 'spotlight') toGridMode();
+});
+
+render();
+</script>
+</body>
+</html>

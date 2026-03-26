@@ -8,7 +8,8 @@ import { AnnotationCanvas } from '../canvas/AnnotationCanvas';
 import { useParticipantActivity } from '../../hooks/useParticipantActivity';
 import { devBridge } from '../../services/dev-bridge';
 import { useAnnotationStatusStore } from '../../stores/annotation-status-store';
-import { getPaperSizeInPoints, pointToScreenPx } from '../../types';
+import { getPaperSizeInPoints, pointToScreenPx, formatPageAddress } from '../../types';
+import { mockPenConnected } from '../../utils/dev-mock';
 import type { Participant, ParticipantActivityStatus } from '../../types';
 
 // A4 세로 비율 (210:297 ≈ 0.707)
@@ -69,15 +70,11 @@ function ParticipantItem({
   const miniH = Math.round(miniW * (heightPt / widthPt));
   const initial = participant.userName.charAt(0).toUpperCase();
 
-  // DEV mock: userId 해시 기반 펜 연결 여부
-  const isPenConnected = useMemo(() => {
-    if (!import.meta.env.DEV) return false;
-    let hash = 0;
-    for (let i = 0; i < participant.userId.length; i++) {
-      hash = ((hash << 5) - hash + participant.userId.charCodeAt(i)) | 0;
-    }
-    return Math.abs(hash) % 3 !== 0; // ~66% 연결
-  }, [participant.userId]);
+  // DEV mock: 펜 연결 여부
+  const isPenConnected = useMemo(() => mockPenConnected(participant.userId), [participant.userId]);
+
+  // 참가자의 현재 페이지
+  const participantPage = useStrokeStore((state) => state.participantCurrentPages.get(participant.userId));
 
   return (
     <button
@@ -118,6 +115,12 @@ function ParticipantItem({
         <span className="text-xs font-semibold text-slate-700 truncate flex-1">
           {participant.userName}
         </span>
+        {/* 현재 페이지 */}
+        {participantPage && (
+          <span className="text-[10px] font-medium text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded-full flex-shrink-0">
+            {formatPageAddress(participantPage)}
+          </span>
+        )}
         {/* 펜 연결 상태 */}
         {isPenConnected && (
           <span className="flex-shrink-0" title="스마트펜 연결됨">

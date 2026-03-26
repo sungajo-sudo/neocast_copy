@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NeoCast — Session Layout v2 (패널 + Grid/Spotlight 통합)</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f8fafc; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+
+/* ─── Header ─── */
+.header { background: #fff; border-bottom: 1px solid #e2e8f0; padding: 8px 20px; display: flex; align-items: center; gap: 12px; flex-shrink: 0; z-index: 10; }
+.header .logo { font-size: 14px; font-weight: 800; color: #3b82f6; }
+.header .session-name { font-size: 13px; font-weight: 600; color: #334155; margin-left: 8px; }
+.header .code-badge { font-size: 10px; background: #f1f5f9; color: #64748b; padding: 2px 8px; border-radius: 4px; font-family: monospace; }
+.header .spacer { flex: 1; }
+.header .user-pill { font-size: 11px; color: #64748b; display: flex; align-items: center; gap: 4px; }
+.header .avatar { width: 24px; height: 24px; border-radius: 50%; background: #3b82f6; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; }
+
+/* ─── Main layout ─── */
+.main-layout { flex: 1; display: flex; overflow: hidden; }
+
+/* ─── Left Panel (Pages) ─── */
+.left-panel {
+  width: 220px; flex-shrink: 0;
+  background: #fff; border-right: 1px solid #e2e8f0;
+  display: flex; flex-direction: column;
+  transition: width 0.3s ease, margin-left 0.3s ease;
+  overflow: hidden;
+}
+.left-panel.collapsed { width: 0; margin-left: 0; border: none; }
+.left-panel .panel-header {
+  padding: 10px 14px; border-bottom: 1px solid #f1f5f9;
+  display: flex; align-items: center; justify-content: space-between;
+  flex-shrink: 0;
+}
+.left-panel .panel-header h3 { font-size: 12px; font-weight: 700; color: #334155; }
+.left-panel .panel-header .page-count { font-size: 10px; color: #94a3b8; }
+.left-panel .pages-list { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+.page-thumb {
+  border-radius: 8px; border: 2px solid #e2e8f0; overflow: hidden; cursor: pointer;
+  transition: all 0.2s; flex-shrink: 0;
+}
+.page-thumb:hover { border-color: #93c5fd; }
+.page-thumb.active { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+.page-thumb .thumb-canvas { height: 100px; background: #fff; display: flex; align-items: center; justify-content: center; }
+.page-thumb .thumb-label { padding: 4px 8px; font-size: 10px; color: #64748b; background: #f8fafc; text-align: center; }
+
+/* ─── Canvas Area (center) ─── */
+.canvas-area {
+  flex: 1; position: relative; overflow: hidden;
+  background: #e2e8f0;
+  transition: all 0.3s ease;
+}
+
+/* Grid / Spotlight container */
+.grid-container {
+  position: absolute; inset: 0; padding: 12px;
+  display: grid; gap: 8px;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.grid-container.grid-mode {
+  grid-template-columns: repeat(var(--cols, 3), 1fr);
+  grid-template-rows: repeat(var(--rows, 2), 1fr);
+}
+.grid-container.spotlight-mode {
+  grid-template-columns: 1fr var(--sidebar-w, 130px);
+  grid-template-rows: 1fr;
+}
+
+/* Cell */
+.cell {
+  border-radius: 10px; overflow: hidden;
+  display: flex; flex-direction: column;
+  cursor: pointer; position: relative;
+  min-width: 0; min-height: 0;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.grid-mode .cell {
+  background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+.grid-mode .cell:hover { box-shadow: 0 0 0 2px rgba(59,130,246,0.3); }
+
+/* Expanded */
+.spotlight-mode .cell.expanded {
+  grid-row: 1; grid-column: 1;
+  background: #fff; box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  cursor: default; border-radius: 12px;
+}
+
+/* Sidebar */
+.sidebar-scroll {
+  grid-row: 1; grid-column: 2;
+  display: flex; flex-direction: column; gap: 6px;
+  overflow-y: auto; padding: 2px;
+}
+.sidebar-scroll .cell {
+  flex-shrink: 0; background: #fff;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.06); height: auto;
+}
+.grid-mode .sidebar-scroll { display: none; }
+.spotlight-mode .cell:not(.expanded) { display: none; }
+.spotlight-mode .sidebar-scroll .cell { display: flex !important; }
+
+/* Cell label */
+.cell-label {
+  padding: 5px 8px; font-size: 11px; font-weight: 600; color: #fff;
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
+}
+
+/* Status */
+.status {
+  font-size: 8px; padding: 1px 5px; border-radius: 99px;
+  font-weight: 700; display: inline-flex; align-items: center; gap: 3px;
+}
+.status.writing { background: #dcfce7; color: #16a34a; }
+.status.writing::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: #16a34a; animation: pulse 1.2s infinite; }
+.status.idle { background: #f1f5f9; color: #94a3b8; }
+.status.annotating { background: #fee2e2; color: #ef4444; }
+.status.annotating::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: #ef4444; animation: pulse 0.8s infinite; }
+.status.pen-connected { background: #dbeafe; color: #2563eb; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+/* Canvas mock */
+.canvas-mock { flex: 1; position: relative; overflow: hidden; background: #fff; min-height: 0; }
+.canvas-mock svg { width: 100%; height: 100%; }
+.stroke { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Annotation bar */
+.annotation-bar {
+  position: absolute; top: 10px; right: 10px;
+  display: flex; gap: 5px; opacity: 0; transform: translateY(-6px);
+  transition: all 0.3s ease; pointer-events: none; z-index: 10;
+}
+.expanded .annotation-bar { opacity: 1; transform: translateY(0); pointer-events: auto; transition-delay: 0.25s; }
+.annotation-bar button {
+  padding: 5px 12px; border-radius: 99px; font-size: 10px; font-weight: 700;
+  border: none; cursor: pointer; display: flex; align-items: center; gap: 3px; transition: all 0.2s;
+}
+.btn-annotate { background: #fff; border: 2px solid #e2e8f0 !important; color: #3b82f6; }
+.btn-annotate:hover { background: #eff6ff; }
+.btn-annotate.active { background: linear-gradient(135deg, #ef4444, #f43f5e); color: #fff; border-color: transparent !important; }
+.btn-clear { background: #fff; border: 2px solid #e2e8f0 !important; color: #64748b; }
+
+/* Spotlight name */
+.spotlight-name {
+  position: absolute; top: 10px; left: 10px;
+  display: flex; align-items: center; gap: 6px;
+  opacity: 0; transition: all 0.3s ease; pointer-events: none; z-index: 10;
+}
+.expanded .spotlight-name { opacity: 1; transition-delay: 0.25s; }
+.name-pill { padding: 4px 12px; border-radius: 99px; font-size: 11px; font-weight: 600; color: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.12); }
+
+/* Back / grid toggle buttons */
+.view-toggle-btn {
+  position: absolute; bottom: 10px; right: 10px;
+  padding: 5px 12px; border-radius: 99px; font-size: 10px; font-weight: 600;
+  background: rgba(255,255,255,0.92); border: none; color: #475569;
+  cursor: pointer; display: flex; align-items: center; gap: 4px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08); backdrop-filter: blur(8px); z-index: 10;
+  transition: all 0.2s;
+}
+.view-toggle-btn:hover { background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.12); }
+
+/* Hint */
+.hint {
+  position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+  background: rgba(0,0,0,0.55); color: #fff; padding: 5px 14px; border-radius: 99px;
+  font-size: 10px; font-weight: 500; pointer-events: none; z-index: 20;
+  transition: opacity 0.3s;
+}
+
+/* Annotation overlay */
+.anno-overlay { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.3s; }
+.anno-overlay.visible { opacity: 1; }
+
+/* ─── Right Panel (Participants / Chat) ─── */
+.right-panel {
+  width: 280px; flex-shrink: 0;
+  background: #fff; border-left: 1px solid #e2e8f0;
+  display: flex; flex-direction: column;
+  transition: width 0.3s ease, margin-right 0.3s ease;
+  overflow: hidden;
+}
+.right-panel.collapsed { width: 0; margin-right: 0; border: none; }
+
+/* Right panel tabs */
+.rp-tabs {
+  display: flex; border-bottom: 1px solid #f1f5f9; flex-shrink: 0;
+}
+.rp-tab {
+  flex: 1; padding: 8px; font-size: 11px; font-weight: 600;
+  text-align: center; cursor: pointer; border: none; background: none;
+  color: #94a3b8; transition: all 0.2s; position: relative;
+}
+.rp-tab.active { color: #3b82f6; }
+.rp-tab.active::after {
+  content: ''; position: absolute; bottom: -1px; left: 20%; right: 20%;
+  height: 2px; background: #3b82f6; border-radius: 1px;
+}
+.rp-tab .tab-badge {
+  display: inline-block; min-width: 16px; padding: 0 4px; margin-left: 4px;
+  font-size: 9px; font-weight: 700; border-radius: 99px; line-height: 16px;
+}
+.rp-tab.active .tab-badge { background: #eff6ff; color: #3b82f6; }
+.rp-tab:not(.active) .tab-badge { background: #f1f5f9; color: #94a3b8; }
+
+/* Participant list */
+.participant-list { flex: 1; overflow-y: auto; padding: 8px; }
+.participant-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px; border-radius: 10px; cursor: pointer;
+  transition: all 0.15s; margin-bottom: 2px;
+}
+.participant-item:hover { background: #f8fafc; }
+.participant-item.highlight { background: #fef2f2; }
+.participant-item .p-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.participant-item .p-info { flex: 1; min-width: 0; }
+.participant-item .p-name { font-size: 12px; font-weight: 600; color: #334155; }
+.participant-item .p-meta { font-size: 10px; color: #94a3b8; margin-top: 1px; }
+.participant-item .p-status { flex-shrink: 0; }
+
+/* Chat mock */
+.chat-area { flex: 1; display: flex; flex-direction: column; }
+.chat-messages { flex: 1; overflow-y: auto; padding: 12px; }
+.chat-msg { margin-bottom: 10px; }
+.chat-msg .msg-name { font-size: 10px; font-weight: 600; color: #64748b; margin-bottom: 2px; }
+.chat-msg .msg-bubble { font-size: 12px; color: #334155; background: #f1f5f9; padding: 6px 10px; border-radius: 8px; display: inline-block; max-width: 90%; }
+.chat-input-bar { border-top: 1px solid #f1f5f9; padding: 8px; display: flex; gap: 6px; }
+.chat-input-bar input { flex: 1; border: 1px solid #e2e8f0; border-radius: 8px; padding: 6px 10px; font-size: 12px; outline: none; }
+.chat-input-bar button { padding: 6px 12px; border-radius: 8px; background: #3b82f6; color: #fff; border: none; font-size: 11px; font-weight: 600; cursor: pointer; }
+
+/* ─── Control Bar (bottom) ─── */
+.control-bar {
+  background: #fff; border-top: 1px solid #e2e8f0;
+  padding: 6px 16px; display: flex; align-items: center; gap: 4px;
+  flex-shrink: 0; z-index: 30;
+}
+.cb-group { display: flex; align-items: center; gap: 2px; }
+.cb-divider { width: 1px; height: 24px; background: #e2e8f0; margin: 0 6px; }
+.cb-btn {
+  width: 40px; height: 36px; border: none; border-radius: 8px; cursor: pointer;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 1px; background: none; color: #64748b; transition: all 0.15s; position: relative;
+}
+.cb-btn:hover { background: #f1f5f9; color: #334155; }
+.cb-btn.active { background: #eff6ff; color: #3b82f6; }
+.cb-btn svg { width: 16px; height: 16px; }
+.cb-btn .cb-label { font-size: 8px; font-weight: 600; }
+.cb-btn .cb-dot {
+  position: absolute; top: 4px; right: 6px;
+  width: 6px; height: 6px; border-radius: 50%; background: #ef4444;
+}
+.spacer { flex: 1; }
+.leave-btn {
+  padding: 6px 14px; border-radius: 8px; font-size: 11px; font-weight: 700;
+  background: #fef2f2; color: #ef4444; border: none; cursor: pointer;
+  transition: all 0.15s;
+}
+.leave-btn:hover { background: #fee2e2; }
+
+/* ─── Interaction highlights ─── */
+.grid-mode .cell.being-annotated { box-shadow: 0 0 0 2px #ef4444, 0 0 12px rgba(239,68,68,0.2); }
+.grid-mode .cell.being-annotated .cell-label .anno-indicator {
+  display: inline-flex;
+}
+.anno-indicator { display: none; align-items: center; gap: 2px; font-size: 8px; background: rgba(255,255,255,0.3); padding: 1px 5px; border-radius: 99px; }
+
+/* Responsive note */
+@media (max-width: 900px) {
+  .left-panel { width: 0; border: none; }
+  .right-panel { width: 0; border: none; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <span class="logo">NeoCast</span>
+  <span class="session-name">수학 워크시트 — 이차함수</span>
+  <span class="code-badge">ABC-123</span>
+  <span class="spacer"></span>
+  <span class="user-pill">
+    <span class="avatar">김</span>
+    김선생님 (호스트)
+  </span>
+</div>
+
+<!-- Main Layout -->
+<div class="main-layout">
+
+  <!-- Left Panel: Pages -->
+  <div class="left-panel" id="leftPanel">
+    <div class="panel-header">
+      <h3>📄 페이지</h3>
+      <span class="page-count">3 pages</span>
+    </div>
+    <div class="pages-list">
+      <div class="page-thumb active" onclick="selectPage(0)">
+        <div class="thumb-canvas">
+          <svg viewBox="0 0 120 80" width="100%"><line x1="10" y1="50%" x2="110" y2="50%" stroke="#e2e8f0" stroke-width="0.5"/><text x="20" y="35" font-size="7" fill="#94a3b8">y = ax² + bx + c</text></svg>
+        </div>
+        <div class="thumb-label">Page 1</div>
+      </div>
+      <div class="page-thumb" onclick="selectPage(1)">
+        <div class="thumb-canvas">
+          <svg viewBox="0 0 120 80" width="100%"><line x1="10" y1="50%" x2="110" y2="50%" stroke="#e2e8f0" stroke-width="0.5"/><text x="20" y="35" font-size="7" fill="#94a3b8">∫f(x)dx</text></svg>
+        </div>
+        <div class="thumb-label">Page 2</div>
+      </div>
+      <div class="page-thumb" onclick="selectPage(2)">
+        <div class="thumb-canvas">
+          <svg viewBox="0 0 120 80" width="100%"><circle cx="60" cy="40" r="20" stroke="#e2e8f0" fill="none" stroke-width="0.5"/><text x="30" y="45" font-size="7" fill="#94a3b8">πr²</text></svg>
+        </div>
+        <div class="thumb-label">Page 3</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Canvas Area -->
+  <div class="canvas-area" id="canvasArea">
+    <div class="grid-container grid-mode" id="gridContainer" style="--cols:3; --rows:2; --sidebar-w:130px;"></div>
+    <div class="hint" id="hint">학생 캔버스를 클릭하면 확대됩니다</div>
+    <button class="view-toggle-btn" id="viewToggle" onclick="handleViewToggle()"></button>
+  </div>
+
+  <!-- Right Panel: Participants / Chat -->
+  <div class="right-panel" id="rightPanel">
+    <div class="rp-tabs">
+      <button class="rp-tab active" id="tabParticipants" onclick="switchRightTab('participants')">
+        👥 참가자 <span class="tab-badge">6</span>
+      </button>
+      <button class="rp-tab" id="tabChat" onclick="switchRightTab('chat')">
+        💬 채팅 <span class="tab-badge">3</span>
+      </button>
+    </div>
+    <div id="rpContent"></div>
+  </div>
+</div>
+
+<!-- Control Bar -->
+<div class="control-bar">
+  <div class="cb-group">
+    <button class="cb-btn" title="스마트펜">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+      <span class="cb-label">펜</span>
+    </button>
+    <button class="cb-btn active" title="스타일러스">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/></svg>
+      <span class="cb-label">터치</span>
+    </button>
+  </div>
+  <div class="cb-divider"></div>
+  <div class="cb-group">
+    <button class="cb-btn" id="cbPages" onclick="toggleLeftPanel()" title="페이지">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      <span class="cb-label">페이지</span>
+    </button>
+    <button class="cb-btn" title="업로드">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+      <span class="cb-label">업로드</span>
+    </button>
+  </div>
+  <div class="cb-divider"></div>
+  <div class="cb-group">
+    <button class="cb-btn" id="cbParticipants" onclick="toggleRightPanel('participants')" title="참가자">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+      <span class="cb-label">참가자</span>
+    </button>
+    <button class="cb-btn" id="cbChat" onclick="toggleRightPanel('chat')" title="채팅">
+      <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+      <span class="cb-label">채팅</span>
+      <span class="cb-dot"></span>
+    </button>
+  </div>
+  <span class="spacer"></span>
+  <button class="leave-btn">나가기</button>
+</div>
+
+<script>
+// ─── Data ───
+const students = [
+  { name: '김민준', color: '#3b82f6', status: 'writing', pen: true,  strokes: 'M20,60 Q50,20 80,55 T140,45 T200,65' },
+  { name: '이서연', color: '#8b5cf6', status: 'writing', pen: true,  strokes: 'M25,50 Q60,25 95,60 T155,40' },
+  { name: '박지호', color: '#06b6d4', status: 'idle',    pen: false, strokes: 'M30,70 Q55,35 85,60' },
+  { name: '최수아', color: '#f59e0b', status: 'writing', pen: true,  strokes: 'M20,55 Q45,30 75,55 T130,50 T180,60' },
+  { name: '정예은', color: '#ec4899', status: 'idle',    pen: false, strokes: 'M25,65 Q50,40 80,65' },
+  { name: '한도윤', color: '#10b981', status: 'writing', pen: true,  strokes: 'M30,50 Q65,25 100,55 T160,45' },
+];
+const statusLabel = { writing: '필기중', idle: '대기', annotating: '첨삭중' };
+const statusEmoji = { writing: '✍️', idle: '⏸️', annotating: '🔴' };
+
+// ─── State ───
+let viewMode = 'grid'; // 'grid' | 'spotlight'
+let expandedIdx = null;
+let annotationActive = false;
+let annotationTarget = null; // index of student being annotated
+let rightTab = 'participants'; // 'participants' | 'chat'
+let leftOpen = true;
+let rightOpen = true;
+
+// ─── Canvas rendering ───
+function makeSVG(strokes, color, expanded) {
+  const sw = expanded ? 2.5 : 1.5;
+  const grid = expanded
+    ? `<line x1="0" y1="33%" x2="100%" y2="33%" stroke="#e2e8f0" stroke-width="0.5"/>
+       <line x1="0" y1="66%" x2="100%" y2="66%" stroke="#e2e8f0" stroke-width="0.5"/>
+       <line x1="33%" y1="0" x2="33%" y2="100%" stroke="#e2e8f0" stroke-width="0.5"/>
+       <line x1="66%" y1="0" x2="66%" y2="100%" stroke="#e2e8f0" stroke-width="0.5"/>`
+    : `<line x1="0" y1="50%" x2="100%" y2="50%" stroke="#f1f5f9" stroke-width="0.5"/>`;
+  return `<svg viewBox="0 0 220 100" preserveAspectRatio="none">
+    ${grid}
+    <path class="stroke" d="${strokes}" stroke="${color}" stroke-width="${sw}" opacity="0.7"/>
+    <text x="15" y="25" font-size="${expanded?9:7}" fill="#94a3b8" font-family="serif" opacity="0.5">y = ax² + bx + c</text>
+    <text x="15" y="${expanded?85:88}" font-size="${expanded?8:6}" fill="#cbd5e1" font-family="serif" opacity="0.4">∫f(x)dx</text>
+  </svg>`;
+}
+
+// ─── Grid / Spotlight render ───
+function renderCanvas() {
+  const container = document.getElementById('gridContainer');
+  const hint = document.getElementById('hint');
+  const toggle = document.getElementById('viewToggle');
+  container.innerHTML = '';
+
+  if (viewMode === 'grid') {
+    container.className = 'grid-container grid-mode';
+    hint.style.opacity = '1';
+    hint.textContent = '학생 캔버스를 클릭하면 확대됩니다';
+    toggle.innerHTML = `
+      <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><rect x="2" y="2" width="10" height="16" rx="1"/><rect x="14" y="2" width="4" height="7" rx="1"/><rect x="14" y="11" width="4" height="7" rx="1"/></svg>
+      스포트라이트
+    `;
+
+    students.forEach((s, i) => {
+      const cell = document.createElement('div');
+      const isAnnoTarget = annotationTarget === i;
+      cell.className = 'cell' + (isAnnoTarget ? ' being-annotated' : '');
+      cell.innerHTML = `
+        <div class="cell-label" style="background:${s.color}">
+          <span>${s.name}</span>
+          <span style="display:flex;align-items:center;gap:4px">
+            <span class="anno-indicator"${isAnnoTarget ? ' style="display:inline-flex"' : ''}>✏️ 첨삭중</span>
+            <span class="status ${isAnnoTarget ? 'annotating' : s.status}">${isAnnoTarget ? '첨삭중' : statusLabel[s.status]}</span>
+          </span>
+        </div>
+        <div class="canvas-mock">${makeSVG(s.strokes, s.color, false)}</div>
+      `;
+      cell.onclick = () => toSpotlight(i);
+      container.appendChild(cell);
+    });
+  } else {
+    container.className = 'grid-container spotlight-mode';
+    hint.style.opacity = '0';
+    toggle.innerHTML = `
+      <svg width="14" height="14" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+      그리드 뷰 (ESC)
+    `;
+
+    const s = students[expandedIdx];
+    const expanded = document.createElement('div');
+    expanded.className = 'cell expanded';
+    expanded.innerHTML = `
+      <div class="spotlight-name">
+        <span class="name-pill" style="background:${s.color}">${s.name}</span>
+        <span class="status ${annotationActive ? 'annotating' : s.status}">${annotationActive ? '첨삭중' : statusLabel[s.status]}</span>
+        ${s.pen ? '<span class="status pen-connected">🖊 펜 연결</span>' : ''}
+      </div>
+      <div class="annotation-bar">
+        <button class="btn-annotate ${annotationActive ? 'active' : ''}" onclick="toggleAnnotation(event)">
+          ✏️ ${annotationActive ? '첨삭 중' : '첨삭 모드'}
+        </button>
+        ${annotationActive ? '<button class="btn-clear" onclick="event.stopPropagation()">🗑 지우기</button>' : ''}
+      </div>
+      <div class="canvas-mock">
+        ${makeSVG(s.strokes, s.color, true)}
+        <div class="anno-overlay ${annotationActive ? 'visible' : ''}">
+          <svg viewBox="0 0 220 100" preserveAspectRatio="none">
+            <path class="stroke" d="M40,40 Q80,20 120,50 T190,35" stroke="#ef4444" stroke-width="2.5" opacity="0.6" stroke-dasharray="${annotationActive?'0':'300'}" stroke-dashoffset="0">
+              ${annotationActive ? '<animate attributeName="stroke-dashoffset" from="300" to="0" dur="1s" fill="freeze"/>' : ''}
+            </path>
+          </svg>
+        </div>
+      </div>
+    `;
+    container.appendChild(expanded);
+
+    // Sidebar thumbnails
+    const sidebar = document.createElement('div');
+    sidebar.className = 'sidebar-scroll';
+    students.forEach((st, i) => {
+      if (i === expandedIdx) return;
+      const thumb = document.createElement('div');
+      thumb.className = 'cell';
+      const isAnnoTarget = annotationTarget === i && annotationTarget !== expandedIdx;
+      thumb.innerHTML = `
+        <div class="cell-label" style="background:${st.color}; padding:4px 8px;">
+          <span style="font-size:10px">${st.name}</span>
+          <span class="status ${isAnnoTarget ? 'annotating' : st.status}" style="font-size:7px">${isAnnoTarget ? '첨삭중' : statusLabel[st.status]}</span>
+        </div>
+        <div class="canvas-mock" style="height:70px">${makeSVG(st.strokes, st.color, false)}</div>
+      `;
+      thumb.onclick = () => toSpotlight(i);
+      sidebar.appendChild(thumb);
+    });
+    container.appendChild(sidebar);
+  }
+}
+
+// ─── Right Panel render ───
+function renderRightPanel() {
+  const content = document.getElementById('rpContent');
+  const tabP = document.getElementById('tabParticipants');
+  const tabC = document.getElementById('tabChat');
+  tabP.className = 'rp-tab' + (rightTab === 'participants' ? ' active' : '');
+  tabC.className = 'rp-tab' + (rightTab === 'chat' ? ' active' : '');
+
+  if (rightTab === 'participants') {
+    let html = '<div class="participant-list">';
+    // Host
+    html += `
+      <div class="participant-item">
+        <div class="p-avatar" style="background:#334155">김</div>
+        <div class="p-info"><div class="p-name">김선생님 <span style="font-size:9px;color:#94a3b8">(호스트)</span></div><div class="p-meta">온라인</div></div>
+      </div>
+    `;
+    // Students
+    students.forEach((s, i) => {
+      const isAnnoTarget = annotationTarget === i;
+      const isExpanded = viewMode === 'spotlight' && expandedIdx === i;
+      html += `
+        <div class="participant-item${isAnnoTarget ? ' highlight' : ''}" onclick="toSpotlight(${i})" style="cursor:pointer">
+          <div class="p-avatar" style="background:${s.color}">${s.name[0]}</div>
+          <div class="p-info">
+            <div class="p-name">${s.name}${isExpanded ? ' <span style="font-size:9px;color:#3b82f6">👁 보는중</span>' : ''}</div>
+            <div class="p-meta">${s.pen ? '🖊 펜 연결 · ' : ''}${isAnnoTarget ? '🔴 첨삭중' : statusEmoji[s.status]+' '+statusLabel[s.status]}</div>
+          </div>
+          <div class="p-status"><span class="status ${isAnnoTarget ? 'annotating' : s.status}">${isAnnoTarget ? '첨삭중' : statusLabel[s.status]}</span></div>
+        </div>
+      `;
+    });
+    html += '</div>';
+    content.innerHTML = html;
+  } else {
+    content.innerHTML = `
+      <div class="chat-area" style="height:100%;display:flex;flex-direction:column">
+        <div class="chat-messages" style="flex:1">
+          <div class="chat-msg"><div class="msg-name">이서연</div><div class="msg-bubble">선생님 3번 문제 모르겠어요 😢</div></div>
+          <div class="chat-msg"><div class="msg-name">김선생님</div><div class="msg-bubble">이차함수 꼭짓점 공식 기억나? 한번 적용해봐</div></div>
+          <div class="chat-msg"><div class="msg-name">한도윤</div><div class="msg-bubble">저도 3번 헷갈립니다</div></div>
+        </div>
+        <div class="chat-input-bar">
+          <input placeholder="메시지 입력..." />
+          <button>전송</button>
+        </div>
+      </div>
+    `;
+  }
+}
+
+// ─── Actions ───
+function toSpotlight(idx) {
+  expandedIdx = idx;
+  viewMode = 'spotlight';
+  annotationActive = false;
+  annotationTarget = null;
+  renderCanvas();
+  renderRightPanel();
+}
+
+function toGridMode() {
+  viewMode = 'grid';
+  expandedIdx = null;
+  annotationActive = false;
+  // annotationTarget은 유지 (다른 학생 첨삭 표시)
+  renderCanvas();
+  renderRightPanel();
+}
+
+function handleViewToggle() {
+  if (viewMode === 'spotlight') toGridMode();
+  else if (students.length > 0) toSpotlight(0);
+}
+
+function toggleAnnotation(e) {
+  e.stopPropagation();
+  annotationActive = !annotationActive;
+  annotationTarget = annotationActive ? expandedIdx : null;
+  renderCanvas();
+  renderRightPanel();
+}
+
+function switchRightTab(tab) {
+  rightTab = tab;
+  renderRightPanel();
+}
+
+function toggleLeftPanel() {
+  leftOpen = !leftOpen;
+  document.getElementById('leftPanel').className = 'left-panel' + (leftOpen ? '' : ' collapsed');
+  document.getElementById('cbPages').className = 'cb-btn' + (leftOpen ? ' active' : '');
+}
+
+function toggleRightPanel(tab) {
+  if (rightOpen && rightTab === tab) {
+    rightOpen = false;
+  } else {
+    rightOpen = true;
+    rightTab = tab;
+  }
+  document.getElementById('rightPanel').className = 'right-panel' + (rightOpen ? '' : ' collapsed');
+  document.getElementById('cbParticipants').className = 'cb-btn' + (rightOpen && rightTab === 'participants' ? ' active' : '');
+  document.getElementById('cbChat').className = 'cb-btn' + (rightOpen && rightTab === 'chat' ? ' active' : '');
+  renderRightPanel();
+}
+
+function selectPage(idx) {
+  document.querySelectorAll('.page-thumb').forEach((el, i) => {
+    el.className = 'page-thumb' + (i === idx ? ' active' : '');
+  });
+}
+
+// ESC
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && viewMode === 'spotlight') toGridMode();
+});
+
+// Init
+document.getElementById('cbPages').className = 'cb-btn active';
+document.getElementById('cbParticipants').className = 'cb-btn active';
+renderCanvas();
+renderRightPanel();
+</script>
+</body>
+</html>
