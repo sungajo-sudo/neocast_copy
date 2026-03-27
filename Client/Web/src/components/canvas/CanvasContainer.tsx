@@ -933,6 +933,12 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
     );
   };
 
+  // 스포트라이트용 데이터 (훅은 조건 블록 밖에서 호출)
+  const spotAnnotations = useMemo(
+    () => (effectiveSpotlightUserId ? annotationsMap.get(effectiveSpotlightUserId) ?? [] : []),
+    [annotationsMap, effectiveSpotlightUserId]
+  );
+
   // 스포트라이트 뷰 렌더링
   if (isGridView && viewMode === 'spotlight') {
     // 호스트와 나머지 사용자 분리 (사이드바용)
@@ -956,10 +962,6 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
     const canDrawSpotlight = isHost || spotlightUser?.userId === currentUserId;
     // 스포트라이트 첨삭: 호스트가 다른 학생 캔버스를 볼 때만 활성 가능
     const canAnnotateSpotlight = isHost && spotlightUser && spotlightUser.userId !== session?.hostId;
-    const spotAnnotations = useMemo(
-      () => (effectiveSpotlightUserId ? annotationsMap.get(effectiveSpotlightUserId) ?? [] : []),
-      [annotationsMap, effectiveSpotlightUserId]
-    );
     const handleSpotAnnotationDrawStart = () => {
       if (!effectiveSpotlightUserId) return;
       setAnnotating(effectiveSpotlightUserId);
