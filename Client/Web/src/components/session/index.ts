@@ -6,7 +6,7 @@ export { SessionInvite } from './SessionInvite';
 export { GridSelector } from './GridSelector';
 export { HostSessionView } from './HostSessionView';
 export { ParticipantModeView } from './ParticipantModeView';
-export { ParticipantMonitorView } from './ParticipantMonitorView';
+// export { ParticipantMonitorView } from './ParticipantMonitorView'; // 비활성화 — 스포트라이트에 통합됨
 export { StudentCard } from './StudentCard';
 export { StudentDetailModal } from './StudentDetailModal';
 export { GuestAnnotationOverlay } from './GuestAnnotationOverlay';

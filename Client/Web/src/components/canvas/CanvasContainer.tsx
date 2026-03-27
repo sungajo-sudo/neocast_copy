@@ -22,6 +22,7 @@ import { useConnectionStore } from '../../stores/connection-store';
 import { useAlert } from '../../contexts/AlertContext';
 import { sessionService } from '../../services/session-service';
 import { mockPenConnected } from '../../utils/dev-mock';
+import { useParticipantActivity } from '../../hooks/useParticipantActivity';
 
 // 컨텍스트 메뉴 상태 타입
 interface ContextMenuState {
@@ -143,10 +144,16 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
 
   // 첨삭 모드 상태 (스포트라이트 뷰에서 사용)
   const [spotAnnotationMode, setSpotAnnotationMode] = useState(false);
+  // 실시간(follow) vs 수동(browse) 모드 — 스포트라이트에서 학생 페이지 자동 따라가기
+  const [spotlightFollowMode, setSpotlightFollowMode] = useState<'follow' | 'browse'>('follow');
+  // browse 모드에서 고정된 페이지 주소 (null이면 현재 학생 페이지 사용)
+  const [browsePageOverride, setBrowsePageOverride] = useState<NcodePageAddress | null>(null);
   const annotationsMap = useAnnotationStore((state) => state.annotations);
   const addAnnotation = useAnnotationStore((state) => state.addAnnotation);
   const clearAnnotations = useAnnotationStore((state) => state.clearAnnotations);
   const setAnnotating = useAnnotationStatusStore((state) => state.setAnnotating);
+  const activeAnnotationTargets = useAnnotationStatusStore((state) => state.activeAnnotationTargets);
+  const { getStatus: getActivityStatus } = useParticipantActivity();
 
   // 그리드 선택 팝업 상태
   const [isGridSelectorOpen, setIsGridSelectorOpen] = useState(false);
@@ -159,6 +166,36 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
     userId: '',
     userName: '',
   });
+
+  // 논리적 페이지 번호 (NCode 주소 → "P.1", "P.2", ...)
+  const getLogicalPageNumber = useCallback((userId: string, addr: NcodePageAddress): string => {
+    const userPages = pages
+      .filter((p) => p.ownerUserId === userId)
+      .sort((a, b) => a.address.page - b.address.page);
+    const idx = userPages.findIndex((p) => isSamePageAddress(p.address, addr));
+    return idx >= 0 ? `P.${idx + 1}` : `P.?`;
+  }, [pages]);
+
+  // 페이지 변경 flash 추적
+  const [flashingUsers, setFlashingUsers] = useState<Set<string>>(new Set());
+  const prevPagesRef = useRef<Map<string, NcodePageAddress>>(new Map());
+
+  useEffect(() => {
+    const prev = prevPagesRef.current;
+    const changed = new Set<string>();
+    participantCurrentPages.forEach((addr, userId) => {
+      const prevAddr = prev.get(userId);
+      if (prevAddr && !isSamePageAddress(prevAddr, addr)) {
+        changed.add(userId);
+      }
+    });
+    if (changed.size > 0) {
+      setFlashingUsers(changed);
+      const timer = setTimeout(() => setFlashingUsers(new Set()), 800);
+      return () => clearTimeout(timer);
+    }
+    prevPagesRef.current = new Map(participantCurrentPages);
+  }, [participantCurrentPages]);
 
   // 그리드 뷰에 표시할 사용자 목록 결정
   const gridUsers = useMemo(() => {
@@ -823,13 +860,18 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
       </div>
     );
 
+    // 활동 상태/첨삭/펜 정보
+    const activityStatus = user.userId !== currentUserId ? getActivityStatus(user.userId) : null;
+    const isBeingAnnotated = activeAnnotationTargets.has(user.userId);
+    const isPenConnected = user.userId !== currentUserId && mockPenConnected(user.userId);
+
     // 이름 라벨
     const nameLabel = isVerticalLabel ? (
       // 좌/우: 세로 라벨 (90도 회전 텍스트)
       <div
         className="flex items-center justify-center text-white font-medium overflow-hidden"
         style={{
-          backgroundColor: userHasPage ? user.color : '#9ca3af',
+          backgroundColor: isBeingAnnotated ? '#ef4444' : userHasPage ? user.color : '#9ca3af',
           width: `${verticalLabelWidth}px`,
           minWidth: `${verticalLabelWidth}px`,
           writingMode: 'vertical-rl',
@@ -840,14 +882,31 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
         }}
       >
         <span className="truncate px-0.5">{user.userName}</span>
+        <span className="text-[8px] font-bold bg-white/30 px-1 rounded mt-0.5">
+          {getLogicalPageNumber(user.userId, thumbPageAddress)}
+        </span>
+        {activityStatus === 'writing' && (
+          <span className="w-1.5 h-1.5 rounded-full bg-green-400 mt-0.5 animate-pulse flex-shrink-0" />
+        )}
       </div>
     ) : (
       // 하단: 가로 라벨
       <div
-        className="flex items-center justify-center px-2 py-0.5 text-white text-xs font-medium"
-        style={{ backgroundColor: userHasPage ? user.color : '#9ca3af' }}
+        className="flex items-center justify-center gap-1 px-2 py-0.5 text-white text-xs font-medium"
+        style={{ backgroundColor: isBeingAnnotated ? '#ef4444' : userHasPage ? user.color : '#9ca3af' }}
       >
         <span className="truncate">{user.userName}</span>
+        <span className="text-[8px] font-bold bg-white/30 px-1 rounded flex-shrink-0">
+          {getLogicalPageNumber(user.userId, thumbPageAddress)}
+        </span>
+        {activityStatus === 'writing' && (
+          <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse flex-shrink-0" />
+        )}
+        {isPenConnected && (
+          <svg className="w-2.5 h-2.5 opacity-75 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+          </svg>
+        )}
       </div>
     );
 
@@ -855,9 +914,11 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
       <div
         key={user.userId}
         className={`cursor-pointer rounded-lg overflow-hidden transition-all flex-shrink-0 ${
-          effectiveSpotlightUserId === user.userId
-            ? 'ring-2 ring-blue-500 ring-offset-1'
-            : 'hover:ring-2 hover:ring-blue-300'
+          isBeingAnnotated
+            ? 'ring-2 ring-red-500 ring-offset-1'
+            : effectiveSpotlightUserId === user.userId
+              ? 'ring-2 ring-blue-500 ring-offset-1'
+              : 'hover:ring-2 hover:ring-blue-300'
         } ${isVerticalLabel ? 'flex flex-row' : ''}`}
         onClick={() => handleSpotlightThumbnailClick(user.userId)}
         onContextMenu={(e) => handleContextMenu(e, user.userId, user.userName)}
@@ -880,12 +941,15 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
 
     // 스포트라이트 대상 사용자 정보
     const spotlightUser = gridUsers.find((u) => u.userId === effectiveSpotlightUserId);
-    // 스포트라이트 대상의 현재 페이지
-    const spotlightPageAddress = spotlightUser
+    // 스포트라이트 대상의 현재 페이지 (follow/browse 모드 분기)
+    const studentLivePage = spotlightUser
       ? (spotlightUser.userId === currentUserId
           ? pageAddress
           : participantCurrentPages.get(spotlightUser.userId) ?? pageAddress)
       : pageAddress;
+    const spotlightPageAddress = (spotlightFollowMode === 'browse' && browsePageOverride)
+      ? browsePageOverride
+      : studentLivePage;
     const spotlightHasPage = spotlightUser ? pages.some(
       (p) => isSamePageAddress(p.address, spotlightPageAddress) && p.ownerUserId === spotlightUser.userId
     ) : false;
@@ -1029,6 +1093,53 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
                     </div>
                   </div>
                 </div>
+                {/* 스포트라이트 헤더: 학생 이름 + 실시간/수동 토글 */}
+                {spotlightUser && (
+                  <div className="absolute top-4 left-4 flex items-center gap-2 z-20">
+                    {/* 학생 이름 pill */}
+                    <span
+                      className="px-3 py-1 rounded-full text-xs font-semibold text-white shadow-lg"
+                      style={{ backgroundColor: spotlightUser.color }}
+                    >
+                      {spotlightUser.userName} · {getLogicalPageNumber(spotlightUser.userId, spotlightPageAddress)}
+                    </span>
+
+                    {/* 실시간/수동 토글 (호스트가 다른 학생을 볼 때만) */}
+                    {isHost && spotlightUser.userId !== currentUserId && (
+                      <div className="flex items-center bg-white/90 backdrop-blur rounded-full shadow-lg p-0.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSpotlightFollowMode('follow');
+                            setBrowsePageOverride(null);
+                          }}
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all ${
+                            spotlightFollowMode === 'follow'
+                              ? 'bg-blue-500 text-white'
+                              : 'text-gray-500 hover:text-gray-700'
+                          }`}
+                        >
+                          실시간
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSpotlightFollowMode('browse');
+                            setBrowsePageOverride(studentLivePage);
+                          }}
+                          className={`px-2.5 py-1 rounded-full text-[10px] font-bold transition-all ${
+                            spotlightFollowMode === 'browse'
+                              ? 'bg-blue-500 text-white'
+                              : 'text-gray-500 hover:text-gray-700'
+                          }`}
+                        >
+                          수동
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {/* 첨삭 토글 버튼 (호스트가 학생 캔버스를 볼 때) */}
                 {canAnnotateSpotlight && (
                   <div className="absolute top-4 right-4 flex items-center gap-2 z-20">
@@ -1037,6 +1148,11 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
                       onClick={() => {
                         const next = !spotAnnotationMode;
                         setSpotAnnotationMode(next);
+                        // 첨삭 모드 ON → 자동으로 수동 모드 전환 (페이지 따라가기 방지)
+                        if (next) {
+                          setSpotlightFollowMode('browse');
+                          setBrowsePageOverride(studentLivePage);
+                        }
                         if (!next && effectiveSpotlightUserId) {
                           clearAnnotations(effectiveSpotlightUserId);
                         }
@@ -1298,9 +1414,11 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
                 key={user.userId}
                 className={`flex flex-col rounded-lg shadow overflow-hidden transition-all ${isActive
                   ? 'ring-4 ring-blue-500 ring-offset-2 bg-blue-50'
-                  : userHasPage
-                    ? 'bg-white hover:ring-2 hover:ring-blue-300'
-                    : 'bg-gray-200 hover:ring-2 hover:ring-gray-400'
+                  : flashingUsers.has(user.userId)
+                    ? 'ring-2 ring-amber-400 bg-white'
+                    : userHasPage
+                      ? 'bg-white hover:ring-2 hover:ring-blue-300'
+                      : 'bg-gray-200 hover:ring-2 hover:ring-gray-400'
                   }`}
                 onClick={(e) => userHasPage ? handleCanvasClick(e, user.userId) : undefined}
                 onContextMenu={(e) => handleContextMenu(e, user.userId, user.userName)}
@@ -1312,8 +1430,12 @@ export const CanvasContainer: React.FC<CanvasContainerProps> = ({
                 >
                   <div className="flex items-center gap-1.5 min-w-0">
                     <span className="truncate">{user.userName}</span>
-                    <span className="text-xs opacity-75 flex-shrink-0">
-                      {formatPageAddress(userPageAddress)}
+                    <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded flex-shrink-0 transition-all ${
+                      flashingUsers.has(user.userId)
+                        ? 'bg-white/70 text-gray-800 animate-[badgePop_0.5s_ease]'
+                        : 'bg-white/30 text-white'
+                    }`}>
+                      {getLogicalPageNumber(user.userId, userPageAddress)}
                     </span>
                     {mockPenConnected(user.userId) && (
                       <svg className="w-3 h-3 opacity-75 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

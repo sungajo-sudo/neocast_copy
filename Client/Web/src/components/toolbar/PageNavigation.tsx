@@ -7,6 +7,53 @@ import { strokeService } from '../../services/stroke-service';
 import { isMousePage, isSamePageAddress, formatPageAddress } from '../../types';
 import type { NcodePageAddress } from '../../types';
 
+/** 특정 페이지에 현재 있는 참가자 dot 표시 */
+function StudentDots({
+  pageAddress,
+  participantCurrentPages,
+  getUserColor,
+  getParticipant,
+}: {
+  pageAddress: NcodePageAddress;
+  participantCurrentPages: Map<string, NcodePageAddress>;
+  getUserColor: (userId: string) => string;
+  getParticipant: (userId: string) => { userName: string } | undefined;
+}) {
+  const studentsOnPage: { userId: string; color: string; name: string }[] = [];
+  participantCurrentPages.forEach((addr, userId) => {
+    if (isSamePageAddress(addr, pageAddress)) {
+      const p = getParticipant(userId);
+      studentsOnPage.push({
+        userId,
+        color: getUserColor(userId),
+        name: p?.userName ?? userId,
+      });
+    }
+  });
+
+  if (studentsOnPage.length === 0) return null;
+
+  return (
+    <div className="flex items-center gap-0.5 mt-1 flex-wrap">
+      {studentsOnPage.slice(0, 6).map((s) => (
+        <div
+          key={s.userId}
+          className="w-3.5 h-3.5 rounded-full flex items-center justify-center text-[6px] font-bold text-white shadow-sm"
+          style={{ backgroundColor: s.color }}
+          title={s.name}
+        >
+          {s.name.charAt(0)}
+        </div>
+      ))}
+      {studentsOnPage.length > 6 && (
+        <span className="text-[8px] text-gray-400 font-medium">
+          +{studentsOnPage.length - 6}
+        </span>
+      )}
+    </div>
+  );
+}
+
 // 페이지 합집합 아이템 (여러 사용자가 같은 페이지를 가질 수 있음)
 interface UnionPageItem {
   address: NcodePageAddress;
@@ -45,6 +92,8 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
   const session = useSessionStore((state) => state.session);
   const getUserColor = useSessionStore((state) => state.getUserColor);
   const getParticipant = useSessionStore((state) => state.getParticipant);
+
+  const participantCurrentPages = useStrokeStore((state) => state.participantCurrentPages);
 
   // 현재 보고 있는 사용자 ID (선택된 사용자 또는 현재 사용자)
   const viewingUserId = selectedViewUserId ?? currentUserId;
@@ -334,6 +383,13 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
                     </div>
                     {/* 소유자 표시 */}
                     {renderOwnerIndicators(unionPage.owners)}
+                    {/* 현재 이 페이지에 있는 학생 dot */}
+                    <StudentDots
+                      pageAddress={unionPage.address}
+                      participantCurrentPages={participantCurrentPages}
+                      getUserColor={getUserColor}
+                      getParticipant={getParticipant}
+                    />
                   </div>
                 </button>
               );
@@ -375,6 +431,13 @@ export const PageNavigation: React.FC<PageNavigationProps> = ({
                     <div className="text-[10px] xl:text-xs text-gray-500 font-mono truncate">
                       {isMouse ? `1024.1.1.${page.address.page}` : formatPageAddress(page.address)}
                     </div>
+                    {/* 현재 이 페이지에 있는 학생 dot */}
+                    <StudentDots
+                      pageAddress={page.address}
+                      participantCurrentPages={participantCurrentPages}
+                      getUserColor={getUserColor}
+                      getParticipant={getParticipant}
+                    />
                   </div>
                 </button>
               );

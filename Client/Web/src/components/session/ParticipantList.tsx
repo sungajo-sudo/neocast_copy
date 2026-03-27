@@ -1,13 +1,16 @@
-import { useCallback, useState, useRef, useEffect } from 'react';
+import { useCallback, useState, useRef, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSessionStore } from '../../stores/session-store';
 import { useAuthStore } from '../../stores/auth-store';
 import { useStrokeStore } from '../../stores/stroke-store';
-import { ParticipantRole, formatPageAddress } from '../../types';
+import { usePageStore } from '../../stores/page-store';
+import { ParticipantRole, isSamePageAddress } from '../../types';
+import type { NcodePageAddress } from '../../types';
 import { GridSelector } from './GridSelector';
 import { sessionService } from '../../services/session-service';
 import { useAlert } from '../../contexts/AlertContext';
 import { mockPenConnected } from '../../utils/dev-mock';
+import { useParticipantActivity } from '../../hooks/useParticipantActivity';
 import type { GridLayout } from '../../stores/session-store';
 
 // 색상 팔레트 (ARGB 형식)
@@ -57,7 +60,18 @@ export const ParticipantList: React.FC<ParticipantListProps> = ({
   const guestInputSettings = useStrokeStore((state) => state.guestInputSettings);
   const setGuestInputColor = useStrokeStore((state) => state.setGuestInputColor);
   const participantCurrentPages = useStrokeStore((state) => state.participantCurrentPages);
+  const pages = usePageStore((state) => state.pages);
   const { tokens } = useAuthStore();
+  const { getStatus } = useParticipantActivity();
+
+  // 논리적 페이지 번호 (NCode 주소 → "P.1", "P.2", ...)
+  const getLogicalPageNumber = useCallback((userId: string, addr: NcodePageAddress): string => {
+    const userPages = pages
+      .filter((p) => p.ownerUserId === userId)
+      .sort((a, b) => a.address.page - b.address.page);
+    const idx = userPages.findIndex((p) => isSamePageAddress(p.address, addr));
+    return idx >= 0 ? `P.${idx + 1}` : `P.?`;
+  }, [pages]);
   const { showConfirm } = useAlert();
 
   // 그리드 선택 팝업 상태
@@ -474,10 +488,10 @@ export const ParticipantList: React.FC<ParticipantListProps> = ({
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
                 )}
-                {/* 참가자 현재 페이지 */}
+                {/* 참가자 현재 페이지 (논리적 번호) */}
                 {participant.role !== ParticipantRole.Host && participantCurrentPages.get(participant.userId) && (
-                  <span className="ml-1 text-[10px] font-medium text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded flex-shrink-0">
-                    {formatPageAddress(participantCurrentPages.get(participant.userId)!)}
+                  <span className="ml-1 text-[10px] font-bold text-gray-600 bg-gray-100 px-1.5 py-0.5 rounded flex-shrink-0">
+                    {getLogicalPageNumber(participant.userId, participantCurrentPages.get(participant.userId)!)}
                   </span>
                 )}
                 {/* 펜 연결 DEV mock */}
@@ -486,6 +500,30 @@ export const ParticipantList: React.FC<ParticipantListProps> = ({
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                   </svg>
                 )}
+                {/* 활동 상태 뱃지 */}
+                {participant.role !== ParticipantRole.Host && (() => {
+                  const status = getStatus(participant.userId);
+                  if (status === 'writing') return (
+                    <span className="ml-1 flex items-center gap-1 text-[9px] font-bold text-green-700 bg-green-100 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                      <span className="relative flex w-1.5 h-1.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75" />
+                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
+                      </span>
+                      필기중
+                    </span>
+                  );
+                  if (status === 'idle') return (
+                    <span className="ml-1 text-[9px] font-medium text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                      대기
+                    </span>
+                  );
+                  if (status === 'inactive') return (
+                    <span className="ml-1 text-[9px] font-medium text-orange-500 bg-orange-50 px-1.5 py-0.5 rounded-full flex-shrink-0">
+                      비활성
+                    </span>
+                  );
+                  return null;
+                })()}
                 {/* 스마트펜 타겟 색상 팔레트 버튼 (호스트, 타겟이 자신이 아닐 때) */}
                 {isSmartpenTarget && isHost && !isCurrentUser && (
                   <div className="relative ml-1 flex-shrink-0">
