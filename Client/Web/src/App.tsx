@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { Routes, Route, Navigate, useNavigate, useParams, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Agentation } from 'agentation';
+// agentation: 로컬 dev 전용 (Vercel 등 프로덕션에서는 미설치)
 import { CanvasContainer } from './components/canvas';
 import { SessionLobby, HostSessionView, GuestSessionView } from './components/session';
 import { useDevBridgeHost } from './hooks/useDevBridgeHost';
@@ -1247,8 +1247,7 @@ function App() {
           </div>
         </footer>
       )}
-      {/* Agentation — AI 시각적 피드백 도구 (dev only) */}
-      {import.meta.env.DEV && <Agentation endpoint="http://localhost:4747" />}
+      {/* Agentation — AI 시각적 피드백 도구 (dev only, 별도 설치 필요) */}
     </div>
   );
 }
