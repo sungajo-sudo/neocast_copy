@@ -647,9 +647,10 @@ function SessionPage() {
     // 방금 참가한 경우 세션 상태가 반영될 때까지 리다이렉트하지 않음
     if (justJoined) return;
 
-    // 1. 세션이 있다가 사라진 경우 (로그아웃, 나가기 등) -> 로비로
+    // 1. 세션이 있다가 사라진 경우 (로그아웃, 나가기 등) -> 홈/랜딩으로
     if (hadSession && !hasSession) {
-      navigate('/lobby', { replace: true });
+      const { isGuest: wasGuest } = useAuthStore.getState();
+      navigate(wasGuest ? '/' : '/home', { replace: true });
       return;
     }
 
@@ -657,13 +658,13 @@ function SessionPage() {
     if (!hasSession && code) {
       const { isGuest } = useAuthStore.getState();
       if (isGuest) {
-        // 게스트는 /join/:code로 이동하면 로그아웃되므로 로비로 이동
-        navigate('/lobby', { replace: true });
+        navigate('/', { replace: true });
       } else {
         navigate(`/join/${code}`, { replace: true });
       }
     } else if (!hasSession) {
-      navigate('/lobby', { replace: true });
+      const { isGuest } = useAuthStore.getState();
+      navigate(isGuest ? '/' : '/home', { replace: true });
     }
   }, [session, code, navigate, justJoined]);
 
@@ -916,7 +917,7 @@ function App() {
 
     disconnect();
     clearSession();
-    navigate('/lobby', { replace: true });
+    navigate(isHost ? '/home' : '/', { replace: true });
   };
 
   // 로그아웃 핸들러

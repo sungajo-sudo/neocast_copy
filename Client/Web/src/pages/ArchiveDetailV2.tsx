@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { HandwritingThumbnail } from '../components/HandwritingThumbnail';
-import { ANNOTATION_EVENTS } from '../data/voiceScenario';
+import { ANNOTATION_EVENTS, DUMMY_VOICE_ANALYSIS } from '../data/voiceScenario';
+import type { VoiceAnalysis, Locale as VoiceLocale } from '../data/voiceScenario';
 import { getAnalysisCache, setAnalysisCache, clearAnalysisCache } from '../utils/analysisCache';
 
 interface ArchiveItem {
@@ -41,7 +42,7 @@ interface SessionAnalysis {
   participationSummary: string;
   pageDropoff: string;
   annotationSummary: string;
-  voiceSummary: string;        // STT 요약 (1~2문단)
+  voiceAnalysis: VoiceAnalysis;  // STT 기반 음성 분석 (v1.1 확장)
 }
 
 interface StudentAnalysis {
@@ -57,131 +58,153 @@ const WORKSHEET: WorksheetInfo = {
   sobp: '3.27.168.1',
 };
 
-const STUDENTS: Student[] = [
-  { userId: 'guest_001', nickname: '박민준' },
-  { userId: 'guest_002', nickname: '이서연' },
-  { userId: 'guest_003', nickname: '최도윤' },
-  { userId: 'guest_004', nickname: '정하은' },
-  { userId: 'guest_005', nickname: '강지우' },
-];
-
-const PAGES_DATA: PageData[] = [
-  {
-    pageNum: 1,
-    title: '근의 공식 유도 및 예제',
-    students: [
-      { userId: 'guest_001', nickname: '박민준', strokeCount: 127, maxStroke: 148 },
-      { userId: 'guest_002', nickname: '이서연', strokeCount: 148, maxStroke: 148 },
-      { userId: 'guest_003', nickname: '최도윤', strokeCount: 63, maxStroke: 148 },
-      { userId: 'guest_004', nickname: '정하은', strokeCount: 112, maxStroke: 148 },
-      { userId: 'guest_005', nickname: '강지우', strokeCount: 0, maxStroke: 148 },
-    ],
-  },
-  {
-    pageNum: 2,
-    title: '판별식 활용 문제',
-    students: [
-      { userId: 'guest_001', nickname: '박민준', strokeCount: 89, maxStroke: 134 },
-      { userId: 'guest_002', nickname: '이서연', strokeCount: 134, maxStroke: 134 },
-      { userId: 'guest_003', nickname: '최도윤', strokeCount: 41, maxStroke: 134 },
-      { userId: 'guest_004', nickname: '정하은', strokeCount: 121, maxStroke: 134 },
-      { userId: 'guest_005', nickname: '강지우', strokeCount: 72, maxStroke: 134 },
-    ],
-  },
-  {
-    pageNum: 3,
-    title: '종합 서술형 풀이',
-    students: [
-      { userId: 'guest_001', nickname: '박민준', strokeCount: 95, maxStroke: 110 },
-      { userId: 'guest_002', nickname: '이서연', strokeCount: 52, maxStroke: 110 },
-      { userId: 'guest_003', nickname: '최도윤', strokeCount: 18, maxStroke: 110 },
-      { userId: 'guest_004', nickname: '정하은', strokeCount: 110, maxStroke: 110 },
-      { userId: 'guest_005', nickname: '강지우', strokeCount: 0, maxStroke: 110 },
-    ],
-  },
-  {
-    pageNum: 4,
-    title: '근과 계수의 관계',
-    students: [
-      { userId: 'guest_001', nickname: '박민준', strokeCount: 88, maxStroke: 105 },
-      { userId: 'guest_002', nickname: '이서연', strokeCount: 45, maxStroke: 105 },
-      { userId: 'guest_003', nickname: '최도윤', strokeCount: 0, maxStroke: 105 },
-      { userId: 'guest_004', nickname: '정하은', strokeCount: 105, maxStroke: 105 },
-      { userId: 'guest_005', nickname: '강지우', strokeCount: 30, maxStroke: 105 },
-    ],
-  },
-  {
-    pageNum: 5,
-    title: '이차방정식의 활용',
-    students: [
-      { userId: 'guest_001', nickname: '박민준', strokeCount: 102, maxStroke: 120 },
-      { userId: 'guest_002', nickname: '이서연', strokeCount: 38, maxStroke: 120 },
-      { userId: 'guest_003', nickname: '최도윤', strokeCount: 0, maxStroke: 120 },
-      { userId: 'guest_004', nickname: '정하은', strokeCount: 120, maxStroke: 120 },
-      { userId: 'guest_005', nickname: '강지우', strokeCount: 0, maxStroke: 120 },
-    ],
-  },
-  {
-    pageNum: 6,
-    title: '종합 연습 문제',
-    students: [
-      { userId: 'guest_001', nickname: '박민준', strokeCount: 76, maxStroke: 98 },
-      { userId: 'guest_002', nickname: '이서연', strokeCount: 31, maxStroke: 98 },
-      { userId: 'guest_003', nickname: '최도윤', strokeCount: 0, maxStroke: 98 },
-      { userId: 'guest_004', nickname: '정하은', strokeCount: 98, maxStroke: 98 },
-      { userId: 'guest_005', nickname: '강지우', strokeCount: 0, maxStroke: 98 },
-    ],
-  },
-  {
-    pageNum: 7,
-    title: '심화 서술형',
-    students: [
-      { userId: 'guest_001', nickname: '박민준', strokeCount: 65, maxStroke: 91 },
-      { userId: 'guest_002', nickname: '이서연', strokeCount: 0, maxStroke: 91 },
-      { userId: 'guest_003', nickname: '최도윤', strokeCount: 0, maxStroke: 91 },
-      { userId: 'guest_004', nickname: '정하은', strokeCount: 91, maxStroke: 91 },
-      { userId: 'guest_005', nickname: '강지우', strokeCount: 0, maxStroke: 91 },
-    ],
-  },
-];
-
-// v1 더미: buildSessionPromptV1 / buildStudentPromptV1 프롬프트 출력 시뮬레이션
-// 입력 데이터: PAGES_DATA + ANNOTATION_EVENTS 기반
-// 제약: 획수만 알 수 있음, 내용·정답·개념이해 판단 불가
-const DUMMY_SESSION_ANALYSIS: SessionAnalysis = {
-  participationSummary: '5명 중 4명이 P1에서 필기를 시작했으며, P2에서는 전원이 필기했습니다. P3에서 다시 1명(강지우)이 미필기로 전환되었습니다. 정하은과 박민준은 전 페이지에서 학급 평균 이상의 필기량을 유지했고, 최도윤은 전 페이지에서 학급 평균을 밑돌았습니다.',
-  pageDropoff: '학급 평균 필기량이 P1 113획 → P2 91획 → P3 69획으로 페이지가 진행될수록 감소했습니다. 이서연은 P1 148획에서 P3 52획으로 가장 큰 감소 폭을 보였고, 최도윤은 P1 63획에서 P3 18획으로 지속 감소했습니다. 강지우는 P2(72획)에서만 필기가 확인되며 P1, P3은 미필기입니다.',
-  annotationSummary: '총 5건의 첨삭이 4명에게 이루어졌습니다. 박민준 2건(P1, P3), 이서연 1건(P2), 최도윤 1건(P3), 강지우 1건(P1). 정하은은 첨삭 없이 전 페이지를 완료했습니다. 첨삭 후 추가 필기가 확인된 경우는 3건(박민준 P1·P3, 이서연 P2)이며, 2건(최도윤 P3, 강지우 P1)은 첨삭 후에도 추가 필기가 없었습니다.',
-  voiceSummary: '수업 중 음성 대화가 기록되었습니다. 이차방정식 풀이법을 다룬 것으로 보이며 판별식 관련 질문이 반복 발생했습니다.',
+/** locale → 학생 이름 매핑 */
+const STUDENT_NAMES: Record<string, Record<string, string>> = {
+  ko: { guest_001: '박민준', guest_002: '이서연', guest_003: '최도윤', guest_004: '정하은', guest_005: '강지우' },
+  ja: { guest_001: '田中 悠真', guest_002: '鈴木 美咲', guest_003: '高橋 蓮', guest_004: '伊藤 結衣', guest_005: '佐藤 陽菜' },
+  en: { guest_001: 'Alex K.', guest_002: 'Emily S.', guest_003: 'James T.', guest_004: 'Mia L.', guest_005: 'Sarah H.' },
+  'zh-TW': { guest_001: '王大明', guest_002: '林美玲', guest_003: '陳志偉', guest_004: '李怡君', guest_005: '張小華' },
 };
 
-const DUMMY_STUDENT_ANALYSES: Record<string, StudentAnalysis> = {
-  guest_001: {
-    pattern: 'P1 127획, P2 89획, P3 95획. 전 페이지에서 필기했으며 학급 평균(P1 113, P2 91, P3 69)과 비교해 P1·P3은 평균 이상, P2는 평균에 근접합니다. P2에서 소폭 감소 후 P3에서 회복하는 패턴입니다.',
-    annotationResponse: 'P1과 P3에서 각 1건의 첨삭을 받았습니다. 두 경우 모두 첨삭 이후 추가 필기가 확인되었습니다(P1: 20획, P3: 15획).',
-    attention: '별도 주의 사항 없음. 전 페이지 필기 및 첨삭 후 추가 필기 모두 확인됨.',
+function getStudentName(locale: string, userId: string): string {
+  const lang = STUDENT_NAMES[locale] ? locale : 'ko';
+  return STUDENT_NAMES[lang]?.[userId] ?? STUDENT_NAMES.ko[userId] ?? userId;
+}
+
+function getStudents(locale: string): Student[] {
+  return [
+    { userId: 'guest_001', nickname: getStudentName(locale, 'guest_001') },
+    { userId: 'guest_002', nickname: getStudentName(locale, 'guest_002') },
+    { userId: 'guest_003', nickname: getStudentName(locale, 'guest_003') },
+    { userId: 'guest_004', nickname: getStudentName(locale, 'guest_004') },
+    { userId: 'guest_005', nickname: getStudentName(locale, 'guest_005') },
+  ];
+}
+
+const PAGE_TITLES: Record<string, string[]> = {
+  ko: ['근의 공식 유도 및 예제', '판별식 활용 문제', '종합 서술형 풀이', '근과 계수의 관계', '이차방정식의 활용', '종합 연습 문제', '심화 서술형'],
+  ja: ['解の公式の導出と例題', '判別式の活用問題', '総合記述問題', '解と係数の関係', '二次方程式の応用', '総合練習問題', '発展記述問題'],
+  en: ['Quadratic Formula Derivation', 'Discriminant Problems', 'Comprehensive Written', 'Roots & Coefficients', 'Applications', 'Mixed Practice', 'Advanced Written'],
+  'zh-TW': ['公式解推導與例題', '判別式應用題', '綜合論述題', '根與係數關係', '一元二次方程式應用', '綜合練習題', '進階論述題'],
+};
+
+// 획수 데이터 (locale 무관 — 숫자)
+const STROKE_DATA = [
+  [127, 148, 63, 112, 0],
+  [89, 134, 41, 121, 72],
+  [95, 52, 18, 110, 0],
+  [88, 45, 0, 105, 30],
+  [102, 38, 0, 120, 0],
+  [76, 31, 0, 98, 0],
+  [65, 0, 0, 91, 0],
+];
+const MAX_STROKES = [148, 134, 110, 105, 120, 98, 91];
+const STUDENT_IDS = ['guest_001', 'guest_002', 'guest_003', 'guest_004', 'guest_005'];
+
+function getPagesData(locale: string): PageData[] {
+  const titles = PAGE_TITLES[locale] ?? PAGE_TITLES.ko;
+  return titles.map((title, i) => ({
+    pageNum: i + 1,
+    title,
+    students: STUDENT_IDS.map((id, j) => ({
+      userId: id,
+      nickname: getStudentName(locale, id),
+      strokeCount: STROKE_DATA[i][j],
+      maxStroke: MAX_STROKES[i],
+    })),
+  }));
+}
+
+// v1 더미: locale별 세션 분석 데이터
+function getVoiceLocale(lang: string): VoiceLocale {
+  if (lang === 'ja') return 'ja';
+  if (lang === 'zh-TW') return 'zh-TW';
+  if (lang.startsWith('en')) return 'en';
+  return 'ko';
+}
+
+const SESSION_ANALYSIS_I18N: Record<string, Omit<SessionAnalysis, 'voiceAnalysis'>> = {
+  ko: {
+    participationSummary: '5명 중 4명이 P1에서 필기를 시작했으며, P2에서는 전원이 필기했습니다. P3에서 다시 1명(강지우)이 미필기로 전환되었습니다. 정하은과 박민준은 전 페이지에서 학급 평균 이상의 필기량을 유지했고, 최도윤은 전 페이지에서 학급 평균을 밑돌았습니다.',
+    pageDropoff: '학급 평균 필기량이 P1 113획 → P2 91획 → P3 69획으로 페이지가 진행될수록 감소했습니다. 이서연은 P1 148획에서 P3 52획으로 가장 큰 감소 폭을 보였고, 최도윤은 P1 63획에서 P3 18획으로 지속 감소했습니다. 강지우는 P2(72획)에서만 필기가 확인되며 P1, P3은 미필기입니다.',
+    annotationSummary: '총 5건의 첨삭이 4명에게 이루어졌습니다. 박민준 2건(P1, P3), 이서연 1건(P2), 최도윤 1건(P3), 강지우 1건(P1). 정하은은 첨삭 없이 전 페이지를 완료했습니다. 첨삭 후 추가 필기가 확인된 경우는 3건(박민준 P1·P3, 이서연 P2)이며, 2건(최도윤 P3, 강지우 P1)은 첨삭 후에도 추가 필기가 없었습니다.',
   },
-  guest_002: {
-    pattern: 'P1 148획, P2 134획, P3 52획. P1~P2에서 학급 내 최고 필기량을 기록했으나, P3에서 52획으로 크게 줄어 학급 평균(69획) 아래로 내려갔습니다.',
-    annotationResponse: 'P2에서 1건의 첨삭을 받았으며, 이후 8획의 추가 필기가 확인되었습니다.',
-    attention: 'P3 필기량이 P1 대비 크게 감소했습니다. 후반부 참여 저하 여부 확인이 필요합니다.',
-  },
-  guest_003: {
-    pattern: 'P1 63획, P2 41획, P3 18획. 전 페이지에서 필기했으나, 페이지가 진행될수록 필기량이 지속 감소했습니다. 세 페이지 모두 학급 평균(P1 113, P2 91, P3 69)을 크게 밑돌았습니다.',
-    annotationResponse: 'P3에서 1건의 첨삭을 받았으나, 이후 추가 필기가 확인되지 않았습니다.',
-    attention: '전 페이지에서 학급 평균 대비 낮은 필기량이며 지속 감소 중입니다. 개별 확인이 필요합니다.',
-  },
-  guest_004: {
-    pattern: 'P1 112획, P2 121획, P3 110획. 전 페이지에서 안정적인 필기량을 유지했으며, 세 페이지 모두 학급 평균을 상회합니다. 페이지 간 편차가 적습니다.',
-    annotationResponse: '첨삭을 받지 않았습니다.',
-    attention: '별도 주의 사항 없음.',
-  },
-  guest_005: {
-    pattern: 'P1 0획, P2 72획, P3 0획. P2에서만 필기 활동이 있었으며 학급 평균(91획)의 79% 수준입니다. P1과 P3은 미필기입니다.',
-    annotationResponse: 'P1에서 1건의 첨삭을 받았으나, 해당 페이지에서 이후 추가 필기는 확인되지 않았습니다.',
-    attention: '3페이지 중 2페이지 미필기. 수업 참여에 어려움이 있는지 확인이 필요합니다.',
+  ja: {
+    participationSummary: '5名中4名がP1で筆記を開始し、P2では全員が筆記しました。P3では再び1名（佐藤 陽菜）が未筆記に転じました。伊藤 結衣と田中 悠真は全ページでクラス平均以上の筆記量を維持し、高橋 蓮は全ページでクラス平均を下回りました。',
+    pageDropoff: 'クラス平均筆記量がP1 113画 → P2 91画 → P3 69画とページが進むにつれ減少しました。鈴木 美咲はP1 148画からP3 52画へ最大の減少幅を示し、高橋 蓮はP1 63画からP3 18画へ持続的に減少しました。佐藤 陽菜はP2（72画）のみ筆記が確認され、P1・P3は未筆記です。',
+    annotationSummary: '合計5件の添削が4名に行われました。田中 悠真 2件（P1, P3）、鈴木 美咲 1件（P2）、高橋 蓮 1件（P3）、佐藤 陽菜 1件（P1）。伊藤 結衣は添削なしで全ページを完了しました。添削後の追加筆記が確認されたのは3件（田中 P1·P3、鈴木 P2）で、2件（高橋 P3、佐藤 P1）は添削後も追加筆記がありませんでした。',
   },
 };
+
+function getDummySessionAnalysis(locale: string): SessionAnalysis {
+  const lang = SESSION_ANALYSIS_I18N[locale] ? locale : 'ko';
+  const vl = getVoiceLocale(locale);
+  return {
+    ...SESSION_ANALYSIS_I18N[lang],
+    voiceAnalysis: DUMMY_VOICE_ANALYSIS[vl],
+  };
+}
+
+const STUDENT_ANALYSES_I18N: Record<string, Record<string, StudentAnalysis>> = {
+  ko: {
+    guest_001: {
+      pattern: 'P1 127획, P2 89획, P3 95획. 전 페이지에서 필기했으며 학급 평균(P1 113, P2 91, P3 69)과 비교해 P1·P3은 평균 이상, P2는 평균에 근접합니다.',
+      annotationResponse: 'P1과 P3에서 각 1건의 첨삭을 받았습니다. 두 경우 모두 첨삭 이후 추가 필기가 확인되었습니다(P1: 20획, P3: 15획).',
+      attention: '별도 주의 사항 없음. 전 페이지 필기 및 첨삭 후 추가 필기 모두 확인됨.',
+    },
+    guest_002: {
+      pattern: 'P1 148획, P2 134획, P3 52획. P1~P2에서 학급 내 최고 필기량을 기록했으나, P3에서 52획으로 크게 줄어 학급 평균(69획) 아래로 내려갔습니다.',
+      annotationResponse: 'P2에서 1건의 첨삭을 받았으며, 이후 8획의 추가 필기가 확인되었습니다.',
+      attention: 'P3 필기량이 P1 대비 크게 감소했습니다. 후반부 참여 저하 여부 확인이 필요합니다.',
+    },
+    guest_003: {
+      pattern: 'P1 63획, P2 41획, P3 18획. 전 페이지에서 필기했으나, 필기량이 지속 감소했습니다. 세 페이지 모두 학급 평균을 크게 밑돌았습니다.',
+      annotationResponse: 'P3에서 1건의 첨삭을 받았으나, 이후 추가 필기가 확인되지 않았습니다.',
+      attention: '전 페이지에서 학급 평균 대비 낮은 필기량이며 지속 감소 중입니다. 개별 확인이 필요합니다.',
+    },
+    guest_004: {
+      pattern: 'P1 112획, P2 121획, P3 110획. 전 페이지에서 안정적인 필기량을 유지했으며, 세 페이지 모두 학급 평균을 상회합니다.',
+      annotationResponse: '첨삭을 받지 않았습니다.',
+      attention: '별도 주의 사항 없음.',
+    },
+    guest_005: {
+      pattern: 'P1 0획, P2 72획, P3 0획. P2에서만 필기 활동이 있었으며 학급 평균(91획)의 79% 수준입니다. P1과 P3은 미필기입니다.',
+      annotationResponse: 'P1에서 1건의 첨삭을 받았으나, 해당 페이지에서 이후 추가 필기는 확인되지 않았습니다.',
+      attention: '3페이지 중 2페이지 미필기. 수업 참여에 어려움이 있는지 확인이 필요합니다.',
+    },
+  },
+  ja: {
+    guest_001: {
+      pattern: 'P1 127画、P2 89画、P3 95画。全ページで筆記しており、クラス平均（P1 113、P2 91、P3 69）と比較してP1·P3は平均以上、P2は平均に近いです。',
+      annotationResponse: 'P1とP3でそれぞれ1件の添削を受けました。いずれも添削後に追加筆記が確認されました（P1: 20画、P3: 15画）。',
+      attention: '特に注意事項なし。全ページ筆記および添削後の追加筆記を確認。',
+    },
+    guest_002: {
+      pattern: 'P1 148画、P2 134画、P3 52画。P1〜P2でクラス最高の筆記量を記録しましたが、P3では52画に大幅減少し、クラス平均（69画）を下回りました。',
+      annotationResponse: 'P2で1件の添削を受け、その後8画の追加筆記が確認されました。',
+      attention: 'P3の筆記量がP1対比で大幅に減少。後半の参加低下の確認が必要です。',
+    },
+    guest_003: {
+      pattern: 'P1 63画、P2 41画、P3 18画。全ページで筆記しましたが、筆記量が持続的に減少。3ページすべてでクラス平均を大きく下回りました。',
+      annotationResponse: 'P3で1件の添削を受けましたが、その後の追加筆記は確認されませんでした。',
+      attention: '全ページでクラス平均対比低い筆記量で持続減少中。個別確認が必要です。',
+    },
+    guest_004: {
+      pattern: 'P1 112画、P2 121画、P3 110画。全ページで安定した筆記量を維持し、3ページすべてでクラス平均を上回っています。',
+      annotationResponse: '添削を受けていません。',
+      attention: '特に注意事項なし。',
+    },
+    guest_005: {
+      pattern: 'P1 0画、P2 72画、P3 0画。P2のみ筆記活動があり、クラス平均（91画）の79%水準です。P1とP3は未筆記です。',
+      annotationResponse: 'P1で1件の添削を受けましたが、そのページでの追加筆記は確認されませんでした。',
+      attention: '3ページ中2ページ未筆記。授業参加に困難がないか確認が必要です。',
+    },
+  },
+};
+
+function getDummyStudentAnalyses(locale: string): Record<string, StudentAnalysis> {
+  return STUDENT_ANALYSES_I18N[locale] ?? STUDENT_ANALYSES_I18N.ko;
+}
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -281,14 +304,14 @@ const SIMPLE_ANNOTATIONS = [
 ];
 
 export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: ArchiveItem; variant?: 'full' | 'simple' }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const locale = i18n.language;
   const isSimple = variant === 'simple';
-  const activeStudents = isSimple ? SIMPLE_STUDENTS : STUDENTS;
-  const activePages = isSimple ? SIMPLE_PAGES : PAGES_DATA;
+  const activeStudents = isSimple ? SIMPLE_STUDENTS : getStudents(locale);
+  const activePages = isSimple ? SIMPLE_PAGES : getPagesData(locale);
   const activeAnnotations = isSimple ? SIMPLE_ANNOTATIONS : ANNOTATION_EVENTS;
   const [viewTab, setViewTab] = useState<ViewTab>('page');
-
   const [sessionAnalysis, setSessionAnalysis] = useState<SessionAnalysis | null>(null);
   const [sessionAnalyzing, setSessionAnalyzing] = useState(false);
   const [expandedStudents, setExpandedStudents] = useState<Set<string>>(new Set());
@@ -310,7 +333,13 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
     const cache = getAnalysisCache(archive.archiveId);
     if (cache?.sessionResult) {
       try {
-        setSessionAnalysis(JSON.parse(cache.sessionResult));
+        const parsed = JSON.parse(cache.sessionResult);
+        // 이전 형식(voiceSummary: string) 캐시는 무시 — 새 voiceAnalysis 구조 필요
+        if (parsed.voiceAnalysis && typeof parsed.voiceAnalysis === 'object') {
+          setSessionAnalysis(parsed);
+        } else {
+          clearAnalysisCache(archive.archiveId);
+        }
       } catch { /* 파싱 실패 시 무시 */ }
     }
     if (cache?.studentResults) {
@@ -339,10 +368,11 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
     if (sessionAnalyzing) return; // 중복 클릭 방어
     setSessionAnalyzing(true);
     setTimeout(() => {
-      setSessionAnalysis(DUMMY_SESSION_ANALYSIS);
+      const analysis = getDummySessionAnalysis(locale);
+      setSessionAnalysis(analysis);
       setSessionAnalyzing(false);
       setAnalysisCache(archive.archiveId, {
-        sessionResult: JSON.stringify(DUMMY_SESSION_ANALYSIS),
+        sessionResult: JSON.stringify(analysis),
       });
     }, 2000);
   };
@@ -357,7 +387,7 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
     if (studentAnalyzing.has(userId)) return; // 중복 클릭 방어
     setStudentAnalyzing(prev => new Set(prev).add(userId));
     setTimeout(() => {
-      const result = DUMMY_STUDENT_ANALYSES[userId];
+      const result = getDummyStudentAnalyses(locale)[userId];
       setStudentAnalyses(prev => {
         const updated = { ...prev, [userId]: result };
         // 학생 분석 결과도 캐시에 저장
@@ -1098,16 +1128,96 @@ export function ArchiveDetailV2({ archive, variant = 'full' }: { archive: Archiv
                       </div>
                     </div>
 
-                    {/* 음성 요약 */}
-                    <div className="p-4 bg-gray-50 rounded-xl border border-gray-100">
-                      <div className="flex items-center gap-2 mb-2">
-                        <svg className="w-3.5 h-3.5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    {/* ── 수업 음성 분석 (STT) ── */}
+                    <div className="p-5 bg-gradient-to-br from-slate-50 to-gray-50 rounded-xl border border-gray-200 flex flex-col gap-5">
+                      {/* 헤더 */}
+                      <div className="flex items-center gap-2">
+                        <svg className="w-4 h-4 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                         </svg>
-                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest">{t('archiveDetail.voiceSummary')}</h3>
-                        <span className="text-[10px] text-gray-300 font-normal normal-case">(STT 참고)</span>
+                        <h3 className="text-sm font-bold text-gray-800">{t('archiveDetail.voiceAnalysisTitle')}</h3>
+                        <span className="text-[10px] text-gray-400 font-normal">(STT)</span>
                       </div>
-                      <p className="text-xs text-gray-500 leading-relaxed">{sessionAnalysis.voiceSummary}</p>
+
+                      {/* 수업 요약 */}
+                      <div>
+                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5">{t('archiveDetail.classSummary')}</h4>
+                        <p className="text-xs text-gray-600 leading-relaxed">{sessionAnalysis.voiceAnalysis.classSummary}</p>
+                      </div>
+
+                      {/* 학생 질문 목록 */}
+                      {sessionAnalysis.voiceAnalysis.studentQuestions.length > 0 && (
+                        <div>
+                          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{t('archiveDetail.studentQuestions')}</h4>
+                          <div className="flex flex-col gap-1.5">
+                            {sessionAnalysis.voiceAnalysis.studentQuestions.map((q, i) => (
+                              <div key={i} className="flex items-start gap-3 px-3 py-2 bg-white rounded-lg border border-gray-100">
+                                <span className="text-[11px] text-gray-400 font-mono flex-shrink-0 pt-0.5">{q.timestamp}</span>
+                                <span className="text-[11px] font-semibold text-indigo-600 flex-shrink-0 pt-0.5">{q.studentName}</span>
+                                <span className="text-xs text-gray-600 leading-relaxed">&ldquo;{q.question}&rdquo;</span>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* 주요 이슈 */}
+                      {sessionAnalysis.voiceAnalysis.keyIssues.length > 0 && (
+                        <div className="p-3 bg-amber-50/60 rounded-lg border border-amber-200/50">
+                          <h4 className="text-xs font-bold text-amber-700 mb-2">{t('archiveDetail.keyIssues')}</h4>
+                          <ul className="flex flex-col gap-1">
+                            {sessionAnalysis.voiceAnalysis.keyIssues.map((issue, i) => (
+                              <li key={i} className="flex items-start gap-2 text-xs text-gray-600 leading-relaxed">
+                                <span className="text-amber-500 flex-shrink-0 mt-0.5">&#x2022;</span>
+                                {issue}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* 발화 통계 */}
+                      <div>
+                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-2">{t('archiveDetail.speakingStats')}</h4>
+                        {/* 비율 바 */}
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="text-[11px] text-gray-500">{t('archiveDetail.teacher')}</span>
+                          <div className="flex-1 h-2.5 bg-gray-200 rounded-full overflow-hidden flex">
+                            <div
+                              className="h-full bg-indigo-400 rounded-l-full"
+                              style={{ width: `${sessionAnalysis.voiceAnalysis.speakingStats.teacherRatio}%` }}
+                            />
+                            <div
+                              className="h-full bg-emerald-400 rounded-r-full"
+                              style={{ width: `${sessionAnalysis.voiceAnalysis.speakingStats.studentRatio}%` }}
+                            />
+                          </div>
+                          <span className="text-[11px] text-gray-500">{t('archiveDetail.students')}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-[11px] text-gray-500">
+                          <span className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-indigo-400" />
+                            {t('archiveDetail.teacher')} {sessionAnalysis.voiceAnalysis.speakingStats.teacherRatio}%
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                            {t('archiveDetail.students')} {sessionAnalysis.voiceAnalysis.speakingStats.studentRatio}%
+                          </span>
+                        </div>
+                        {/* 학생별 발화 횟수 */}
+                        <div className="flex flex-wrap gap-2 mt-2.5">
+                          {sessionAnalysis.voiceAnalysis.speakingStats.perStudent.map((s) => (
+                            <span
+                              key={s.studentId}
+                              className={`px-2.5 py-1 rounded-full text-[11px] font-medium ${
+                                s.count > 0 ? 'bg-indigo-50 text-indigo-600' : 'bg-gray-100 text-gray-400'
+                              }`}
+                            >
+                              {s.studentName} {s.count}{t('archiveDetail.speakCount')}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -157,7 +157,10 @@
     "participants": "참가자",
     "currentParticipants": "현재 참가자",
     "participantCount": "{{count}}명 참여 중",
-    "participantCountSimple": "{{count}}명"
+    "participantCountSimple": "{{count}}명",
+    "annotate": "첨삭",
+    "annotating": "첨삭 중",
+    "clearAnnotation": "지우기"
   },
   "sessionCreate": {
     "title": "새 세션 만들기",
@@ -590,7 +593,13 @@
     "saveDone": "저장 완료",
     "saveDoneDesc": "아카이브에서 확인할 수 있습니다",
     "deleteSessionTitle": "세션 삭제",
-    "deleteSessionConfirm": "이 세션을 삭제하시겠습니까? 삭제하면 아카이브로 저장할 수 없습니다."
+    "deleteSessionConfirm": "이 세션을 삭제하시겠습니까? 삭제하면 아카이브로 저장할 수 없습니다.",
+    "reconnectTitle": "진행 중인 세션으로 돌아가기",
+    "reconnectButton": "다시 접속",
+    "reconnectEnd": "종료",
+    "reconnectEndTitle": "세션 종료",
+    "reconnectEndConfirm": "이 세션을 종료하시겠습니까? 참가자들의 연결도 함께 종료됩니다.",
+    "reconnecting": "접속 중..."
   },
   "archiveDetail": {
     "backToList": "목록으로 돌아가기",
@@ -651,6 +660,12 @@
     "recommendedMethod": "추천 학습법",
     "resetAnalysis": "분석 초기화",
     "voiceSummary": "음성 요약",
+    "voiceAnalysisTitle": "수업 음성 분석",
+    "studentQuestions": "학생 질문 목록",
+    "keyIssues": "주요 이슈",
+    "speakingStats": "발화 통계",
+    "students": "학생",
+    "speakCount": "회",
     "noWritingN": "미필기 {{count}}P",
     "poorN": "부진 {{count}}P",
     "good": "양호",

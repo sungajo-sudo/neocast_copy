@@ -2,6 +2,10 @@ import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getAnalysisCache } from '../utils/analysisCache';
+import { sessionService } from '../services/session-service';
+import { useAuthStore } from '../stores/auth-store';
+import { useSessionStore } from '../stores/session-store';
+import { useConnectionStore } from '../stores/connection-store';
 
 interface EndedSession {
   sessionId: string;
@@ -67,10 +71,113 @@ export function HomePage() {
   const [endedSessions, setEndedSessions] = useState<EndedSession[]>([]);
   const [archives, setArchives] = useState<ArchiveItem[]>([]);
 
+  // 재접속 가능한 세션
+  const [reconnectableSession, setReconnectableSession] = useState<{
+    sessionId: string;
+    sessionCode: string;
+    title?: string;
+    participantCount: number;
+  } | null>(null);
+  const [reconnecting, setReconnecting] = useState(false);
+  // 세션 종료 확인 팝업
+  const [endSessionPopup, setEndSessionPopup] = useState(false);
+
   // 아카이브 저장 팝업 상태
   const [savePopup, setSavePopup] = useState<{ open: boolean; session: EndedSession | null; saving: boolean; done: boolean }>({ open: false, session: null, saving: false, done: false });
   // 삭제 확인 팝업 상태
   const [deletePopup, setDeletePopup] = useState<{ open: boolean; sessionId: string | null }>({ open: false, sessionId: null });
+
+  // 재접속 가능한 세션 조회
+  useEffect(() => {
+    const tokens = useAuthStore.getState().tokens;
+
+    // TODO: 더미 데이터 — 서버 연동 시 아래 블록을 제거하고 API 호출로 교체
+    if (!tokens?.accessToken) {
+      setReconnectableSession({
+        sessionId: 'dummy-reconnect-001',
+        sessionCode: 'ABC123',
+        title: '수학 월요일 오전반',
+        participantCount: 3,
+      });
+      return;
+    }
+
+    sessionService.getReconnectableSession(tokens.accessToken)
+      .then((res) => {
+        if (res.hasDisconnectedSession && res.session) {
+          setReconnectableSession({
+            sessionId: res.session.sessionId,
+            sessionCode: res.session.sessionCode,
+            participantCount: res.session.participantCount,
+          });
+        }
+      })
+      .catch(() => {
+        // API 실패 시 더미로 폴백 (개발용)
+        setReconnectableSession({
+          sessionId: 'dummy-reconnect-001',
+          sessionCode: 'ABC123',
+          title: '수학 월요일 오전반',
+          participantCount: 3,
+        });
+      });
+  }, []);
+
+  // 다시 접속 핸들러
+  const handleReconnect = useCallback(async () => {
+    if (!reconnectableSession) return;
+    const tokens = useAuthStore.getState().tokens;
+    if (!tokens?.accessToken) return;
+
+    setReconnecting(true);
+    try {
+      const res = await sessionService.reconnectToSession(tokens.accessToken, reconnectableSession.sessionId);
+
+      // WebSocket 연결 (control, chat, voice, stroke)
+      const serverUrl = (import.meta.env.VITE_API_BASE_URL ?? '/api').replace(/\/api$/, '').replace(/\/$/, '') || window.location.origin;
+      await useConnectionStore.getState().connect(serverUrl, tokens.accessToken, res.session.id);
+
+      // 세션 스토어 업데이트
+      const sessionStore = useSessionStore.getState();
+      sessionStore.setCurrentUserId(useAuthStore.getState().user?.id ?? '');
+      sessionStore.setSession({
+        id: res.session.id,
+        code: res.session.code,
+        title: res.session.title,
+        status: res.session.status as 'active' | 'paused' | 'closed',
+        hostId: res.session.hostId,
+        participants: res.session.participants?.map(p => ({
+          userId: p.userId,
+          userName: p.userName,
+          role: p.role as 'host' | 'guest',
+          joinedAt: new Date(p.joinedAt).getTime(),
+          isMuted: false,
+          isSpeaking: false,
+          isOnline: true,
+        })) ?? [],
+        createdAt: new Date(res.session.createdAt).getTime(),
+      });
+
+      navigate(`/session/${res.session.code}`, { state: { justJoined: true } });
+    } catch {
+      setReconnecting(false);
+    }
+  }, [reconnectableSession, navigate]);
+
+  // 세션 종료 핸들러
+  const handleEndReconnectable = useCallback(async () => {
+    if (!reconnectableSession) return;
+    const tokens = useAuthStore.getState().tokens;
+    if (!tokens?.accessToken) return;
+
+    try {
+      await sessionService.closeSession(tokens.accessToken, reconnectableSession.sessionId);
+      setReconnectableSession(null);
+    } catch {
+      // 실패 시 무시
+    }
+    setEndSessionPopup(false);
+  }, [reconnectableSession]);
 
   useEffect(() => {
     // 인증 정보 로드
@@ -169,6 +276,41 @@ export function HomePage() {
         <h1 className="text-2xl font-extrabold text-gray-800">
           {t('homePage.greeting', { name: nickname })}
         </h1>
+
+        {/* ── 진행 중인 세션 재접속 배너 ── */}
+        {reconnectableSession && (
+          <div className="neo-card border-2 border-orange-300 bg-orange-50/60 p-5 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 min-w-0 flex-1">
+              <span className="w-3 h-3 rounded-full bg-orange-400 animate-pulse flex-shrink-0" />
+              <div className="flex flex-col gap-0.5 min-w-0">
+                <span className="font-bold text-gray-800 text-sm">
+                  {t('homePage.reconnectTitle')}
+                </span>
+                <span className="text-xs text-gray-500 truncate">
+                  {reconnectableSession.title ?? reconnectableSession.sessionCode}
+                  {' · '}
+                  {t('homePage.participantCount', { count: reconnectableSession.participantCount })}
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-shrink-0">
+              <button
+                onClick={handleReconnect}
+                disabled={reconnecting}
+                className="px-4 py-2 rounded-xl bg-orange-500 text-white text-xs font-bold hover:bg-orange-600 active:scale-[0.97] transition-all disabled:opacity-60"
+              >
+                {reconnecting ? t('homePage.reconnecting') : t('homePage.reconnectButton')}
+              </button>
+              <button
+                onClick={() => setEndSessionPopup(true)}
+                disabled={reconnecting}
+                className="px-3 py-2 rounded-xl bg-gray-100 text-gray-500 text-xs font-medium hover:bg-gray-200 hover:text-gray-700 active:scale-[0.97] transition-all disabled:opacity-60"
+              >
+                {t('homePage.reconnectEnd')}
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* 새 세션 시작 카드 */}
         <button
@@ -329,6 +471,44 @@ export function HomePage() {
                 </div>
               </>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* ── 세션 종료 확인 팝업 ── */}
+      {endSessionPopup && (
+        <div className="fixed inset-0 z-[200] bg-black/40 backdrop-blur-sm flex items-center justify-center" onClick={() => setEndSessionPopup(false)}>
+          <div className="bg-white rounded-2xl w-[90vw] max-w-[360px] p-6 shadow-2xl animate-in" onClick={e => e.stopPropagation()}>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0">
+                <svg className="w-5 h-5 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                </svg>
+              </div>
+              <div>
+                <p className="text-sm font-bold text-gray-900">{t('homePage.reconnectEndTitle')}</p>
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {reconnectableSession?.title ?? reconnectableSession?.sessionCode}
+                </p>
+              </div>
+            </div>
+            <p className="text-sm text-gray-600 mb-5">
+              {t('homePage.reconnectEndConfirm')}
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setEndSessionPopup(false)}
+                className="flex-1 px-4 py-2.5 text-sm font-medium text-gray-500 bg-gray-100 rounded-xl hover:bg-gray-200 active:scale-[0.97] transition-all"
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={handleEndReconnectable}
+                className="flex-1 px-4 py-2.5 text-sm font-bold text-white bg-orange-500 rounded-xl hover:bg-orange-600 active:scale-[0.97] transition-all"
+              >
+                {t('homePage.reconnectEnd')}
+              </button>
+            </div>
           </div>
         </div>
       )}

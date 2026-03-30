@@ -153,7 +153,10 @@
     "participants": "参加者",
     "currentParticipants": "現在の参加者",
     "participantCount": "{{count}}人参加中",
-    "participantCountSimple": "{{count}}人"
+    "participantCountSimple": "{{count}}人",
+    "annotate": "添削",
+    "annotating": "添削中",
+    "clearAnnotation": "消去"
   },
   "sessionCreate": {
     "title": "新しいセッションを作成",
@@ -562,7 +565,13 @@
     "saveDone": "保存完了",
     "saveDoneDesc": "アーカイブで確認できます",
     "deleteSessionTitle": "セッション削除",
-    "deleteSessionConfirm": "このセッションを削除しますか？削除するとアーカイブに保存できなくなります。"
+    "deleteSessionConfirm": "このセッションを削除しますか？削除するとアーカイブに保存できなくなります。",
+    "reconnectTitle": "進行中のセッションに戻る",
+    "reconnectButton": "再接続",
+    "reconnectEnd": "終了",
+    "reconnectEndTitle": "セッション終了",
+    "reconnectEndConfirm": "このセッションを終了しますか？参加者の接続も一緒に終了されます。",
+    "reconnecting": "接続中..."
   },
   "archiveDetail": {
     "backToList": "一覧に戻る",
@@ -623,6 +632,12 @@
     "recommendedMethod": "おすすめ学習法",
     "resetAnalysis": "分析リセット",
     "voiceSummary": "音声要約",
+    "voiceAnalysisTitle": "授業音声分析",
+    "studentQuestions": "生徒の質問一覧",
+    "keyIssues": "主要な問題点",
+    "speakingStats": "発話統計",
+    "students": "生徒",
+    "speakCount": "回",
     "noWritingN": "未筆記 {{count}}P",
     "poorN": "不振 {{count}}P",
     "good": "良好",
